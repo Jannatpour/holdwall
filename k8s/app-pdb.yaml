@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: holdwall-app-pdb
+  namespace: holdwall
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: holdwall
+      component: app

@@ -1,0 +1,103 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: holdwall-backup
+  namespace: holdwall
+spec:
+  schedule: "0 2 * * *" # Daily at 2 AM
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: holdwall-worker
+          containers:
+            - name: backup
+              image: holdwall-app:latest
+              command: ["node", "-e", "require('./lib/backup').createBackup()"]
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: holdwall-secrets
+                      key: DATABASE_URL
+              resources:
+                requests:
+                  memory: "512Mi"
+                  cpu: "250m"
+                limits:
+                  memory: "1Gi"
+                  cpu: "1000m"
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: holdwall-reindex
+  namespace: holdwall
+spec:
+  schedule: "0 */6 * * *" # Every 6 hours
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: holdwall-worker
+          containers:
+            - name: reindex
+              image: holdwall-app:latest
+              command: ["node", "-e", "require('./lib/evidence/reindex').reindexLegacyEvidence()"]
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: holdwall-secrets
+                      key: DATABASE_URL
+                - name: CHROMA_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: holdwall-secrets
+                      key: CHROMA_URL
+              resources:
+                requests:
+                  memory: "1Gi"
+                  cpu: "500m"
+                limits:
+                  memory: "2Gi"
+                  cpu: "2000m"
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: holdwall-pos-cycle
+  namespace: holdwall
+spec:
+  schedule: "0 */6 * * *" # Every 6 hours
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: holdwall-worker
+          containers:
+            - name: pos-cycle
+              image: holdwall-app:latest
+              command: ["node", "-e", "require('./lib/pos/cycle-worker').executePOSCycleForAllTenants()"]
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: holdwall-secrets
+                      key: DATABASE_URL
+              resources:
+                requests:
+                  memory: "1Gi"
+                  cpu: "500m"
+                limits:
+                  memory: "2Gi"
+                  cpu: "2000m"
+          restartPolicy: OnFailure

@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: holdwall
+      POSTGRES_PASSWORD: holdwall
+      POSTGRES_DB: holdwall
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U holdwall"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://holdwall:holdwall@postgres:5432/holdwall
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
+      CSRF_SECRET: ${CSRF_SECRET:?CSRF_SECRET is required}
+      EVIDENCE_SIGNING_SECRET: ${EVIDENCE_SIGNING_SECRET:?EVIDENCE_SIGNING_SECRET is required}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

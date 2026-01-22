@@ -1,0 +1,1370 @@
+// Prisma schema for Holdwall POS
+// Production-ready database schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Authentication & Users
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  image         String?
+  emailVerified DateTime?
+  role          UserRole  @default(USER)
+  tenantId      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  pushSubscriptions PushSubscription[]
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  tenantId  String
+  endpoint  String   @unique
+  p256dhKey String
+  authKey   String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, endpoint])
+  @@index([userId])
+  @@index([tenantId])
+  @@index([enabled])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  APPROVER
+  VIEWER
+}
+
+// Tenants
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  settings  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                User[]
+  evidence             Evidence[]
+  events               Event[]
+  claims               Claim[]
+  clusters             ClaimCluster[]
+  nodes                BeliefNode[]
+  edges                BeliefEdge[]
+  forecasts            Forecast[]
+  artifacts            AAALArtifact[]
+  approvals            Approval[]
+  playbooks            Playbook[]
+  policies             SourcePolicy[]
+  entitlements         Entitlement[]
+  counters             MeteringCounter[]
+  connectors           Connector[]
+  apiKeys              ApiKey[]
+  secrets              Secret[]
+  aiAnswerSnapshots    AIAnswerSnapshot[]
+  prompts              Prompt[]
+  aiModels             AIModel[]
+  citationRules        CitationRule[]
+  pushSubscriptions    PushSubscription[]
+  consensusSignals     ConsensusSignal[]
+  externalValidators   ExternalValidator[]
+  audits               Audit[]
+  slas                 SLA[]
+  rebuttalDocuments    RebuttalDocument[]
+  incidentExplanations IncidentExplanation[]
+  metricsDashboards    MetricsDashboard[]
+  predictedComplaints  PredictedComplaint[]
+  decisionCheckpoints  DecisionCheckpoint[]
+  idempotencyKeys      IdempotencyKey[]
+
+  @@index([slug])
+}
+
+// Evidence Vault
+model Evidence {
+  id                   String           @id @default(cuid())
+  tenantId             String
+  type                 EvidenceType
+  sourceType           String
+  sourceId             String
+  sourceUrl            String?
+  collectedAt          DateTime
+  collectedBy          String
+  method               CollectionMethod
+  contentRaw           String?          @db.Text
+  contentNormalized    String?          @db.Text
+  contentMetadata      Json?
+  collectionMethod     String
+  retentionPolicy      String
+  complianceFlags      String[]
+  signatureAlgorithm   String?
+  signatureValue       String?          @db.Text
+  signatureSignerId    String?
+  metadata             Json?
+  // Deduplication
+  contentHash          String?          @db.VarChar(64)
+  // Language detection
+  detectedLanguage     String?
+  languageConfidence   Float?
+  // PII redaction
+  piiRedacted          Boolean          @default(false)
+  piiRedactionMap      Json?
+  // Embedding storage (JSON array, primary storage in ChromaDB)
+  embedding            Json?
+  embeddingModel       String?
+  embeddingGeneratedAt DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  tenant       Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  claimRefs    ClaimEvidence[]
+  artifactRefs AAALArtifactEvidence[]
+  eventRefs    EventEvidence[]
+
+  @@unique([tenantId, contentHash])
+  @@index([tenantId])
+  @@index([type])
+  @@index([sourceType, sourceId])
+  @@index([createdAt])
+  @@index([contentHash])
+}
+
+enum EvidenceType {
+  SIGNAL
+  DOCUMENT
+  ARTIFACT
+  METRIC
+  EXTERNAL
+}
+
+enum CollectionMethod {
+  API
+  RSS
+  EXPORT
+  MANUAL
+}
+
+// Events
+model Event {
+  id            String   @id @default(cuid())
+  tenantId      String
+  actorId       String
+  type          String
+  occurredAt    DateTime @default(now())
+  correlationId String
+  causationId   String?
+  schemaVersion String   @default("1.0")
+  payload       Json
+  signatures    Json
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  evidenceRefs EventEvidence[]
+  outbox       EventOutbox?
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([correlationId])
+  @@index([occurredAt])
+}
+
+model EventEvidence {
+  id         String @id @default(cuid())
+  eventId    String
+  evidenceId String
+
+  event    Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  evidence Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, evidenceId])
+  @@index([eventId])
+  @@index([evidenceId])
+}
+
+// Event Outbox (for reliable Kafka publishing)
+model EventOutbox {
+  id          String    @id @default(cuid())
+  eventId     String    @unique
+  tenantId    String
+  topic       String
+  partition   Int?
+  key         String?
+  value       String    @db.Text // JSON stringified event
+  headers     Json?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  retryCount  Int       @default(0)
+  lastError   String?   @db.Text
+  createdAt   DateTime  @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([published])
+  @@index([createdAt])
+  @@index([tenantId])
+}
+
+// Event Processing (durable idempotency for workers)
+model EventProcessing {
+  id          String           @id @default(cuid())
+  tenantId    String
+  worker      String
+  eventId     String
+  status      ProcessingStatus @default(PROCESSING)
+  attempt     Int              @default(1)
+  startedAt   DateTime         @default(now())
+  completedAt DateTime?
+  lastError   String?          @db.Text
+
+  @@unique([worker, eventId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+enum ProcessingStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Claims
+model Claim {
+  id            String   @id @default(cuid())
+  tenantId      String
+  canonicalText String   @db.Text
+  variants      String[]
+  decisiveness  Float
+  clusterId     String?
+  createdAt     DateTime @default(now())
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  cluster        ClaimCluster?   @relation(fields: [clusterId], references: [id], onDelete: SetNull)
+  evidenceRefs   ClaimEvidence[]
+  asPrimaryClaim ClaimCluster?   @relation("PrimaryClaim")
+
+  @@index([tenantId])
+  @@index([clusterId])
+  @@index([createdAt])
+}
+
+model ClaimEvidence {
+  id         String @id @default(cuid())
+  claimId    String
+  evidenceId String
+
+  claim    Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  evidence Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@unique([claimId, evidenceId])
+  @@index([claimId])
+  @@index([evidenceId])
+}
+
+model ClaimCluster {
+  id             String   @id @default(cuid())
+  tenantId       String
+  primaryClaimId String   @unique
+  size           Int
+  decisiveness   Float
+  createdAt      DateTime @default(now())
+
+  tenant       Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  primaryClaim Claim   @relation("PrimaryClaim", fields: [primaryClaimId], references: [id], onDelete: Restrict)
+  claims       Claim[]
+
+  @@index([tenantId])
+  @@index([createdAt])
+}
+
+// Belief Graph
+model BeliefNode {
+  id           String   @id @default(cuid())
+  tenantId     String
+  type         NodeType
+  content      String   @db.Text
+  trustScore   Float
+  decisiveness Float
+  actorWeights Json
+  decayFactor  Float    @default(0.99)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fromEdges BeliefEdge[] @relation("FromNode")
+  toEdges   BeliefEdge[] @relation("ToNode")
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum NodeType {
+  CLAIM
+  EMOTION
+  PROOF_POINT
+  NARRATIVE
+}
+
+model BeliefEdge {
+  id           String   @id @default(cuid())
+  tenantId     String
+  fromNodeId   String
+  toNodeId     String
+  type         EdgeType
+  weight       Float
+  actorWeights Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fromNode BeliefNode @relation("FromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode   BeliefNode @relation("ToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([fromNodeId])
+  @@index([toNodeId])
+  @@index([type])
+}
+
+enum EdgeType {
+  REINFORCEMENT
+  NEUTRALIZATION
+  DECAY
+}
+
+// Forecasts
+model Forecast {
+  id              String       @id @default(cuid())
+  tenantId        String
+  type            ForecastType
+  targetMetric    String
+  value           Float
+  confidenceLower Float
+  confidenceUpper Float
+  confidenceLevel Float
+  horizonDays     Int
+  model           String
+  evalScore       Float?
+  createdAt       DateTime     @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Type-specific fields (stored as JSON for flexibility)
+  typeData Json?
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum ForecastType {
+  DRIFT
+  ANOMALY
+  OUTBREAK
+  DIFFUSION
+}
+
+// AAAL Artifacts
+model AAALArtifact {
+  id                String         @id @default(cuid())
+  tenantId          String
+  title             String
+  content           String         @db.Text
+  version           String
+  status            ArtifactStatus
+  approvers         String[]
+  requiredApprovals Int
+  policyChecks      Json?
+  padlPublished     Boolean        @default(false)
+  padlUrl           String?
+  padlHash          String?
+  padlRobots        String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  publishedAt       DateTime?
+
+  tenant       Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  evidenceRefs AAALArtifactEvidence[]
+  approvals    Approval[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AAALArtifactEvidence {
+  id         String @id @default(cuid())
+  artifactId String
+  evidenceId String
+
+  artifact AAALArtifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  evidence Evidence     @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@unique([artifactId, evidenceId])
+  @@index([artifactId])
+  @@index([evidenceId])
+}
+
+enum ArtifactStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  PUBLISHED
+}
+
+// Approvals
+model Approval {
+  id           String            @id @default(cuid())
+  tenantId     String
+  resourceType String
+  resourceId   String
+  action       String
+  requesterId  String
+  approvers    String[]
+  decision     ApprovalDecision?
+  approverId   String?
+  reason       String?           @db.Text
+  artifactId   String?
+  createdAt    DateTime          @default(now())
+  decidedAt    DateTime?
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  artifact AAALArtifact? @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([resourceType, resourceId])
+  @@index([decision])
+  @@index([createdAt])
+}
+
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+}
+
+// Playbooks
+model Playbook {
+  id            String        @id @default(cuid())
+  tenantId      String
+  name          String
+  description   String?       @db.Text
+  template      Json
+  autopilotMode AutopilotMode
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  executions PlaybookExecution[]
+
+  @@index([tenantId])
+}
+
+enum AutopilotMode {
+  RECOMMEND_ONLY
+  AUTO_DRAFT
+  AUTO_ROUTE
+  AUTO_PUBLISH
+}
+
+model PlaybookExecution {
+  id          String          @id @default(cuid())
+  playbookId  String
+  status      ExecutionStatus
+  result      Json?
+  error       String?         @db.Text
+  startedAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  playbook Playbook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+
+  @@index([playbookId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// Source Compliance
+model SourcePolicy {
+  id               String           @id @default(cuid())
+  tenantId         String
+  sourceType       String
+  allowedSources   String[]
+  collectionMethod CollectionMethod
+  retentionDays    Int
+  autoDelete       Boolean
+  complianceFlags  String[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sourceType])
+  @@index([tenantId])
+}
+
+// Metering
+model Entitlement {
+  id           String          @id @default(cuid())
+  tenantId     String
+  metric       String
+  softLimit    Int
+  hardLimit    Int
+  currentUsage Int             @default(0)
+  enforcement  EnforcementMode
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, metric])
+  @@index([tenantId])
+}
+
+enum EnforcementMode {
+  SOFT
+  HARD
+  NONE
+}
+
+model MeteringCounter {
+  id        String        @id @default(cuid())
+  tenantId  String
+  metric    String
+  value     Int           @default(0)
+  period    CounterPeriod
+  lastReset DateTime      @default(now())
+  nextReset DateTime
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, metric, period])
+  @@index([tenantId])
+  @@index([nextReset])
+}
+
+enum CounterPeriod {
+  DAY
+  MONTH
+  YEAR
+}
+
+// Connectors
+model Connector {
+  id         String          @id @default(cuid())
+  tenantId   String
+  type       String // "rss", "github", "s3", "webhook", etc.
+  name       String
+  status     ConnectorStatus @default(INACTIVE)
+  config     Json // Connector-specific configuration
+  apiKeyId   String? // Reference to API key (no plaintext secrets)
+  lastSync   DateTime?
+  lastError  String?         @db.Text
+  errorCount Int             @default(0)
+  cursor     String? // Checkpoint for incremental syncs
+  schedule   String? // Cron expression for scheduled syncs
+  enabled    Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  runs   ConnectorRun[]
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([status])
+  @@index([enabled])
+}
+
+enum ConnectorStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+  SYNCING
+}
+
+model ConnectorRun {
+  id             String    @id @default(cuid())
+  connectorId    String
+  status         RunStatus @default(PENDING)
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+  itemsProcessed Int       @default(0)
+  itemsCreated   Int       @default(0)
+  itemsUpdated   Int       @default(0)
+  itemsFailed    Int       @default(0)
+  error          String?   @db.Text
+  cursor         String? // Checkpoint after this run
+  metadata       Json? // Run-specific metadata
+  createdAt      DateTime  @default(now())
+
+  connector Connector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+
+  @@index([connectorId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// API Keys (for connector credentials)
+model ApiKey {
+  id        String    @id @default(cuid())
+  tenantId  String
+  name      String
+  service   String // "openai", "github", "s3", etc.
+  keyHash   String // Hashed key (never store plaintext)
+  maskedKey String // Last 4 chars for display
+  scopes    String[] // Permission scopes
+  lastUsed  DateTime?
+  expiresAt DateTime?
+  revoked   Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([service])
+  @@index([revoked])
+}
+
+// Secrets Management (encrypted storage)
+model Secret {
+  id                   String    @id @default(cuid())
+  tenantId             String
+  name                 String
+  type                 String // "api_key", "password", "token", "certificate", "other"
+  service              String?
+  encryptedValue       String    @db.Text
+  iv                   String // Initialization vector for encryption
+  tag                  String // Authentication tag
+  version              Int       @default(1)
+  rotationPolicy       String    @default("manual") // "manual", "scheduled", "on-demand"
+  rotationIntervalDays Int?
+  lastRotated          DateTime?
+  nextRotation         DateTime?
+  accessCount          Int       @default(0)
+  lastAccessed         DateTime?
+  revoked              Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name, version])
+  @@index([tenantId])
+  @@index([name])
+  @@index([service])
+  @@index([revoked])
+  @@index([nextRotation])
+}
+
+// AI Answer Monitoring
+model AIAnswerSnapshot {
+  id        String   @id @default(cuid())
+  tenantId  String
+  engine    String
+  query     String
+  answer    String   @db.Text
+  citations String[]
+  tone      String?
+  model     String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([engine])
+  @@index([query])
+  @@index([createdAt])
+}
+
+// Prompt Registry (AI Governance)
+model Prompt {
+  id           String    @id @default(cuid())
+  tenantId     String
+  name         String
+  version      String // Semantic version (e.g., "1.0.0")
+  content      String    @db.Text
+  description  String?
+  tags         String[]
+  category     String? // "rag", "kag", "extraction", "evaluation", etc.
+  model        String? // Recommended model
+  temperature  Float?
+  maxTokens    Int?
+  parameters   Json? // Additional parameters
+  policyChecks Json? // Policy validation results
+  approved     Boolean   @default(false)
+  approvedBy   String?
+  approvedAt   DateTime?
+  deprecated   Boolean   @default(false)
+  deprecatedAt DateTime?
+  usageCount   Int       @default(0)
+  lastUsed     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  evaluations PromptEvaluation[]
+
+  @@unique([tenantId, name, version])
+  @@index([tenantId])
+  @@index([name])
+  @@index([category])
+  @@index([approved])
+  @@index([deprecated])
+}
+
+// Golden Sets for AI Evaluation
+model GoldenSet {
+  id          String   @id @default(cuid())
+  domain      String // "claims" | "evidence_linking" | "graph_updates" | "aaal_outputs"
+  name        String
+  version     String
+  description String?  @db.Text
+  examples    Json // Array of GoldenSetExample
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([domain, name, version])
+  @@index([domain])
+  @@index([name])
+}
+
+// Prompt Evaluation (for quality tracking)
+model PromptEvaluation {
+  id           String   @id @default(cuid())
+  promptId     String
+  evaluationId String? // Link to AIAnswerEvaluationHarness result
+  score        Float // Overall quality score (0-1)
+  metrics      Json // Detailed metrics (citation, accuracy, etc.)
+  evaluator    String? // Model/service used for evaluation
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  prompt Prompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  @@index([promptId])
+  @@index([score])
+  @@index([createdAt])
+}
+
+// Model Registry (AI Governance)
+model AIModel {
+  id           String      @id @default(cuid())
+  tenantId     String
+  name         String // e.g., "gpt-4", "claude-3-opus"
+  provider     String // "openai", "anthropic", "cohere", etc.
+  version      String? // Model version/identifier
+  status       ModelStatus @default(ACTIVE)
+  capabilities String[] // ["text", "vision", "function-calling", etc.]
+  rateLimit    Json? // Rate limit configuration
+  costPerToken Json? // Pricing information
+  policyChecks Json? // Policy validation results
+  approved     Boolean     @default(false)
+  approvedBy   String?
+  approvedAt   DateTime?
+  deprecated   Boolean     @default(false)
+  deprecatedAt DateTime?
+  usageCount   Int         @default(0)
+  lastUsed     DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name, version])
+  @@index([tenantId])
+  @@index([name])
+  @@index([provider])
+  @@index([status])
+  @@index([approved])
+}
+
+enum ModelStatus {
+  ACTIVE
+  DEPRECATED
+  BLOCKED
+}
+
+// Citation Quality Rules (AI Governance)
+model CitationRule {
+  id               String           @id @default(cuid())
+  tenantId         String
+  name             String
+  description      String?          @db.Text
+  enabled          Boolean          @default(true)
+  minCitations     Int              @default(1)
+  maxCitations     Int? // Optional maximum
+  requiredTypes    String[] // ["evidence", "claim", "forecast", etc.]
+  qualityThreshold Float            @default(0.7) // Minimum quality score (0-1)
+  enforcement      EnforcementLevel @default(WARNING)
+  metadata         Json?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([enabled])
+  @@index([enforcement])
+}
+
+enum EnforcementLevel {
+  WARNING // Log warning but allow
+  BLOCK // Block publishing if violated
+  REQUIRE_FIX // Require fix before publishing
+}
+
+// A2A (Agent-to-Agent Protocol) with OASF (Open Agentic Schema) support
+model AgentRegistry {
+  id           String   @id @default(cuid())
+  agentId      String   @unique
+  name         String
+  version      String
+  capabilities Json // Array of AgentCapability
+  endpoint     String
+  publicKey    String?  @db.Text
+  metadata     Json? // Includes OASF AgentProfile
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([name])
+}
+
+model AgentConnection {
+  id            String    @id @default(cuid())
+  connectionId  String    @unique
+  agentId       String
+  peerAgentId   String
+  status        String // "connecting" | "connected" | "disconnected" | "error"
+  establishedAt DateTime  @default(now())
+  lastHeartbeat DateTime?
+  capabilities  Json // Array of AgentCapability
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([agentId])
+  @@index([peerAgentId])
+  @@index([status])
+}
+
+// ANP (Agent Network Protocol)
+model AgentNetwork {
+  id          String   @id @default(cuid())
+  networkId   String   @unique
+  name        String
+  description String?  @db.Text
+  agents      Json // Array of agent IDs
+  topology    String // "mesh" | "star" | "hierarchical" | "ring"
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([networkId])
+  @@index([topology])
+}
+
+// AG-UI (Agent-User Interaction Protocol)
+model ConversationSession {
+  id           String    @id @default(cuid())
+  sessionId    String    @unique
+  userId       String
+  agentId      String
+  startedAt    DateTime  @default(now())
+  lastActivity DateTime  @default(now())
+  endedAt      DateTime?
+  messages     Json // Array of messages
+  state        Json? // Session state
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([agentId])
+  @@index([lastActivity])
+}
+
+// AP2 (Agent Payment Protocol)
+model PaymentMandate {
+  id          String    @id @default(cuid())
+  mandateId   String    @unique
+  fromAgentId String
+  toAgentId   String
+  type        String // "intent" | "cart" | "payment"
+  amount      Int // in smallest currency unit (cents)
+  currency    String    @db.VarChar(3)
+  description String?   @db.Text
+  metadata    Json?
+  expiresAt   DateTime?
+  status      String // "pending" | "approved" | "rejected" | "expired" | "revoked" | "completed"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([mandateId])
+  @@index([fromAgentId])
+  @@index([toAgentId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model PaymentSignature {
+  id          String   @id @default(cuid())
+  signatureId String   @unique
+  mandateId   String
+  agentId     String
+  signature   String   @db.Text
+  publicKey   String   @db.Text
+  timestamp   DateTime @default(now())
+
+  @@index([mandateId])
+  @@index([agentId])
+}
+
+model WalletLedgerEntry {
+  id            String   @id @default(cuid())
+  entryId       String   @unique
+  walletId      String
+  agentId       String
+  type          String // "credit" | "debit"
+  amount        Int
+  currency      String   @db.VarChar(3)
+  mandateId     String?
+  transactionId String?
+  description   String?  @db.Text
+  balance       Int // Balance after this entry
+  timestamp     DateTime @default(now())
+
+  @@index([walletId])
+  @@index([agentId])
+  @@index([currency])
+  @@index([mandateId])
+  @@index([transactionId])
+  @@index([timestamp])
+}
+
+model WalletLimit {
+  id           String   @id @default(cuid())
+  walletId     String   @unique
+  agentId      String
+  limitType    String // "daily" | "weekly" | "monthly" | "transaction" | "lifetime"
+  limitAmount  Int
+  currency     String   @db.VarChar(3)
+  currentUsage Int      @default(0)
+  resetAt      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([currency])
+  @@index([resetAt])
+}
+
+model PaymentAuditLog {
+  id            String   @id @default(cuid())
+  auditId       String   @unique
+  mandateId     String?
+  transactionId String?
+  action        String
+  fromAgentId   String?
+  toAgentId     String?
+  amount        Int?
+  currency      String?  @db.VarChar(3)
+  status        String // "success" | "failure"
+  error         String?  @db.Text
+  metadata      Json?
+  timestamp     DateTime @default(now())
+
+  @@index([mandateId])
+  @@index([transactionId])
+  @@index([fromAgentId])
+  @@index([toAgentId])
+  @@index([action])
+  @@index([timestamp])
+}
+
+// POS: Consensus Hijacking - Third-party validators and expert commentary
+model ConsensusSignal {
+  id               String              @id @default(cuid())
+  tenantId         String
+  type             ConsensusSignalType
+  title            String
+  content          String              @db.Text
+  source           String // Third-party source name
+  sourceUrl        String?
+  author           String? // Expert/author name
+  authorCredential String? // Author credentials/affiliation
+  publishedAt      DateTime
+  relevanceScore   Float               @default(0.5) // 0-1, how relevant to tenant
+  trustScore       Float               @default(0.5) // 0-1, source trustworthiness
+  amplification    Float               @default(0.0) // How much this amplifies consensus
+  evidenceRefs     String[] // Evidence IDs this signal references
+  relatedNodeIds   String[] // Belief node IDs this relates to
+  metadata         Json?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([publishedAt])
+  @@index([relevanceScore])
+  @@index([trustScore])
+}
+
+enum ConsensusSignalType {
+  THIRD_PARTY_ANALYSIS
+  EXPERT_COMMENTARY
+  COMPARATIVE_RESEARCH
+  BALANCED_PERSPECTIVE
+  INDEPENDENT_REVIEW
+}
+
+// POS: External Validators
+model ExternalValidator {
+  id            String        @id @default(cuid())
+  tenantId      String
+  name          String
+  type          ValidatorType
+  description   String?       @db.Text
+  url           String?
+  publicKey     String?       @db.Text
+  trustLevel    Float         @default(0.5) // 0-1
+  isActive      Boolean       @default(true)
+  lastValidated DateTime?
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([isActive])
+}
+
+enum ValidatorType {
+  INDEPENDENT_AUDIT
+  CERTIFICATION_BODY
+  EXPERT_PANEL
+  RESEARCH_INSTITUTION
+  STANDARDS_ORGANIZATION
+}
+
+// POS: Trust Substitution - Audits and SLAs
+model Audit {
+  id              String      @id @default(cuid())
+  tenantId        String
+  type            AuditType
+  title           String
+  description     String?     @db.Text
+  auditorId       String? // External validator ID
+  status          AuditStatus
+  findings        Json? // Audit findings
+  recommendations Json? // Recommendations
+  publishedAt     DateTime?
+  publicUrl       String?
+  evidenceRefs    String[]
+  metadata        Json?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @default(now())
+  completedAt     DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([status])
+  @@index([publishedAt])
+}
+
+enum AuditType {
+  SECURITY
+  COMPLIANCE
+  OPERATIONAL
+  FINANCIAL
+  QUALITY
+}
+
+enum AuditStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  PUBLISHED
+}
+
+model SLA {
+  id          String    @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?   @db.Text
+  metric      String // e.g., "uptime", "response_time"
+  target      Float // Target value
+  actual      Float? // Current actual value
+  unit        String // e.g., "percent", "ms", "count"
+  period      SLAPeriod
+  publicUrl   String? // Public dashboard URL
+  isPublic    Boolean   @default(false)
+  lastUpdated DateTime  @default(now())
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([isPublic])
+  @@index([lastUpdated])
+}
+
+enum SLAPeriod {
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+}
+
+// POS: AI Answer Authority Layer - Rebuttal documents and incident explanations
+model RebuttalDocument {
+  id             String    @id @default(cuid())
+  tenantId       String
+  title          String
+  content        String    @db.Text
+  targetClaimId  String? // Claim this rebuts
+  targetNodeId   String? // Belief node this addresses
+  evidenceRefs   String[]
+  structuredData Json? // Structured data for AI citation
+  publicUrl      String?
+  isPublished    Boolean   @default(false)
+  publishedAt    DateTime?
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([targetClaimId])
+  @@index([targetNodeId])
+  @@index([isPublished])
+}
+
+model IncidentExplanation {
+  id           String    @id @default(cuid())
+  tenantId     String
+  incidentId   String // Internal incident identifier
+  title        String
+  summary      String    @db.Text
+  explanation  String    @db.Text
+  rootCause    String?   @db.Text
+  resolution   String?   @db.Text
+  prevention   String?   @db.Text
+  evidenceRefs String[]
+  publicUrl    String?
+  isPublished  Boolean   @default(false)
+  publishedAt  DateTime?
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([incidentId])
+  @@index([isPublished])
+}
+
+model MetricsDashboard {
+  id              String   @id @default(cuid())
+  tenantId        String
+  name            String
+  description     String?  @db.Text
+  metrics         Json // Array of metric definitions
+  publicUrl       String?
+  isPublic        Boolean  @default(false)
+  refreshInterval Int? // Seconds
+  lastRefreshed   DateTime @default(now())
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([isPublic])
+}
+
+// POS: Narrative Preemption Engine - Predictive complaint detection
+model PredictedComplaint {
+  id                 String           @id @default(cuid())
+  tenantId           String
+  predictedTopic     String
+  predictedContent   String           @db.Text
+  probability        Float // 0-1
+  confidence         Float // 0-1
+  horizonDays        Int // Days until predicted
+  triggers           Json // Trigger conditions
+  preemptiveActionId String? // Preemptive artifact/action ID
+  status             PredictionStatus
+  evidenceRefs       String[]
+  metadata           Json?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  resolvedAt         DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([probability])
+  @@index([createdAt])
+}
+
+enum PredictionStatus {
+  ACTIVE
+  ADDRESSED
+  FALSE_POSITIVE
+  EXPIRED
+}
+
+// POS: Decision Funnel Domination - Decision checkpoints
+model DecisionCheckpoint {
+  id           String        @id @default(cuid())
+  tenantId     String
+  stage        DecisionStage
+  checkpointId String // Unique identifier for this checkpoint
+  name         String
+  description  String?       @db.Text
+  controlType  ControlType
+  content      Json // Control content (narrative, proof, etc.)
+  metrics      Json? // Metrics to track at this stage
+  isActive     Boolean       @default(true)
+  metadata     Json?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([stage])
+  @@index([isActive])
+}
+
+enum DecisionStage {
+  AWARENESS
+  RESEARCH
+  COMPARISON
+  DECISION
+  POST_PURCHASE
+}
+
+enum ControlType {
+  NARRATIVE_FRAMING
+  AI_SUMMARY
+  THIRD_PARTY_VALIDATOR
+  PROOF_DASHBOARD
+  REINFORCEMENT_LOOP
+}
+
+// Idempotency Keys for ensuring operation idempotency
+model IdempotencyKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  tenantId  String
+  operation String
+  result    String?  @db.Text
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([operation])
+  @@index([expiresAt])
+}

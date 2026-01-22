@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: holdwall-config
+  namespace: holdwall
+data:
+  NODE_ENV: "production"
+  NEXT_TELEMETRY_DISABLED: "1"
+  GRAPHQL_CACHE_ENABLED: "true"
+  GRAPHQL_CACHE_TTL: "3600"
+  GRAPHQL_CACHE_MAX_SIZE: "1000"
+  KAFKA_ENABLED: "true"
+  KAFKA_EVENTS_TOPIC: "holdwall-events"
+  KAFKA_PARTITIONS: "3"
+  CHROMA_COLLECTION: "holdwall-evidence"
+  OUTBOX_BATCH_SIZE: "100"
+  OUTBOX_MAX_RETRIES: "3"
+  LOG_LEVEL: "info"

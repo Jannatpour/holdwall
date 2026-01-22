@@ -1,0 +1,114 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e4]:
+    - generic [ref=e9]:
+      - generic [ref=e10]: Holdwall POS
+      - list [ref=e12]:
+        - listitem [ref=e13]:
+          - link "Navigate to overview dashboard" [ref=e14] [cursor=pointer]:
+            - /url: /overview
+            - img [ref=e15]
+            - text: Overview
+        - listitem [ref=e20]:
+          - link "Navigate to Perception Operating System" [ref=e21] [cursor=pointer]:
+            - /url: /pos
+            - img [ref=e22]
+            - text: POS
+        - listitem [ref=e30]:
+          - link "Navigate to signals page" [ref=e31] [cursor=pointer]:
+            - /url: /signals
+            - img [ref=e32]
+            - text: Signals
+        - listitem [ref=e38]:
+          - link "Navigate to claims page" [ref=e39] [cursor=pointer]:
+            - /url: /claims
+            - img [ref=e40]
+            - text: Claims
+        - listitem [ref=e43]:
+          - link "Navigate to belief graph" [ref=e44] [cursor=pointer]:
+            - /url: /graph
+            - img [ref=e45]
+            - text: Graph
+        - listitem [ref=e50]:
+          - link "Navigate to forecasts page" [ref=e51] [cursor=pointer]:
+            - /url: /forecasts
+            - img [ref=e52]
+            - text: Forecasts
+        - listitem [ref=e55]:
+          - link "Navigate to AAAL studio" [ref=e56] [cursor=pointer]:
+            - /url: /studio
+            - img [ref=e57]
+            - text: AAAL Studio
+        - listitem [ref=e61]:
+          - link "Navigate to trust assets" [ref=e62] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e63]
+            - text: Trust Assets
+        - listitem [ref=e65]:
+          - link "Navigate to funnel map" [ref=e66] [cursor=pointer]:
+            - /url: /funnel
+            - img [ref=e67]
+            - text: Funnel Map
+        - listitem [ref=e69]:
+          - link "Navigate to playbooks" [ref=e70] [cursor=pointer]:
+            - /url: /playbooks
+            - img [ref=e71]
+            - text: Playbooks
+        - listitem [ref=e73]:
+          - link "Navigate to governance" [ref=e74] [cursor=pointer]:
+            - /url: /governance
+            - img [ref=e75]
+            - text: Governance
+        - listitem [ref=e78]:
+          - link "Navigate to Financial Services dashboard" [ref=e79] [cursor=pointer]:
+            - /url: /financial-services
+            - img [ref=e80]
+            - text: Financial Services
+    - main [ref=e84]:
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - img [ref=e88]
+            - searchbox "Search claims, evidence, artifacts... (Ctrl+F)" [ref=e91]
+          - button "Command palette" [ref=e92]:
+            - img
+            - generic [ref=e93]: Command palette
+        - generic [ref=e94]:
+          - button "3 Notifications" [ref=e95]:
+            - img
+            - generic [ref=e96]: "3"
+            - generic [ref=e97]: Notifications
+          - button "Theme obsidian" [ref=e98]:
+            - generic [ref=e99]: Theme
+            - generic [ref=e100]: obsidian
+          - button "HW" [ref=e101]:
+            - generic [ref=e103]: HW
+      - main "Main content" [ref=e104]:
+        - generic [ref=e105]:
+          - generic [ref=e106]:
+            - heading "Integrations Registry" [level=1] [ref=e107]
+            - paragraph [ref=e108]: Manage MCP tools, connectors, and API keys
+          - generic [ref=e109]:
+            - tablist [ref=e110]:
+              - tab "MCP Tools" [selected] [ref=e111]
+              - tab "Connectors" [ref=e112]
+              - tab "API Keys" [ref=e113]
+              - tab "Agents (A2A)" [ref=e114]
+              - tab "Networks (ANP)" [ref=e115]
+              - tab "Payments (AP2)" [ref=e116]
+              - tab "Security" [ref=e117]
+            - tabpanel "MCP Tools" [ref=e118]:
+              - generic [ref=e119]:
+                - generic [ref=e120]:
+                  - generic [ref=e121]: MCP Tool Registry
+                  - generic [ref=e122]: Model Context Protocol tools available for agent orchestration
+                - generic [ref=e124]: No MCP tools registered
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e130] [cursor=pointer]:
+    - img [ref=e131]
+  - alert [ref=e134]
+```

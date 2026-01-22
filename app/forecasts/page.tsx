@@ -1,0 +1,97 @@
+import { Metadata } from "next";
+import dynamic from "next/dynamic";
+import { AppShell } from "@/components/app-shell";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Play, BarChart3 } from "lucide-react";
+import { generateMetadata as genMeta } from "@/lib/seo/metadata";
+import { GuideButton, GuideWalkthrough } from "@/components/guides";
+
+const ForecastsData = dynamic(() => import("@/components/forecasts-data").then((mod) => ({ default: mod.ForecastsData })), {
+  loading: () => <div className="space-y-6"><div className="h-32 w-full bg-muted animate-pulse rounded" /></div>,
+  ssr: true,
+});
+
+export const metadata: Metadata = genMeta(
+  "Forecasts",
+  "Diffusion, drift dashboards, and what-if simulations powered by Graph Neural Networks. Outbreak probability forecasting with AI-powered insights.",
+  "/forecasts"
+);
+
+export default function ForecastsPage() {
+  return (
+    <AppShell>
+      <GuideWalkthrough pageId="forecasts" />
+      <div className="space-y-6">
+        <div className="flex items-start justify-between" data-guide="forecasts-header">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">Forecasts</h1>
+            <p className="text-muted-foreground">
+              Diffusion, drift dashboards, and what-if simulations powered by Graph Neural Networks
+            </p>
+          </div>
+          <GuideButton pageId="forecasts" />
+        </div>
+
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList data-guide="forecasts-tabs">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="drift">Sentiment Drift</TabsTrigger>
+            <TabsTrigger value="outbreak">Outbreak Probability</TabsTrigger>
+            <TabsTrigger value="simulation">What-If Simulations</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-4">
+            <ForecastsData />
+          </TabsContent>
+
+          <TabsContent value="drift" className="space-y-4">
+            <ForecastsData />
+          </TabsContent>
+
+          <TabsContent value="outbreak" className="space-y-4">
+            <ForecastsData />
+          </TabsContent>
+
+          <TabsContent value="simulation" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>What-If Simulation</CardTitle>
+                <CardDescription>
+                  Simulate scenarios using Graph Neural Networks
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="scenario">Scenario Description</Label>
+                  <Input
+                    id="scenario"
+                    data-guide="scenario-input"
+                    placeholder="e.g., What if we publish a response artifact addressing the top cluster?"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="timeframe">Time Horizon (days)</Label>
+                  <Input id="timeframe" data-guide="time-horizon" type="number" defaultValue={7} min={1} max={30} />
+                </div>
+                <Button className="w-full" data-guide="run-simulation">
+                  <Play className="mr-2 size-4" />
+                  Run Simulation
+                </Button>
+                <div className="rounded-lg border bg-muted/20 p-8 text-center">
+                  <BarChart3 className="mx-auto size-12 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">
+                    Run a simulation to see predicted outcomes
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AppShell>
+  );
+}

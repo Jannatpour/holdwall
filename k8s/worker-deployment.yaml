@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: holdwall-worker
+  namespace: holdwall
+  labels:
+    app: holdwall
+    component: worker
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: holdwall
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: holdwall
+        component: worker
+    spec:
+      serviceAccountName: holdwall-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+        - name: pipeline-worker
+          image: holdwall-app:latest
+          command: ["node", "-e", "require('./lib/workers/pipeline-worker').start()"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: holdwall-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: holdwall-secrets
+                  key: REDIS_URL
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: holdwall-secrets
+                  key: KAFKA_BROKERS
+          envFrom:
+            - configMapRef:
+                name: holdwall-config
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - holdwall
+                    - key: component
+                      operator: In
+                      values:
+                        - worker
+                topologyKey: kubernetes.io/hostname

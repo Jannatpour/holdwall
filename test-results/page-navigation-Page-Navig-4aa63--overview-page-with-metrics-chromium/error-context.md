@@ -1,0 +1,176 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e4]:
+    - generic [ref=e9]:
+      - generic [ref=e10]: Holdwall POS
+      - list [ref=e12]:
+        - listitem [ref=e13]:
+          - link "Navigate to overview dashboard" [ref=e14] [cursor=pointer]:
+            - /url: /overview
+            - img [ref=e15]
+            - text: Overview
+        - listitem [ref=e20]:
+          - link "Navigate to Perception Operating System" [ref=e21] [cursor=pointer]:
+            - /url: /pos
+            - img [ref=e22]
+            - text: POS
+        - listitem [ref=e30]:
+          - link "Navigate to signals page" [ref=e31] [cursor=pointer]:
+            - /url: /signals
+            - img [ref=e32]
+            - text: Signals
+        - listitem [ref=e38]:
+          - link "Navigate to claims page" [ref=e39] [cursor=pointer]:
+            - /url: /claims
+            - img [ref=e40]
+            - text: Claims
+        - listitem [ref=e43]:
+          - link "Navigate to belief graph" [ref=e44] [cursor=pointer]:
+            - /url: /graph
+            - img [ref=e45]
+            - text: Graph
+        - listitem [ref=e50]:
+          - link "Navigate to forecasts page" [ref=e51] [cursor=pointer]:
+            - /url: /forecasts
+            - img [ref=e52]
+            - text: Forecasts
+        - listitem [ref=e55]:
+          - link "Navigate to AAAL studio" [ref=e56] [cursor=pointer]:
+            - /url: /studio
+            - img [ref=e57]
+            - text: AAAL Studio
+        - listitem [ref=e61]:
+          - link "Navigate to trust assets" [ref=e62] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e63]
+            - text: Trust Assets
+        - listitem [ref=e65]:
+          - link "Navigate to funnel map" [ref=e66] [cursor=pointer]:
+            - /url: /funnel
+            - img [ref=e67]
+            - text: Funnel Map
+        - listitem [ref=e69]:
+          - link "Navigate to playbooks" [ref=e70] [cursor=pointer]:
+            - /url: /playbooks
+            - img [ref=e71]
+            - text: Playbooks
+        - listitem [ref=e73]:
+          - link "Navigate to governance" [ref=e74] [cursor=pointer]:
+            - /url: /governance
+            - img [ref=e75]
+            - text: Governance
+        - listitem [ref=e78]:
+          - link "Navigate to Financial Services dashboard" [ref=e79] [cursor=pointer]:
+            - /url: /financial-services
+            - img [ref=e80]
+            - text: Financial Services
+    - main [ref=e84]:
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - img [ref=e88]
+            - searchbox "Search claims, evidence, artifacts... (Ctrl+F)" [ref=e91]
+          - button "Command palette" [ref=e92]:
+            - img
+            - generic [ref=e93]: Command palette
+        - generic [ref=e94]:
+          - button "3 Notifications" [ref=e95]:
+            - img
+            - generic [ref=e96]: "3"
+            - generic [ref=e97]: Notifications
+          - button "Theme obsidian" [ref=e98]:
+            - generic [ref=e99]: Theme
+            - generic [ref=e100]: obsidian
+          - button "HW" [ref=e101]:
+            - generic [ref=e103]: HW
+      - main "Main content" [ref=e104]:
+        - generic [ref=e105]:
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - heading "Overview" [level=1] [ref=e108]
+              - paragraph [ref=e109]: Narrative risk brief and recommended actions powered by advanced AI
+            - button "Guide" [ref=e110]:
+              - img
+              - text: Guide
+          - generic [ref=e111]:
+            - tablist [ref=e113]:
+              - tab "Today" [ref=e114]
+              - tab "7 Days" [selected] [ref=e115]
+              - tab "30 Days" [ref=e116]
+            - generic [ref=e117]:
+              - generic [ref=e118]:
+                - generic [ref=e119]:
+                  - generic [ref=e120]: Perception Health Score
+                  - img [ref=e121]
+                - generic [ref=e123]:
+                  - generic [ref=e124]: 35%
+                  - progressbar [ref=e125]
+                  - paragraph [ref=e127]: Based on sentiment, decisiveness, and trust coverage
+              - generic [ref=e128]:
+                - generic [ref=e129]:
+                  - generic [ref=e130]: Outbreak Probability
+                  - img [ref=e131]
+                - generic [ref=e133]:
+                  - generic [ref=e134]: 0%
+                  - progressbar [ref=e135]
+                  - paragraph [ref=e137]: 7-day forecast
+              - generic [ref=e138]:
+                - generic [ref=e139]:
+                  - generic [ref=e140]: AI Citation Coverage
+                  - img [ref=e141]
+                - generic [ref=e144]:
+                  - generic [ref=e145]: 0%
+                  - progressbar [ref=e146]
+                  - paragraph [ref=e148]: Answers with citations
+              - generic [ref=e149]:
+                - generic [ref=e150]:
+                  - generic [ref=e151]: Trust Coverage Ratio
+                  - img [ref=e152]
+                - generic [ref=e156]:
+                  - generic [ref=e157]: 0%
+                  - progressbar [ref=e158]
+                  - paragraph [ref=e160]: Clusters with trust assets
+            - generic [ref=e161]:
+              - generic [ref=e162]:
+                - generic [ref=e163]:
+                  - generic [ref=e164]: Top Claim Clusters
+                  - generic [ref=e165]: Ranked by decisiveness
+                - generic [ref=e168]:
+                  - img [ref=e169]
+                  - heading "No clusters" [level=3] [ref=e172]
+                  - paragraph [ref=e173]: No claim clusters found for this period
+                  - button "View Signals" [ref=e174]
+              - generic [ref=e175]:
+                - generic [ref=e176]:
+                  - generic [ref=e177]: Recommended Actions
+                  - generic [ref=e178]: POS Autopilot queue
+                - generic [ref=e181]:
+                  - img [ref=e182]
+                  - heading "No recommendations" [level=3] [ref=e185]
+                  - paragraph [ref=e186]: All systems operating normally
+            - generic [ref=e187]:
+              - generic [ref=e188]:
+                - generic [ref=e189]:
+                  - generic [ref=e190]: Ops Feed
+                  - generic [ref=e191]: Real-time operational events
+                - generic [ref=e193]:
+                  - generic [ref=e194]:
+                    - generic [ref=e195]: Recent Activity
+                    - generic [ref=e196]:
+                      - generic "Connected" [ref=e197]
+                      - generic [ref=e198]: Live
+                  - generic [ref=e202]: No recent events
+              - generic [ref=e203]:
+                - generic [ref=e204]:
+                  - generic [ref=e205]: Approvals Pending
+                  - generic [ref=e206]: 0 items
+                - generic [ref=e208]: No pending approvals
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e214] [cursor=pointer]:
+    - img [ref=e215]
+  - alert [ref=e218]
+```
