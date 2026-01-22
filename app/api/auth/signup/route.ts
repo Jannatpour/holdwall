@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
           role: true,
           tenantId: true,
         },
-      }).catch((dbError) => {
+      }).catch((dbError: unknown) => {
         logger.error("Database error creating user", {
           error: dbError instanceof Error ? dbError.message : String(dbError),
           email,
