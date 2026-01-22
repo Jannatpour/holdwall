@@ -31,6 +31,7 @@
     "db:studio": "prisma studio",
     "demo:data": "tsx scripts/demo-data.ts",
     "verify": "node scripts/verify-everything.js",
+    "verify:api-keys": "tsx scripts/validate-api-keys.ts",
     "verify:health": "curl -s http://localhost:3000/api/health | jq || echo 'Server not running. Start with: npm run dev'",
     "verify:flows": "curl -s -X POST http://localhost:3000/api/verification/run -H 'Content-Type: application/json' -d '{\"flow\":\"all\"}' | jq || echo 'Server not running or authentication required'",
     "clean": "rm -rf .next && echo '✅ Cleared .next directory'",
@@ -133,6 +134,7 @@
   "overrides": {
     "test-exclude": "^7.0.1",
     "glob": "^10.4.1",
-    "jsdom": "^27.4.0"
+    "jsdom": "^27.4.0",
+    "html-encoding-sniffer": "^6.0.0"
   }
 }

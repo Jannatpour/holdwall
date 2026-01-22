@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Calculate contributing signals from evidence
-      const contributingSignals = claim.evidenceRefs.map((ref, idx) => {
+      const contributingSignals = claim.evidenceRefs.map((ref: { evidence: { id: string; type: string; sourceType: string; contentMetadata?: unknown } }, idx: number) => {
         const ev = ref.evidence;
         const metadata = (ev.contentMetadata || {}) as any;
         const sentiment = typeof metadata.sentiment === "number" ? metadata.sentiment : 0.5;
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
             },
           ],
         },
-        evidenceLinks: claim.evidenceRefs.slice(0, 5).map((ref) => ({
+        evidenceLinks: claim.evidenceRefs.slice(0, 5).map((ref: { evidence: { id: string; type: string } }) => ({
           id: ref.evidence.id,
           type: "evidence" as const,
           title: `${ref.evidence.type} evidence`,
@@ -349,7 +349,7 @@ export async function GET(request: NextRequest) {
             },
           ],
         },
-        evidenceLinks: cluster.claims.slice(0, 5).map((claim) => ({
+        evidenceLinks: cluster.claims.slice(0, 5).map((claim: { id: string; canonicalText: string }) => ({
           id: claim.id,
           type: "claim" as const,
           title: claim.canonicalText.substring(0, 50),
@@ -389,7 +389,7 @@ export async function GET(request: NextRequest) {
         confidence: Math.min(0.95, 0.5 + evidenceCount * 0.05),
         contributingSignals:
           evidenceCount > 0
-            ? artifact.evidenceRefs.map((ref) => ({
+            ? artifact.evidenceRefs.map((ref: { evidence: { id: string; sourceType: string } }) => ({
                 name: `Evidence: ${ref.evidence.sourceType}`,
                 weight: 1 / evidenceCount,
                 impact: "positive",
@@ -421,7 +421,7 @@ export async function GET(request: NextRequest) {
             },
           ],
         },
-        evidenceLinks: artifact.evidenceRefs.slice(0, 10).map((ref) => ({
+        evidenceLinks: artifact.evidenceRefs.slice(0, 10).map((ref: { evidence: { id: string; type: string } }) => ({
           id: ref.evidence.id,
           type: "evidence" as const,
           title: `${ref.evidence.type} evidence`,

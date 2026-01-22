@@ -31,8 +31,9 @@ import { GalileoGuard } from '@/lib/ai/galileo-guard';
 import { GroundednessChecker } from '@/lib/ai/groundedness-checker';
 import { JudgeFramework } from '@/lib/ai/judge-framework';
 import { DatabaseEvidenceVault } from '@/lib/evidence/vault-db';
-import { RAGPipeline } from '@/lib/ai/rag';
+import { RAGPipeline, type RAGContext } from '@/lib/ai/rag';
 import type { BeliefNode, BeliefEdge } from '@/lib/graph/belief';
+import type { Claim } from '@/lib/claims/extraction';
 
 // Test result formatter
 interface TestResult {
@@ -108,22 +109,25 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
     const testNode: BeliefNode = {
       node_id: 'test-node-1',
       tenant_id: 'test-tenant',
-      canonical_text: 'Test claim about product quality',
+      type: 'claim',
+      content: 'Test claim about product quality',
       trust_score: 0.75,
-      amplification: 0.6,
+      decisiveness: 0.6,
+      actor_weights: {},
       decay_factor: 0.95,
-      createdAt: new Date(),
+      created_at: new Date().toISOString(),
     };
 
     const testEdges: BeliefEdge[] = [
       {
         edge_id: 'edge-1',
         tenant_id: 'test-tenant',
-        from_node: 'test-node-1',
-        to_node: 'test-node-2',
-        edge_type: 'reinforcement',
-        strength: 0.8,
-        createdAt: new Date(),
+        from_node_id: 'test-node-1',
+        to_node_id: 'test-node-2',
+        type: 'reinforcement',
+        weight: 0.8,
+        actor_weights: {},
+        created_at: new Date().toISOString(),
       },
     ];
 
@@ -200,11 +204,13 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
         const neighborNode: BeliefNode = {
           node_id: 'test-node-2',
           tenant_id: 'test-tenant',
-          canonical_text: 'Neighbor claim',
+          type: 'claim',
+          content: 'Neighbor claim',
           trust_score: 0.6,
-          amplification: 0.5,
+          decisiveness: 0.5,
+          actor_weights: {},
           decay_factor: 0.95,
-          createdAt: new Date(),
+          created_at: new Date().toISOString(),
         };
         
         const neighbors = testEdges.map(edge => ({
@@ -302,14 +308,11 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const engine = new ExplainableForecastEngine();
       
       try {
-        const forecast = await engine.forecast([testNode], testEdges, {
-          horizon: 7,
-          explainability: true,
-        });
+        const forecast = await engine.forecast('Test forecast query', [testNode], testEdges, 7);
         
         expect(forecast).toBeDefined();
-        expect(forecast.predictions).toBeDefined();
-        expect(forecast.explanations).toBeDefined();
+        expect(forecast.events).toBeDefined();
+        expect(forecast.explanation).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -318,8 +321,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            predictions_count: forecast.predictions.length,
-            explanations_count: forecast.explanations.length,
+            events_count: forecast.events.length,
+            confidence: forecast.explanation.confidence,
           },
         });
       } catch (error) {
@@ -341,13 +344,11 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const tgnf = new TGNF();
       
       try {
-        const evolution = await tgnf.evolve([testNode], testEdges, {
-          timeSteps: 7,
-          evolutionRate: 0.1,
-        });
+        const detection = await tgnf.detect(testNode, testEdges, [testNode]);
         
-        expect(evolution).toBeDefined();
-        expect(evolution.evolvedNodes).toBeDefined();
+        expect(detection).toBeDefined();
+        expect(detection.nodeId).toBeDefined();
+        expect(detection.patterns).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -356,8 +357,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            evolved_nodes: evolution.evolvedNodes.length,
-            evolution_steps: 7,
+            patterns_detected: detection.patterns.length,
+            confidence: detection.confidence,
           },
         });
       } catch (error) {
@@ -379,10 +380,11 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const ngm = new NeuralGraphicalModel();
       
       try {
-        const model = await ngm.buildModel([testNode], testEdges);
+        const reasoning = await ngm.reason('Analyze test query', [testNode], testEdges);
         
-        expect(model).toBeDefined();
-        expect(model.probabilities).toBeDefined();
+        expect(reasoning).toBeDefined();
+        expect(reasoning.distributions).toBeDefined();
+        expect(reasoning.mostLikelyOutcome).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -391,7 +393,7 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            probabilities_count: Object.keys(model.probabilities).length,
+            distributions_count: reasoning.distributions.length,
           },
         });
       } catch (error) {
@@ -413,14 +415,11 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const realtg = new ReaLTG();
       
       try {
-        const forecast = await realtg.forecastLinks([testNode], testEdges, {
-          horizon: 7,
-          explainability: true,
-        });
+        const forecast = await realtg.forecast('Test link forecast query', [testNode], testEdges, 7);
         
         expect(forecast).toBeDefined();
-        expect(forecast.links).toBeDefined();
-        expect(forecast.explanations).toBeDefined();
+        expect(forecast.forecasts).toBeDefined();
+        expect(forecast.reasoning).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -429,8 +428,7 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            links_forecasted: forecast.links.length,
-            explanations_count: forecast.explanations.length,
+            forecasts_count: forecast.forecasts.length,
           },
         });
       } catch (error) {
@@ -467,8 +465,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
         });
         
         expect(result).toBeDefined();
-        expect(result.answers).toBeDefined();
-        expect(result.entities).toBeDefined();
+        expect(result.answer).toBeDefined();
+        expect(result.sources).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -477,8 +475,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            answers_count: result.answers.length,
-            entities_found: result.entities.length,
+            sources_count: result.sources.length,
+            confidence: result.confidence,
           },
         });
       } catch (error) {
@@ -500,13 +498,13 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const kerag = new KERAG(ragPipeline);
       
       try {
-        const result = await kerag.retrieve(testQuery, {
-          evidenceIds: testEvidenceIds,
-          knowledgeGraph: true,
+        const result = await kerag.execute(testQuery, 'test-tenant', {
+          maxHops: 3,
+          minConfidence: 0.7,
         });
         
         expect(result).toBeDefined();
-        expect(result.documents).toBeDefined();
+        expect(result.answer).toBeDefined();
         expect(result.knowledgeGraph).toBeDefined();
         
         const duration = Date.now() - startTime;
@@ -516,8 +514,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            documents_retrieved: result.documents.length,
-            kg_nodes: result.knowledgeGraph?.nodes.length || 0,
+            triples_count: result.triples.length,
+            kg_nodes: result.knowledgeGraph.nodes.length,
           },
         });
       } catch (error) {
@@ -539,14 +537,14 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const corag = new CoRAG(ragPipeline);
       
       try {
-        const result = await corag.retrieve(testQuery, {
-          maxIterations: 3,
-          evidenceIds: testEvidenceIds,
+        const result = await corag.execute(testQuery, 'test-tenant', {
+          maxSteps: 3,
+          minConfidence: 0.7,
         });
         
         expect(result).toBeDefined();
-        expect(result.documents).toBeDefined();
-        expect(result.iterations).toBeGreaterThan(0);
+        expect(result.steps).toBeDefined();
+        expect(result.finalAnswer).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -555,8 +553,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            documents_retrieved: result.documents.length,
-            iterations: result.iterations,
+            steps_count: result.steps.length,
+            total_retrieved: result.totalRetrieved,
           },
         });
       } catch (error) {
@@ -578,14 +576,11 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const agenticRAG = new AgenticRAG(ragPipeline);
       
       try {
-        const result = await agenticRAG.retrieve(testQuery, {
-          evidenceIds: testEvidenceIds,
-          autonomous: true,
-        });
+        const result = await agenticRAG.execute(testQuery, 'test-tenant');
         
         expect(result).toBeDefined();
-        expect(result.documents).toBeDefined();
-        expect(result.agentActions).toBeDefined();
+        expect(result.result).toBeDefined();
+        expect(result.subtasks).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -594,8 +589,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            documents_retrieved: result.documents.length,
-            agent_actions: result.agentActions.length,
+            subtasks_count: result.subtasks.length,
+            confidence: result.confidence,
           },
         });
       } catch (error) {
@@ -617,14 +612,14 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const multimodalRAG = new MultimodalRAG(ragPipeline);
       
       try {
-        const result = await multimodalRAG.retrieve(testQuery, {
-          evidenceIds: testEvidenceIds,
-          modalities: ['text', 'image'],
+        const result = await multimodalRAG.execute(testQuery, 'test-tenant', {
+          includeImages: true,
+          includeVideos: false,
         });
         
         expect(result).toBeDefined();
-        expect(result.documents).toBeDefined();
-        expect(result.multimodalResults).toBeDefined();
+        expect(result.answer).toBeDefined();
+        expect(result.evidence).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -633,8 +628,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            documents_retrieved: result.documents.length,
-            modalities_processed: result.multimodalResults.length,
+            evidence_count: result.evidence.length,
+            sources_count: result.sources.length,
           },
         });
       } catch (error) {
@@ -656,15 +651,16 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const orchestrator = new CompositeOrchestrator();
       
       try {
-        const result = await orchestrator.orchestrate({
+        const result = await orchestrator.execute({
           id: 'task-1',
-          type: 'claim_extraction',
-          input: { text: testQuery },
+          type: 'reasoning',
+          input: testQuery,
           context: { tenantId: 'test-tenant' },
         });
         
         expect(result).toBeDefined();
-        expect(result.output).toBeDefined();
+        expect(result.result).toBeDefined();
+        expect(result.reasoning).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -673,7 +669,7 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            tasks_completed: 1,
+            confidence: result.confidence,
           },
         });
       } catch (error) {
@@ -701,8 +697,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
         });
         
         expect(result).toBeDefined();
-        expect(result.reasoningSteps).toBeDefined();
-        expect(result.conclusion).toBeDefined();
+        expect(result.reasoning).toBeDefined();
+        expect(result.answer).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -711,7 +707,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            reasoning_steps: result.reasoningSteps.length,
+            reasoning_steps: result.reasoning.length,
+            confidence: result.finalConfidence,
           },
         });
       } catch (error) {
@@ -757,8 +754,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
         const result = await factReasoner.decompose(testClaim);
         
         expect(result).toBeDefined();
-        expect(result.facts).toBeDefined();
-        expect(result.relations).toBeDefined();
+        expect(result.atomicClaims).toBeDefined();
+        expect(result.overallConfidence).toBeDefined();
         
         const duration = Date.now() - startTime;
         reporter.record({
@@ -767,8 +764,8 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            facts_extracted: result.facts.length,
-            relations_found: result.relations.length,
+            atomic_claims: result.atomicClaims.length,
+            overall_confidence: result.overallConfidence,
           },
         });
       } catch (error) {
@@ -804,12 +801,12 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       
       try {
         const result = await veritas.verify(testClaim, {
-          evidenceIds: ['evidence-1'],
-          webScraping: true,
+          maxSources: 5,
+          searchQuery: testClaim,
         });
         
         expect(result).toBeDefined();
-        expect(result.entailment).toBeDefined();
+        expect(result.verified).toBeDefined();
         expect(result.confidence).toBeGreaterThanOrEqual(0);
         
         const duration = Date.now() - startTime;
@@ -819,7 +816,7 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
           status: 'pass',
           duration,
           metrics: {
-            entailment_score: result.entailment,
+            verified: result.verified ? 1 : 0,
             confidence: result.confidence,
           },
         });
@@ -856,14 +853,15 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       
       try {
         // Create mock claims for testing
-        const testClaims = [{
+        const testClaims: Claim[] = [{
           claim_id: 'claim-1',
           tenant_id: 'test-tenant',
           canonical_text: testClaim,
           variants: [testClaim],
+          evidence_refs: [],
           decisiveness: 0.7,
-          cluster_id: null,
-          created_at: new Date(),
+          cluster_id: undefined,
+          created_at: new Date().toISOString(),
         }];
         
         const result = await beliefInference.inferBeliefNetwork(testClaims);
@@ -1221,7 +1219,7 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       
       try {
         // Create proper RAGContext structure
-        const context = {
+        const context: RAGContext = {
           query: 'What are the customer complaints?',
           context: testAnswer,
           evidence: [
@@ -1244,6 +1242,11 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
               created_at: new Date().toISOString(),
             },
           ] as any[],
+          metadata: {
+            retrieval_count: 2,
+            retrieval_time_ms: 100,
+            relevance_scores: [0.8, 0.7],
+          },
         };
         
         const result = await checker.check(testAnswer, context);
@@ -1362,11 +1365,13 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const testNode: BeliefNode = {
         node_id: 'ensemble-test',
         tenant_id: 'test-tenant',
-        canonical_text: 'Test claim',
+        type: 'claim',
+        content: 'Test claim',
         trust_score: 0.75,
-        amplification: 0.6,
+        decisiveness: 0.6,
+        actor_weights: {},
         decay_factor: 0.95,
-        createdAt: new Date(),
+        created_at: new Date().toISOString(),
       };
       
       const [codenResult, tipGnnResult, rgpResult] = await Promise.all([
@@ -1403,7 +1408,7 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
       const [graphResult, keResult, coResult] = await Promise.all([
         graphRAG.query(query, { maxResults: 10 }),
         kerag.execute(query, 'test-tenant', { maxHops: 2, minConfidence: 0.5 }),
-        corag.retrieve(query, { maxIterations: 3 }),
+        corag.execute(query, 'test-tenant', { maxSteps: 3 }),
       ]);
       
       expect(graphResult).toBeDefined();
@@ -1418,7 +1423,7 @@ describe('Advanced AI Models - Comprehensive Test Suite', () => {
         duration,
         metrics: {
           paradigms_tested: 3,
-          total_results: (graphResult.answers?.length || 0) + (keResult.triples?.length || 0) + (coResult.documents?.length || 0),
+          total_results: (graphResult.answer ? 1 : 0) + (keResult.triples?.length || 0) + (coResult.steps?.length || 0),
         },
       });
     });

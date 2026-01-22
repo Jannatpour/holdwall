@@ -100,6 +100,7 @@ GITHUB_CLIENT_SECRET="your-github-client-secret"
 SENTRY_DSN="your-sentry-dsn"
 
 # AI/ML Services (for RAG, KAG, embeddings)
+# Required for: FactReasoner, VERITAS-NLI, BeliefInference
 OPENAI_API_KEY="your-openai-key"
 ANTHROPIC_API_KEY="your-anthropic-key"
 NVIDIA_API_KEY="your-nvidia-key"
@@ -152,7 +153,17 @@ npm run db:seed
 npm run db:generate
 ```
 
-### Step 5: Start Development Server
+### Step 5: Validate API Keys (Optional but Recommended)
+
+If you're using AI models that require API keys (FactReasoner, VERITAS-NLI, BeliefInference), validate your configuration:
+
+```bash
+npm run verify:api-keys
+```
+
+This will check if `OPENAI_API_KEY` is properly configured for the claim analysis models.
+
+### Step 6: Start Development Server
 
 ```bash
 npm run dev
@@ -174,13 +185,14 @@ The application will be available at **http://localhost:3000**
 
 ### Optional Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `REDIS_URL` | Redis connection string | Not used if not set |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | - |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | - |
-| `GITHUB_CLIENT_ID` | GitHub OAuth client ID | - |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret | - |
+| Variable | Description | Default | Required For |
+|----------|-------------|---------|-------------|
+| `REDIS_URL` | Redis connection string | Not used if not set | - |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | - | OAuth login |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | - | OAuth login |
+| `GITHUB_CLIENT_ID` | GitHub OAuth client ID | - | OAuth login |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret | - | OAuth login |
+| `OPENAI_API_KEY` | OpenAI API key | - | **FactReasoner, VERITAS-NLI, BeliefInference** |
 | `SENTRY_DSN` | Sentry error tracking DSN | - |
 | `LOG_LEVEL` | Logging level | `info` |
 | `NEXT_PUBLIC_BASE_URL` | Public base URL | `http://localhost:3000` |

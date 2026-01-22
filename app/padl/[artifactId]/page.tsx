@@ -145,7 +145,7 @@ export default async function PADLArtifactPage({ params }: PageProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {artifact.evidenceRefs.map((ref) => (
+                  {artifact.evidenceRefs.map((ref: { id: string; evidence: { id: string; type: string; sourceType: string; sourceUrl?: string | null; createdAt: Date } }) => (
                     <div
                       key={ref.id}
                       className="flex items-start justify-between rounded-lg border p-3"

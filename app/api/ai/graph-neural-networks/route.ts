@@ -241,7 +241,7 @@ export async function PATCH(request: NextRequest) {
       tenant_id: e.tenantId,
       from_node_id: e.fromNodeId,
       to_node_id: e.toNodeId,
-      type: e.type.toLowerCase() as any,
+      type: String(e.type).toLowerCase() as "reinforcement" | "neutralization" | "decay",
       weight: e.weight,
       actor_weights: e.actorWeights as any,
       created_at: e.createdAt.toISOString(),

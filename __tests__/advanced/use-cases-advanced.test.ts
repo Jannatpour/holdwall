@@ -378,18 +378,22 @@ describe('Advanced Use Case Scenarios - Complete Coverage', () => {
       const testEdges: BeliefEdge[] = [
         {
           edge_id: 'edge-1',
+          tenant_id: 'test-tenant',
           from_node_id: 'node-0',
           to_node_id: 'node-1',
+          type: 'reinforcement',
           weight: 0.8,
-          relationship_type: 'reinforcement',
+          actor_weights: {},
           created_at: new Date().toISOString(),
         },
         {
           edge_id: 'edge-2',
+          tenant_id: 'test-tenant',
           from_node_id: 'node-1',
           to_node_id: 'node-2',
+          type: 'reinforcement',
           weight: 0.7,
-          relationship_type: 'reinforcement',
+          actor_weights: {},
           created_at: new Date().toISOString(),
         },
       ];
@@ -596,10 +600,10 @@ describe('Advanced Use Case Scenarios - Complete Coverage', () => {
       const k2Reasoning = new K2Reasoning();
 
       // Composite orchestration
-      const orchestrationResult = await orchestrator.orchestrate({
+      const orchestrationResult = await orchestrator.execute({
         id: 'narrative-analysis',
-        type: 'narrative_analysis',
-        input: { query, evidenceIds: [evidenceId] },
+        type: 'reasoning',
+        input: query,
         context: { tenantId },
       });
 
@@ -946,7 +950,6 @@ describe('Advanced Use Case Scenarios - Complete Coverage', () => {
 
       const agenticChunks = await agenticChunking.chunk(longText, query, {
         maxChunkSize: 500,
-        contextAware: true,
       });
 
       steps.push({
@@ -1034,10 +1037,12 @@ describe('Advanced Use Case Scenarios - Complete Coverage', () => {
       for (let i = 0; i < testNodes.length - 1; i++) {
         testEdges.push({
           edge_id: `edge-${i}-${i + 1}`,
+          tenant_id: 'test-tenant',
           from_node_id: testNodes[i].node_id,
           to_node_id: testNodes[i + 1].node_id,
+          type: i % 2 === 0 ? 'reinforcement' : 'neutralization',
           weight: 0.5 + Math.random() * 0.3,
-          relationship_type: i % 2 === 0 ? 'reinforcement' : 'neutralization',
+          actor_weights: {},
           created_at: new Date().toISOString(),
         });
       }

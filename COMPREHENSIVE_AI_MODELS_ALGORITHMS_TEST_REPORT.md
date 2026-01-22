@@ -12,6 +12,38 @@ This document provides a complete report of all AI models, algorithms, tests per
 
 ---
 
+## ⚠️ API Key Configuration
+
+**Important**: The following models require API keys to function fully:
+
+### Claim Analysis Models (Require `OPENAI_API_KEY`)
+- **FactReasoner** - Claim decomposition
+- **VERITAS-NLI** - Real-time NLI verification  
+- **BeliefInference** - Belief network inference
+
+### Configuration Steps
+
+1. **Set the environment variable**:
+   ```bash
+   export OPENAI_API_KEY=sk-your-key-here
+   ```
+   
+   Or add to your `.env.local` file:
+   ```env
+   OPENAI_API_KEY=sk-your-key-here
+   ```
+
+2. **Validate your configuration**:
+   ```bash
+   npm run verify:api-keys
+   ```
+
+3. **Get your API key**: Visit https://platform.openai.com/api-keys
+
+**Note**: Tests will gracefully handle missing API keys with warnings, but models won't function fully without them.
+
+---
+
 ## Table of Contents
 
 1. [AI Models - Complete Inventory](#ai-models-complete-inventory)
@@ -368,6 +400,7 @@ This document provides a complete report of all AI models, algorithms, tests per
   - Fact extraction
   - Relation identification
   - Neuro-symbolic reasoning
+- **API Key Required**: `OPENAI_API_KEY` (required for full functionality)
 - **Test Status**: ✅ PASS (with graceful API key handling)
 - **Test Scenarios**:
   - Neuro-Symbolic Claim Decomposition
@@ -379,6 +412,7 @@ This document provides a complete report of all AI models, algorithms, tests per
   - ✅ Decomposition structure validated
   - ⚠️ Warning if OpenAI API key missing (graceful handling)
 - **Performance**: < 300ms average latency
+- **Configuration**: Set `OPENAI_API_KEY` in your `.env.local` file or environment variables
 
 #### 3.2 VERITAS-NLI
 - **Location**: `lib/claims/veritas-nli.ts`
@@ -388,6 +422,7 @@ This document provides a complete report of all AI models, algorithms, tests per
   - Web scraping integration
   - Entailment scoring
   - Confidence calculation
+- **API Key Required**: `OPENAI_API_KEY` (required for full functionality)
 - **Test Status**: ✅ PASS (with graceful API key handling)
 - **Test Scenarios**:
   - Real-Time NLI Verification
@@ -399,6 +434,7 @@ This document provides a complete report of all AI models, algorithms, tests per
   - ✅ Evidence verification working
   - ⚠️ Warning if OpenAI API key missing (graceful handling)
 - **Performance**: < 500ms average latency (includes web scraping)
+- **Configuration**: Set `OPENAI_API_KEY` in your `.env.local` file or environment variables
 
 #### 3.3 BeliefInference
 - **Location**: `lib/claims/belief-inference.ts`
@@ -408,6 +444,7 @@ This document provides a complete report of all AI models, algorithms, tests per
   - Node creation
   - Cluster identification
   - Connection mapping
+- **API Key Required**: `OPENAI_API_KEY` (required for full functionality)
 - **Test Status**: ✅ PASS (Fixed: Changed `infer()` to `inferBeliefNetwork()`)
 - **Test Scenarios**:
   - Belief Network Inference
@@ -417,6 +454,9 @@ This document provides a complete report of all AI models, algorithms, tests per
   - ✅ Belief networks created
   - ✅ Nodes mapped correctly
   - ✅ Clusters identified
+  - ⚠️ Warning if OpenAI API key missing (graceful handling)
+- **Performance**: < 400ms average latency
+- **Configuration**: Set `OPENAI_API_KEY` in your `.env.local` file or environment variables
   - ⚠️ Warning if OpenAI API key missing (graceful handling)
 - **Performance**: < 400ms average latency
 
@@ -940,11 +980,14 @@ This document provides a complete report of all AI models, algorithms, tests per
 
 #### Claim Analysis Models (3 Models) - ✅ 100% Pass
 
+**⚠️ API Key Required**: All three models require `OPENAI_API_KEY` environment variable to function fully.
+Run `npm run verify:api-keys` to validate your API key configuration.
+
 | Model | Test Scenario | Status | Duration | Metrics |
 |-------|--------------|--------|----------|---------|
-| FactReasoner | Claim decomposition | ✅ PASS/WARN | < 300ms | facts_extracted, relations_found (⚠️ API key warning if missing) |
-| VERITAS-NLI | Real-time NLI verification | ✅ PASS/WARN | < 500ms | entailment_score, confidence (⚠️ API key warning if missing) |
-| BeliefInference | Belief network inference | ✅ PASS/WARN | < 400ms | network_nodes, clusters_count (⚠️ API key warning if missing) |
+| FactReasoner | Claim decomposition | ✅ PASS/WARN | < 300ms | facts_extracted, relations_found (⚠️ Requires OPENAI_API_KEY) |
+| VERITAS-NLI | Real-time NLI verification | ✅ PASS/WARN | < 500ms | entailment_score, confidence (⚠️ Requires OPENAI_API_KEY) |
+| BeliefInference | Belief network inference | ✅ PASS/WARN | < 400ms | network_nodes, clusters_count (⚠️ Requires OPENAI_API_KEY) |
 
 #### Multimodal Detection (3 Models) - ✅ 100% Pass
 
