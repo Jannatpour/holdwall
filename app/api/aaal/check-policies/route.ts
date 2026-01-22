@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       tenant_id: artifact.tenantId,
       title: artifact.title,
       content: artifact.content,
-      evidence_refs: artifact.evidenceRefs.map((ref) => ref.evidenceId),
+      evidence_refs: artifact.evidenceRefs.map((ref: { evidenceId: string }) => ref.evidenceId),
       version: artifact.version,
       status: artifact.status.toLowerCase() as any,
       approval_routing: artifact.requiredApprovals > 0 ? {
