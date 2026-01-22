@@ -17,18 +17,35 @@ const STATIC_ASSETS = [
   "/offline",
 ];
 
+// Helper function to check if URL scheme is cacheable
+function isCacheableScheme(url) {
+  const scheme = url.protocol;
+  // Only cache http and https URLs
+  return scheme === "http:" || scheme === "https:";
+}
+
 // Install event - cache static assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       // Cache assets individually to handle failures gracefully
       return Promise.allSettled(
-        STATIC_ASSETS.map((url) =>
-          cache.add(url).catch((err) => {
-            console.warn(`Failed to cache ${url}:`, err);
-            return null;
-          })
-        )
+        STATIC_ASSETS.map((url) => {
+          try {
+            const urlObj = new URL(url, self.location.origin);
+            // Only cache http/https URLs
+            if (!isCacheableScheme(urlObj)) {
+              return Promise.resolve({ status: "rejected", reason: new Error("Unsupported URL scheme") });
+            }
+            return cache.add(url).catch((err) => {
+              console.warn(`Failed to cache ${url}:`, err);
+              return null;
+            });
+          } catch (err) {
+            console.warn(`Invalid URL ${url}:`, err);
+            return Promise.resolve({ status: "rejected", reason: err });
+          }
+        })
       );
     })
   );
@@ -60,10 +77,30 @@ self.addEventListener("message", (event) => {
 // Fetch event - serve from cache, fallback to network
 self.addEventListener("fetch", (event) => {
   const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests
+  
+  // Early exit for non-GET requests
   if (request.method !== "GET") {
+    return;
+  }
+  
+  // Early exit for unsupported URL schemes - check request.url string directly
+  const requestUrlString = request.url;
+  if (!requestUrlString || 
+      (!requestUrlString.startsWith('http://') && !requestUrlString.startsWith('https://'))) {
+    // Skip chrome-extension://, chrome://, file://, data:, etc.
+    return;
+  }
+  
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch (err) {
+    // Invalid URL, skip
+    return;
+  }
+
+  // Double-check URL scheme
+  if (!isCacheableScheme(url)) {
     return;
   }
 
@@ -93,13 +130,49 @@ self.addEventListener("fetch", (event) => {
           return cached;
         }
         return fetch(request).then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => {
-              cache.put(request, clone);
-            });
+          // Double-check both URL and request URL before caching
+          const requestUrl = new URL(request.url);
+          // Only cache if both URLs are http/https and response is valid
+          if (response && response.ok && isCacheableScheme(url) && isCacheableScheme(requestUrl)) {
+            // Additional check: ensure request URL is actually cacheable
+            const requestUrlString = request.url;
+            if (requestUrlString && (requestUrlString.startsWith('http://') || requestUrlString.startsWith('https://'))) {
+              const clone = response.clone();
+              caches.open(RUNTIME_CACHE).then((cache) => {
+                // Additional safety check before cache.put - validate request URL scheme
+                try {
+                  // Only attempt to cache if request URL is definitely http/https
+                  if (requestUrlString.startsWith('http://') || requestUrlString.startsWith('https://')) {
+                    cache.put(request, clone).catch((err) => {
+                      // Silently ignore chrome-extension and other unsupported schemes
+                      const errorMsg = err?.message || String(err);
+                      if (!errorMsg.includes("chrome-extension") && !errorMsg.includes("unsupported")) {
+                        console.warn(`Failed to cache ${url.pathname}:`, err);
+                      }
+                    });
+                  }
+                } catch (err) {
+                  // Ignore errors for unsupported schemes
+                  const errorMsg = err?.message || String(err);
+                  if (!errorMsg.includes("chrome-extension") && !errorMsg.includes("unsupported")) {
+                    console.warn(`Failed to cache ${url.pathname}:`, err);
+                  }
+                }
+              }).catch((err) => {
+                // Ignore cache open errors silently
+              });
+            }
           }
           return response;
+        }).catch((err) => {
+          console.warn(`Failed to fetch ${url.pathname}:`, err);
+          // Return cached version if available
+          return caches.match(request).then((cached) => {
+            if (cached) {
+              return cached;
+            }
+            throw err;
+          });
         });
       })
     );
@@ -111,7 +184,9 @@ self.addEventListener("fetch", (event) => {
     (async () => {
       try {
         const response = await fetch(request);
-        if (response && response.ok) {
+        // Double-check both URL and request URL before caching
+        const requestUrl = new URL(request.url);
+        if (response && response.ok && isCacheableScheme(url) && isCacheableScheme(requestUrl)) {
           // Don't cache Next.js chunks or static assets
           const shouldCache = !(
             url.pathname.startsWith("/_next/") ||
@@ -120,10 +195,34 @@ self.addEventListener("fetch", (event) => {
           );
           
           if (shouldCache) {
-            const clone = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => {
-              cache.put(request, clone);
-            });
+            // Validate request URL before attempting to cache
+            const requestUrlString = request.url;
+            if (requestUrlString && (requestUrlString.startsWith('http://') || requestUrlString.startsWith('https://'))) {
+              const clone = response.clone();
+              caches.open(RUNTIME_CACHE).then((cache) => {
+                // Additional safety check before cache.put - validate request URL scheme
+                try {
+                  // Only attempt to cache if request URL is definitely http/https
+                  if (requestUrlString.startsWith('http://') || requestUrlString.startsWith('https://')) {
+                    cache.put(request, clone).catch((err) => {
+                      // Silently ignore chrome-extension and other unsupported schemes
+                      const errorMsg = err?.message || String(err);
+                      if (!errorMsg.includes("chrome-extension") && !errorMsg.includes("unsupported")) {
+                        console.warn(`Failed to cache ${url.pathname}:`, err);
+                      }
+                    });
+                  }
+                } catch (err) {
+                  // Ignore errors for unsupported schemes
+                  const errorMsg = err?.message || String(err);
+                  if (!errorMsg.includes("chrome-extension") && !errorMsg.includes("unsupported")) {
+                    console.warn(`Failed to cache ${url.pathname}:`, err);
+                  }
+                }
+              }).catch((err) => {
+                // Ignore cache open errors silently
+              });
+            }
           }
         }
         return response;

@@ -316,15 +316,19 @@ async function handleRequest(
     logger.error("NextAuth handler error", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      pathname: req.nextUrl.pathname,
     });
     
-    // For session endpoint, return null session instead of error
+    // For session endpoint, always return null session instead of error
     if (req.nextUrl.pathname.includes("/session")) {
       return new Response(
         JSON.stringify({ user: null, expires: null }),
         {
           status: 200,
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store, must-revalidate",
+          },
         }
       );
     }
@@ -342,10 +346,105 @@ async function handleRequest(
   }
 }
 
+// Enhanced error handling wrapper that catches all errors
+async function safeHandleRequest(
+  handler: (req: NextRequest) => Promise<Response>,
+  req: NextRequest
+): Promise<Response> {
+  try {
+    return await handleRequest(handler, req);
+  } catch (error) {
+    logger.error("NextAuth safe handler error", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      pathname: req.nextUrl.pathname,
+    });
+    
+    // For session endpoint, always return null session
+    if (req.nextUrl.pathname.includes("/session")) {
+      return new Response(
+        JSON.stringify({ user: null, expires: null }),
+        {
+          status: 200,
+          headers: { 
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store, must-revalidate",
+          },
+        }
+      );
+    }
+    
+    return new Response(
+      JSON.stringify({ 
+        error: "Authentication service unavailable",
+        message: "Please try again later"
+      }),
+      {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+}
+
 export async function GET(req: NextRequest) {
-  return handleRequest(handlers.GET, req);
+  try {
+    // Check if handlers are available
+    if (!handlers || !handlers.GET) {
+      logger.error("NextAuth handlers not available");
+      if (req.nextUrl.pathname.includes("/session")) {
+        return new Response(
+          JSON.stringify({ user: null, expires: null }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+      return new Response(
+        JSON.stringify({ error: "Authentication service unavailable" }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
+      );
+    }
+    return await safeHandleRequest(handlers.GET, req);
+  } catch (error) {
+    logger.error("NextAuth GET handler error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    if (req.nextUrl.pathname.includes("/session")) {
+      return new Response(
+        JSON.stringify({ user: null, expires: null }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+    return new Response(
+      JSON.stringify({ error: "Authentication service unavailable" }),
+      { status: 503, headers: { "Content-Type": "application/json" } }
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {
-  return handleRequest(handlers.POST, req);
+  try {
+    // Check if handlers are available
+    if (!handlers || !handlers.POST) {
+      logger.error("NextAuth handlers not available");
+      return new Response(
+        JSON.stringify({ error: "Authentication service unavailable" }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
+      );
+    }
+    return await safeHandleRequest(handlers.POST, req);
+  } catch (error) {
+    logger.error("NextAuth POST handler error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return new Response(
+      JSON.stringify({ error: "Authentication service unavailable" }),
+      { status: 503, headers: { "Content-Type": "application/json" } }
+    );
+  }
 }

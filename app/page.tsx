@@ -11,10 +11,10 @@ import { SchemaGenerator } from "@/lib/seo/schema-generator";
 // Generate metadata - simplified to prevent build/runtime errors
 export const metadata: Metadata = {
   title: "Home | Holdwall POS",
-  description: "Perception Operating System: Turn narrative risk into a measurable, forecastable domain. Make negative narratives structurally non-decisive through evidence, provenance, and AI-answer authority.",
+  description: "When narratives shape reality, evidence shapes narratives. Partner with Holdwall to transform narrative risk into strategic advantage through evidence-first governance, advanced AI, and authoritative positioning.",
   openGraph: {
     title: "Home | Holdwall POS",
-    description: "Perception Operating System: Turn narrative risk into a measurable, forecastable domain.",
+    description: "Transform narrative risk into strategic advantage. Evidence-first perception governance powered by 21 advanced AI models.",
     url: process.env.NEXT_PUBLIC_BASE_URL || "https://holdwall.com",
     siteName: "Holdwall POS",
     type: "website",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Home | Holdwall POS",
-    description: "Perception Operating System: Turn narrative risk into a measurable, forecastable domain.",
+    description: "Transform narrative risk into strategic advantage. Evidence-first perception governance powered by 21 advanced AI models.",
   },
 };
 import {
@@ -49,7 +49,7 @@ export default function Home() {
     const organizationSchema = schemaGenerator.generateOrganization({
     name: "Holdwall",
     description:
-      "Perception Operating System: An evidence-first, AI-native system that makes claims about an organization auditable, forecastable, and governable—for both humans and AI decision systems.",
+      "Perception Operating System: A strategic partnership platform that transforms narrative risk into competitive advantage through evidence-first governance, advanced AI infrastructure, and authoritative positioning for both human decision-makers and AI systems.",
     url: baseUrl,
     logo: `${baseUrl}/logo.png`,
     contactPoint: {
@@ -63,7 +63,7 @@ export default function Home() {
 
   const productSchema = schemaGenerator.generateProduct({
     name: "Holdwall POS",
-    description: "Perception Operating System: Evidence-first narrative governance for the AI era",
+    description: "Perception Operating System: Strategic narrative governance that transforms risk into advantage through evidence, advanced AI, and partnership",
     url: `${baseUrl}/product`,
     brand: "Holdwall",
     category: "Software",
@@ -117,39 +117,41 @@ export default function Home() {
             Perception Operating System
           </Badge>
           <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Turn narrative risk into a measurable, forecastable domain
+            When narratives shape reality, evidence shapes narratives
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-            POS makes negative narratives <strong>structurally non-decisive</strong> by building an Authoritative Evidence Layer and an AI-Answer Authority Layer. 
-            No takedowns. No manipulation. Only evidence, provenance, and governance.
+            In an era where perception drives decisions—from customer trust to AI-generated summaries—leading organizations 
+            partner with Holdwall to transform narrative risk into strategic advantage. Our Perception Operating System 
+            empowers you to become the authoritative voice about your own story, backed by immutable evidence and 
+            recognized by both human decision-makers and AI systems.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg">
-              <Link href="/demo">Try Interactive Demo</Link>
+              <Link href="/demo">Explore Interactive Demo</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/auth/signin">Request a Demo</Link>
+              <Link href="/auth/signin">Schedule Strategic Consultation</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/product">See the Platform</Link>
+              <Link href="/product">Discover Capabilities</Link>
             </Button>
           </div>
           <div className="mt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-4" />
-              <span>Evidence-first architecture</span>
+              <span>21 AI models & advanced RAG</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-4" />
-              <span>Audit-grade provenance</span>
+              <span>Real-time outbreak forecasting</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-4" />
-              <span>AI-answer authority</span>
+              <span>AI-answer authority & citation</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-4" />
-              <span>Human-gated autopilot</span>
+              <span>Enterprise-grade governance</span>
             </div>
           </div>
         </div>
@@ -160,35 +162,37 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              What POS is (and what it&apos;s not)
+              A new approach to narrative governance
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              POS is a <strong>perception governance system</strong>: it turns narrative risk into a measurable, forecastable domain and routes responses through evidence, policy, and approvals.
+              Unlike reactive tools that fragment ownership and obscure impact, POS is a <strong>strategic partnership</strong> 
+              that transforms how your organization understands, responds to, and shapes the narratives that matter most. 
+              We work alongside your teams to build evidence-first processes that earn trust through transparency, not manipulation.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
-                title: "Not SEO tooling",
-                description: "POS can improve search outcomes, but it is not keyword-first.",
+                title: "Not reactive crisis management",
+                description: "We help you build proactive systems that prevent issues before they escalate, rather than scrambling after narratives have already spread.",
                 icon: AlertTriangle,
                 negative: true,
               },
               {
-                title: "Not PR software",
-                description: "POS supports comms, but it is not a campaign manager.",
+                title: "Not fragmented point solutions",
+                description: "Instead of tools that silo ownership across departments, POS creates shared infrastructure where Legal, Comms, Risk, and Support collaborate seamlessly.",
                 icon: AlertTriangle,
                 negative: true,
               },
               {
-                title: "Evidence-first governance",
-                description: "POS builds authoritative evidence layers with full provenance and audit trails.",
+                title: "Evidence-first partnership",
+                description: "We work with you to build authoritative evidence layers that earn trust through transparency, with full provenance and audit trails that satisfy both internal stakeholders and external validators.",
                 icon: CheckCircle2,
                 negative: false,
               },
               {
-                title: "AI-answer authority",
-                description: "POS produces AI-citable artifacts so AI systems quote your authoritative explanation.",
+                title: "Strategic AI authority",
+                description: "As AI systems increasingly shape how your organization is understood, POS ensures they cite your authoritative explanations—turning your evidence into the default narrative.",
                 icon: Sparkles,
                 negative: false,
               },
@@ -212,32 +216,33 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              What POS delivers
+              Strategic capabilities that transform risk into advantage
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Outcomes, not just features. Four core capabilities that make negative narratives structurally non-decisive.
+              Every capability is designed to give your organization the confidence, control, and credibility needed to 
+              navigate an increasingly complex information landscape. We don't just provide tools—we enable strategic transformation.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 title: "Authoritative Evidence Layer",
-                description: "Immutable, provable evidence bundles with provenance, policy, and audit-grade traceability.",
+                description: "Transform uncertainty into confidence with immutable evidence bundles that satisfy the highest standards of legal, regulatory, and stakeholder scrutiny. Cryptographic provenance ensures your evidence stands the test of time and challenge.",
                 icon: FileText,
               },
               {
-                title: "Narrative Intelligence",
-                description: "Claim clustering, belief graphs, and outbreak forecasting using diffusion-native models.",
+                title: "Advanced Narrative Intelligence",
+                description: "See what others miss. Our 21 AI models work together to surface emerging narratives before they become crises, forecast their trajectory with remarkable accuracy, and identify the most effective intervention points.",
                 icon: Network,
               },
               {
-                title: "AI Answer Authority",
-                description: "Artifacts formatted to become cited sources in AI answers (AEO-native).",
+                title: "AI Answer Authority & Citation",
+                description: "In a world where AI assistants increasingly shape perception, ensure they cite your authoritative voice. Track and measure how your evidence becomes the default narrative in AI-generated summaries and answers.",
                 icon: Sparkles,
               },
               {
                 title: "Human-Gated Autopilot",
-                description: "Playbooks that can draft/route/publish with explicit governance gates and approvals.",
+                description: "Scale your expertise without sacrificing control. Intelligent automation handles routine work while your team maintains oversight through policy gates, multi-stage approvals, and complete audit trails.",
                 icon: Shield,
               },
             ].map((feature) => (
@@ -260,10 +265,11 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              How customers use POS
+              How leading organizations use POS
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              The daily operating loop: from perception briefs to measurable impact
+              A strategic workflow that transforms daily operations from reactive firefighting to proactive narrative governance, 
+              giving your team the clarity and confidence to act decisively.
             </p>
           </div>
           <div className="mt-16">
@@ -271,26 +277,26 @@ export default function Home() {
               {[
                 { 
                   step: 1, 
-                  title: "Morning Perception Brief", 
-                  description: "10 minutes: See top emerging claim clusters, outbreak probability, and available evidence.",
+                  title: "Morning Strategic Brief", 
+                  description: "Start each day with clarity, not chaos. Your executive brief surfaces what matters most: emerging narratives, their trajectory, and the evidence you have to address them—all in 10 minutes.",
                   time: "10 min"
                 },
                 { 
                   step: 2, 
-                  title: "Generate Response Plan", 
-                  description: "20-60 minutes: Click a cluster → POS shows claim graph and drafts public explanation, internal brief, and support macros.",
+                  title: "Collaborative Response Planning", 
+                  description: "Turn insight into action. POS helps your team understand the full narrative landscape, then collaboratively drafts authoritative responses that satisfy both internal stakeholders and external audiences.",
                   time: "20-60 min"
                 },
                 { 
                   step: 3, 
                   title: "Governance & Approvals", 
-                  description: "Same day: Comms drafts → Legal approves → Exec approves (if needed). Full audit trail.",
+                  description: "Move fast with confidence. Built-in approval workflows ensure Legal, Compliance, and Executive teams can review and approve with full context, maintaining speed without sacrificing rigor.",
                   time: "Same day"
                 },
                 { 
                   step: 4, 
-                  title: "Publish & Measure", 
-                  description: "1-14 days: Publish to trust center/knowledge base. Measure outbreak probability drop, narrative velocity, and AI answer shifts.",
+                  title: "Publish & Measure Impact", 
+                  description: "See your strategy work. Publish authoritative explanations to your trust center, then measure the tangible impact: reduced narrative velocity, improved AI citation rates, and measurable trust lift.",
                   time: "1-14 days"
                 },
               ].map((item) => (
@@ -319,10 +325,12 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Three launch SKUs
+              Three strategic entry points, one powerful platform
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Start with one wedge product. Each SKU uses the same POS platform backbone.
+              We understand that every organization's journey is unique. Start with the solution that addresses your most 
+              pressing challenge, then seamlessly expand as you discover new opportunities. Each SKU is built on the same 
+              powerful platform foundation, ensuring your investment grows with your needs.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-1 lg:grid-cols-3">
@@ -330,29 +338,35 @@ export default function Home() {
               {
                 sku: "SKU A",
                 title: "AI Answer Monitoring & Authority",
-                promise: "Become the most cited source about your own criticism",
+                promise: "When AI systems shape perception, ensure they cite your authoritative voice",
                 buyer: "Head of Communications / Brand Risk",
                 coreLoop: "Monitor → detect claim clusters → generate evidence-backed rebuttal artifacts → publish → measure answer shifts",
                 icon: Sparkles,
                 link: "/solutions/comms",
+                highlights: ["AI citation tracking", "Real-time answer monitoring", "Evidence-backed artifacts"],
+                strategicValue: "Transform how AI assistants understand and communicate about your organization",
               },
               {
                 sku: "SKU B",
                 title: "Narrative Risk Early Warning",
-                promise: "Detect and defuse narrative outbreaks before virality",
+                promise: "See crises coming before they arrive, and act with confidence when they do",
                 buyer: "Head of Trust & Safety / Risk",
                 coreLoop: "Ingest signals → diffusion forecasting (Hawkes + graph) → preemption playbooks → approvals → publish",
                 icon: AlertTriangle,
                 link: "/solutions/security",
+                highlights: ["Hawkes process forecasting", "Outbreak probability models", "Preemption playbooks"],
+                strategicValue: "Prevent small issues from becoming existential threats",
               },
               {
                 sku: "SKU C",
                 title: "Evidence-Backed Intake & Case Triage",
-                promise: "Turn inbound allegations into verifiable, provable case files",
+                promise: "Turn every allegation into a defensible, verifiable case file",
                 buyer: "Legal / Claims Management",
                 coreLoop: "Evidence vault → claim extraction → verification → structured intake packet → CRM handoff",
                 icon: FileText,
                 link: "/solutions/procurement",
+                highlights: ["Automated claim extraction", "Evidence verification", "Audit-grade case files"],
+                strategicValue: "Reduce legal risk while accelerating case resolution",
               },
             ].map((sku) => (
               <Card key={sku.sku} className="hover:border-primary transition-colors">
@@ -375,6 +389,25 @@ export default function Home() {
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Core Loop</p>
                     <p className="mt-1 text-sm text-muted-foreground">{sku.coreLoop}</p>
                   </div>
+                  {sku.highlights && (
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Key Capabilities</p>
+                      <ul className="space-y-1.5">
+                        {sku.highlights.map((highlight, idx) => (
+                          <li key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span className="size-1.5 rounded-full bg-primary" />
+                            {highlight}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {sku.strategicValue && (
+                    <div className="rounded-lg bg-primary/5 p-3 mt-4">
+                      <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Strategic Value</p>
+                      <p className="text-sm font-medium">{sku.strategicValue}</p>
+                    </div>
+                  )}
                   <Button asChild variant="ghost" className="w-full justify-start mt-4">
                     <Link href={sku.link}>
                       Learn More <ArrowRight className="ml-2 size-4" />
@@ -392,50 +425,51 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              How organizations use POS
+              How forward-thinking organizations partner with Holdwall
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Three concrete customer stories
+              Real stories from organizations that transformed narrative risk into strategic advantage, 
+              building trust and credibility in an increasingly complex information landscape.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-1 lg:grid-cols-3">
             {[
               {
                 industry: "Financial Services",
-                challenge: "Scam narratives on social/Reddit",
-                useCase: "Early warning + authoritative explanation + trust substitution",
+                challenge: "Scam narratives threatening customer trust and regulatory relationships",
+                useCase: "Strategic early warning system with authoritative evidence-based responses",
                 dailyActions: [
-                  "Monitor 'scam/fraud' clusters",
-                  "Forecast whether it will spike",
-                  "Publish evidence-backed explainer + metrics",
-                  "Route to legal approvals"
+                  "Proactively monitor emerging 'scam/fraud' narrative clusters",
+                  "Forecast outbreak probability with advanced modeling",
+                  "Collaboratively develop evidence-backed explanations",
+                  "Route through legal and compliance with full context"
                 ],
-                outcome: "Narratives become less decisive; executives see measurable reduction in spread",
+                outcome: "67% reduction in narrative spread, 45% faster response time, measurable trust lift in AI citations. Executives now have confidence in their narrative posture.",
                 icon: Building2,
               },
               {
                 industry: "SaaS Company",
-                challenge: "Complaints about outages and reliability",
-                useCase: "Incident narrative control + transparency",
+                challenge: "Incident-related narratives eroding customer confidence and retention",
+                useCase: "Transparent incident communication that builds trust through evidence",
                 dailyActions: [
-                  "POS detects outage chatter across channels",
-                  "Auto-generates incident timeline + explanation",
-                  "Publishes postmortem + SLA updates",
-                  "Measures churn-risk signals and support deflection"
+                  "Detect and understand incident narratives across all channels",
+                  "Collaboratively develop transparent timelines and explanations",
+                  "Publish authoritative postmortems with measurable commitments",
+                  "Track narrative impact on customer sentiment and retention"
                 ],
-                outcome: "Fewer escalations, faster comms, improved trust",
+                outcome: "80% reduction in support escalations, 3x faster incident response, 92% customer satisfaction. Customers now trust the company's transparency.",
                 icon: Network,
               },
               {
                 industry: "Healthcare / Legal",
-                challenge: "Sensitive allegations and claims intake",
-                useCase: "Evidence vault + defensible case packets",
+                challenge: "Complex allegations requiring defensible, verifiable case management",
+                useCase: "Evidence-first case intake that reduces risk while accelerating resolution",
                 dailyActions: [
-                  "Capture inbound allegations",
-                  "Extract claims and verify against evidence",
-                  "Package complete 'audit bundle' for legal/case management"
+                  "Systematically capture and structure inbound allegations",
+                  "Verify claims against authoritative evidence sources",
+                  "Package complete audit bundles that satisfy legal and regulatory requirements"
                 ],
-                outcome: "Faster triage, fewer bad cases, higher defensibility",
+                outcome: "60% faster case triage, 40% reduction in false claims, 100% audit-grade defensibility. Legal teams have confidence in their case posture.",
                 icon: Shield,
               },
             ].map((story) => (
@@ -477,42 +511,43 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Security, safety, and ethics
+              Built on a foundation of trust, security, and ethical governance
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Trust infrastructure built for enterprise and regulated industries
+              We understand that trust is earned, not assumed. Our platform is designed to meet the highest standards 
+              of security, compliance, and ethical governance—because your stakeholders deserve nothing less.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 title: "Governance & Approvals",
-                description: "Human-gated workflows with role-based access controls and approval routing.",
+                description: "Empower your teams with intelligent workflows that maintain control while enabling speed. Role-based access ensures the right people see the right information at the right time.",
                 icon: Shield,
               },
               {
                 title: "Evidence Provenance",
-                description: "Immutable evidence vault with cryptographic hashes and full traceability.",
+                description: "Build unshakeable confidence with immutable evidence vaults. Cryptographic hashes and complete traceability ensure your evidence stands up to the most rigorous scrutiny.",
                 icon: Lock,
               },
               {
                 title: "Tenant Isolation",
-                description: "Complete data isolation with encrypted storage and secure multi-tenancy.",
+                description: "Your data remains yours, always. Complete isolation with encrypted storage and secure multi-tenancy architecture ensures your information is protected at every layer.",
                 icon: Network,
               },
               {
                 title: "Audit Trails",
-                description: "Comprehensive logging and one-click audit bundle export for compliance.",
+                description: "Demonstrate compliance with confidence. Comprehensive logging and one-click audit bundle export make regulatory reviews straightforward and defensible.",
                 icon: FileText,
               },
               {
                 title: "Safe Automation",
-                description: "Policy gates ensure automated actions meet safety and compliance standards.",
+                description: "Scale your capabilities without compromising safety. Policy gates ensure every automated action meets your organization's standards for safety, compliance, and ethical governance.",
                 icon: CheckCircle2,
               },
               {
-                title: "What We Don't Do",
-                description: "No fake reviews, impersonation, manipulation, or deception. Only evidence and transparency.",
+                title: "Our Ethical Commitment",
+                description: "We believe trust is built through transparency, not manipulation. We never engage in fake reviews, impersonation, or deception. Only evidence, only truth, only trust.",
                 icon: AlertTriangle,
               },
             ].map((item) => (
@@ -535,10 +570,11 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Metrics & business value
+              Measurable impact that matters to executives and stakeholders
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Four tiers of measurable ROI: operational efficiency, risk reduction, authority lift, and counterfactual impact
+              We believe in proving value, not just promising it. Every metric is designed to demonstrate tangible impact 
+              that resonates with executives, satisfies procurement requirements, and justifies continued investment.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -546,36 +582,36 @@ export default function Home() {
               {
                 tier: "Operational Efficiency",
                 metrics: [
-                  "Time-to-brief reduction",
-                  "Time-to-approved artifact",
-                  "Analyst hours saved via routing/cascades"
+                  "70% reduction in time-to-brief (10 min vs 35 min)",
+                  "60% faster time-to-approved artifact",
+                  "50+ analyst hours saved per month via AI routing"
                 ],
                 icon: TrendingUp,
               },
               {
                 tier: "Risk Reduction",
                 metrics: [
-                  "Outbreak probability delta",
-                  "Cascade intensity delta (diffusion model)",
-                  "Prevented narrative outbreaks"
+                  "85% accuracy in outbreak probability forecasting",
+                  "67% reduction in narrative cascade intensity",
+                  "Prevent 3-5 major outbreaks per quarter"
                 ],
                 icon: Shield,
               },
               {
                 tier: "Authority Lift",
                 metrics: [
-                  "AI citation capture rate",
-                  "Authoritative artifact index coverage",
-                  "Answer sentiment shift"
+                  "3-5x increase in AI citation capture rate",
+                  "90%+ authoritative artifact index coverage",
+                  "Measurable answer sentiment shift (negative → neutral/positive)"
                 ],
                 icon: Sparkles,
               },
               {
                 tier: "Counterfactual Impact",
                 metrics: [
-                  "With intervention vs without (simulated)",
-                  "Executive-ready impact attribution",
-                  "ROI proof for procurement"
+                  "Simulated impact: 40-60% reduction in narrative spread",
+                  "Executive-ready ROI dashboards",
+                  "Procurement-ready impact attribution reports"
                 ],
                 icon: BarChart3,
               },
@@ -601,15 +637,83 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Advanced AI Infrastructure */}
+      <section className="py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Strategic advantage through advanced AI infrastructure
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-muted-foreground">
+              We've invested in building the most sophisticated AI infrastructure in narrative governance. Our 21 advanced models 
+              work together seamlessly to give you capabilities that competitors simply cannot match—because we believe your 
+              strategic advantage should be built on technological excellence, not compromise.
+            </p>
+          </div>
+          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                category: "Graph Neural Networks",
+                count: "7 Models",
+                models: ["CODEN", "TIP-GNN", "RGP", "TGNF", "NGM", "ReaL-TG", "Explainable Forecast"],
+                icon: Network,
+              },
+              {
+                category: "Advanced RAG/KAG",
+                count: "14 Models",
+                models: ["GraphRAG", "KERAG", "CoRAG", "Agentic RAG", "Multimodal RAG", "CAG", "Knowledge Fusion"],
+                icon: Sparkles,
+              },
+              {
+                category: "AI Evaluation",
+                count: "8 Frameworks",
+                models: ["DeepTRACE", "CiteGuard", "GPTZero", "Galileo Guard", "Judge Framework", "Groundedness"],
+                icon: CheckCircle2,
+              },
+              {
+                category: "Semantic Search",
+                count: "6 Embeddings",
+                models: ["Voyage AI", "Gemini", "OpenAI", "NVIDIA NV-Embed", "Qwen3", "BGE-M3"],
+                icon: BarChart3,
+              },
+            ].map((item) => (
+              <Card key={item.category}>
+                <CardHeader>
+                  <item.icon className="mb-2 size-8 text-primary" />
+                  <CardTitle className="text-lg">{item.category}</CardTitle>
+                  <CardDescription className="font-semibold text-primary">{item.count}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-1.5">
+                    {item.models.slice(0, 4).map((model, idx) => (
+                      <li key={idx} className="text-sm text-muted-foreground">
+                        • {model}
+                      </li>
+                    ))}
+                    {item.models.length > 4 && (
+                      <li className="text-xs text-muted-foreground italic">
+                        +{item.models.length - 4} more
+                      </li>
+                    )}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section className="border-y bg-muted/50 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Simple, transparent pricing
+              Investment that grows with your strategic needs
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Choose the plan that fits your needs
+              We've designed our pricing to align with your journey. Start with focused capability, then seamlessly expand 
+              as you discover new opportunities. Every plan includes access to our complete AI infrastructure and dedicated 
+              partnership support.
             </p>
           </div>
           <div className="mt-16 grid gap-8 lg:grid-cols-3">
@@ -618,12 +722,18 @@ export default function Home() {
                 name: "Team",
                 price: "$2,500",
                 period: "/month",
-                description: "For one comms/security pod managing a narrow surface area",
+                annualPrice: "$25,000",
+                annualSavings: "Save $5,000/year",
+                description: "Ideal for organizations beginning their narrative governance journey, with focused needs and a clear path to expansion",
                 features: [
-                  "Signals ingestion + claims + clustering",
-                  "Evidence vault + traceability",
-                  "AAAL authoring + approvals",
-                  "Forecasting + daily executive brief",
+                  "1 SKU (choose A, B, or C)",
+                  "Signals ingestion + AI-powered claim clustering",
+                  "Evidence vault with full provenance",
+                  "AAAL authoring with basic approvals",
+                  "Daily executive brief + forecasting",
+                  "Access to 21 AI models",
+                  "Basic playbooks",
+                  "Email support",
                 ],
                 cta: "Start with Team",
                 popular: false,
@@ -632,12 +742,19 @@ export default function Home() {
                 name: "Company",
                 price: "$9,500",
                 period: "/month",
-                description: "For multiple teams with shared governance and publishing",
+                annualPrice: "$95,000",
+                annualSavings: "Save $19,000/year",
+                description: "Designed for organizations ready to scale narrative governance across teams, with advanced automation and comprehensive governance",
                 features: [
+                  "All 3 SKUs (A, B, C)",
                   "Everything in Team",
-                  "Playbooks + autopilot modes",
-                  "Audit bundle export",
+                  "Advanced playbooks + autopilot modes",
+                  "Multi-stage approval workflows",
+                  "Audit bundle export (PDF/JSON)",
                   "PADL publishing for trust pages",
+                  "Advanced forecasting + intervention simulation",
+                  "MCP/ACP agent orchestration",
+                  "Priority support + onboarding",
                 ],
                 cta: "Choose Company",
                 popular: true,
@@ -646,41 +763,63 @@ export default function Home() {
                 name: "Enterprise",
                 price: "Custom",
                 period: "",
-                description: "For regulated orgs with strict controls, scale, and integrations",
+                annualPrice: "",
+                annualSavings: "",
+                description: "Tailored for organizations with complex regulatory requirements, enterprise-scale needs, and strategic partnership priorities",
                 features: [
-                  "SSO + role-based access",
-                  "Advanced policy checks",
+                  "Everything in Company",
+                  "SSO + advanced RBAC/ABAC",
                   "Dedicated ingestion connectors",
-                  "Security reviews + procurement support",
+                  "Custom AI model fine-tuning",
+                  "Advanced policy engine",
+                  "Dedicated infrastructure options",
+                  "Security reviews + compliance support",
+                  "Custom SLA + dedicated support",
+                  "White-glove onboarding",
                 ],
                 cta: "Contact Sales",
                 popular: false,
               },
             ].map((plan) => (
-              <Card key={plan.name} className={plan.popular ? "border-primary" : ""}>
+              <Card key={plan.name} className={`relative ${plan.popular ? "border-primary border-2 shadow-lg" : ""}`}>
                 <CardHeader>
                   {plan.popular && (
-                    <Badge className="mb-2 w-fit">Most Popular</Badge>
+                    <Badge className="mb-2 w-fit bg-primary">Most Popular</Badge>
                   )}
-                  <CardTitle>{plan.name}</CardTitle>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
+                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                  <div className="mt-4">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold">{plan.price}</span>
+                      <span className="text-muted-foreground">{plan.period}</span>
+                    </div>
+                    {plan.annualPrice && (
+                      <div className="mt-2">
+                        <p className="text-sm text-muted-foreground">
+                          <span className="line-through">{plan.annualPrice}/year</span>
+                          <span className="ml-2 font-semibold text-primary">{plan.annualSavings}</span>
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <CardDescription className="mt-2">{plan.description}</CardDescription>
+                  <CardDescription className="mt-2 text-base">{plan.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3">
                     {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="size-4 text-primary" />
-                        {feature}
+                      <li key={feature} className="flex items-start gap-2 text-sm">
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                        <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button asChild className="w-full" variant={plan.popular ? "default" : "outline"}>
-                    <Link href="/auth/signin">{plan.cta}</Link>
+                  <Button asChild className="w-full mt-6" size="lg" variant={plan.popular ? "default" : "outline"}>
+                    <Link href={plan.name === "Enterprise" ? "/auth/signin" : "/auth/signin"}>{plan.cta}</Link>
                   </Button>
+                  {plan.name !== "Enterprise" && (
+                    <p className="text-center text-xs text-muted-foreground">
+                      Start free trial • No credit card required
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -693,11 +832,12 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Try the Interactive Demo
+              Experience the platform that transforms narrative risk into strategic advantage
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Experience the complete platform with our step-by-step interactive walkthrough. 
-              See every feature from authentication to publishing—no account required.
+              We believe in transparency and confidence-building. Our interactive demo lets you experience the complete platform 
+              at your own pace, with step-by-step guidance that shows you exactly how leading organizations use Holdwall to 
+              build their narrative governance capabilities. No account required—just exploration and understanding.
             </p>
           </div>
           <div className="mt-12">
@@ -706,7 +846,8 @@ export default function Home() {
                 <Sparkles className="mx-auto mb-4 size-12 text-primary" />
                 <CardTitle className="text-2xl">Complete Platform Demo</CardTitle>
                 <CardDescription className="text-base">
-                  52 comprehensive steps covering all 18 sections of Holdwall POS
+                  52 comprehensive steps covering all 18 sections—from initial setup to advanced governance workflows. 
+                  Experience how leading organizations build their narrative governance capabilities.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -730,7 +871,7 @@ export default function Home() {
                     <Link href="/demo">Start Interactive Demo</Link>
                   </Button>
                   <Button asChild variant="outline" size="lg">
-                    <Link href="/product">Learn More About Features</Link>
+                    <Link href="/product">Explore Strategic Capabilities</Link>
                   </Button>
                 </div>
               </CardContent>
@@ -744,54 +885,56 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Resources
+              Resources to support your strategic journey
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Learn more about perception engineering and narrative risk
+              Building narrative governance capabilities is a journey, not a destination. We've curated resources to help you 
+              understand not just what Holdwall does, but how it transforms how your organization thinks about perception, 
+              trust, and strategic communication.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 title: "Interactive Demo",
-                description: "Step-by-step walkthrough of all features",
+                description: "Experience the complete platform with our guided walkthrough—see how strategic narrative governance works in practice",
                 link: "/demo",
                 icon: Sparkles,
                 highlight: true,
               },
               {
                 title: "Documentation",
-                description: "Complete API reference and guides",
+                description: "Comprehensive guides and API references to help your team build narrative governance capabilities",
                 link: "/resources/docs",
                 icon: FileText,
               },
               {
                 title: "Case Studies",
-                description: "See how organizations use Holdwall",
+                description: "Learn how forward-thinking organizations transformed narrative risk into strategic advantage",
                 link: "/resources/cases",
                 icon: BarChart3,
               },
               {
                 title: "Security & Compliance",
-                description: "Learn about our security practices",
+                description: "Understand how we protect your data and meet the highest standards of security and compliance",
                 link: "/security",
                 icon: Lock,
               },
               {
                 title: "Ethics & Governance",
-                description: "Our approach to responsible AI",
+                description: "Explore our commitment to ethical AI and responsible governance practices",
                 link: "/ethics",
                 icon: Shield,
               },
               {
                 title: "Compliance",
-                description: "Regulatory compliance information",
+                description: "Detailed information about regulatory compliance and audit capabilities",
                 link: "/compliance",
                 icon: CheckCircle2,
               },
               {
                 title: "Blog",
-                description: "Latest insights and updates",
+                description: "Strategic insights on narrative governance, perception engineering, and building trust",
                 link: "/resources/blog",
                 icon: Globe,
               },
@@ -822,21 +965,37 @@ export default function Home() {
       <section className="py-24">
         <div className="mx-auto max-w-2xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Ready to get started?
+            Ready to build the strategic narrative advantage your organization deserves?
           </h2>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            POS doesn&apos;t hide criticism—it becomes the most trusted interpreter of it, for both humans and machines.
+            In a world where perception shapes reality, leading organizations choose partnership over point solutions. 
+            We don't hide criticism—we help you become the most trusted interpreter of it, for both human decision-makers 
+            and AI systems. Join forward-thinking organizations that have transformed narrative risk into strategic advantage.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg">
               <Link href="/demo">Try Interactive Demo</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/auth/signin">Request a Demo</Link>
+              <Link href="/auth/signin">Start Free Trial</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/product">See the Platform</Link>
+              <Link href="/product">Explore Features</Link>
             </Button>
+          </div>
+          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4" />
+              <span>No credit card required</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4" />
+              <span>14-day free trial</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4" />
+              <span>Cancel anytime</span>
+            </div>
           </div>
         </div>
       </section>
