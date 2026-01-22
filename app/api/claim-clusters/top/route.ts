@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     }).catch(() => []);
 
     // Resolve trust mappings from artifact policyChecks (explicit mappings stored on artifacts)
-    const clusterIds = clusters.map((c) => c.id);
+    const clusterIds = clusters.map((c: { id: string }) => c.id);
     const artifacts = await db.aAALArtifact.findMany({
       where: {
         tenantId: tenant_id,
