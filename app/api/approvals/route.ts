@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
           });
 
           // Add Legal as a required approver (using role name as identifier)
-          approvers = ["Legal", ...legalApprovers.map((u: { id: string }) => u.id)];
+          approvers = ["Legal", ...legalApprovers.map((u: { id: string; name: string | null; email: string | null }) => u.id)];
         } else {
           // Standard approval flow
           approvers =
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
                     },
                     select: { id: true },
                   })
-                ).map((u) => u.id);
+                ).map((u: { id: string }) => u.id);
         }
       } catch (fsError) {
         // If Financial Services check fails, use standard flow
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
                   },
                   select: { id: true },
                 })
-              ).map((u) => u.id);
+              ).map((u: { id: string }) => u.id);
       }
 
       const approval = await db.approval.create({
