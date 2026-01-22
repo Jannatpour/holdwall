@@ -213,7 +213,7 @@ export async function PATCH(request: NextRequest) {
     });
 
     // Get edges
-    const nodeIdSet = new Set(nodes.map(n => n.id));
+    const nodeIdSet = new Set(nodes.map((n: { id: string }) => n.id));
     const edges = await db.beliefEdge.findMany({
       where: {
         OR: [
