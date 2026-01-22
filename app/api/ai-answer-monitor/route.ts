@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
           correlation_id: correlationId,
           causation_id: undefined,
           schema_version: "1.0",
-          evidence_refs: snapshots.map((s) => s.id),
+          evidence_refs: snapshots.map((s: { id: string }) => s.id),
           payload: {
             brand_name: validated.brandName,
             queries_count: validated.queries?.length || 0,
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
           correlation_id: correlationId,
           causation_id: undefined,
           data: auditEvent,
-          evidence_refs: snapshots.map((s) => s.id),
+          evidence_refs: snapshots.map((s: { id: string }) => s.id),
         });
 
         return NextResponse.json({
