@@ -129,5 +129,10 @@
     "typescript": "^5",
     "undici": "^7.18.2",
     "whatwg-fetch": "^3.6.20"
+  },
+  "overrides": {
+    "test-exclude": "^7.0.1",
+    "glob": "^10.4.1",
+    "jsdom": "^27.4.0"
   }
 }

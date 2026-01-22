@@ -66,16 +66,16 @@ export async function POST(request: NextRequest) {
 
       const forecast = coden.predict(
         beliefNode,
-        edges.map(e => ({
+        edges.map((e) => ({
           edge_id: e.id,
           tenant_id: e.tenantId,
           from_node_id: e.fromNodeId,
           to_node_id: e.toNodeId,
-          type: e.type.toLowerCase() as any,
+          type: e.type.toLowerCase() as "reinforcement" | "neutralization" | "decay",
           weight: e.weight,
-          actor_weights: e.actorWeights as any,
+          actor_weights: (e.actorWeights as Record<string, number>) || {},
           created_at: e.createdAt.toISOString(),
-          updated_at: e.updatedAt?.toISOString(),
+          updated_at: e.updatedAt.toISOString(),
         })),
         timeWindow
       );
