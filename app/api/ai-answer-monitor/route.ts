@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
           success: true,
-          snapshots: snapshots.map((s) => ({
+          snapshots: snapshots.map((s: { id: string; engine: string; query: string; answer: string; citations: unknown; tone: string | null; createdAt: Date }) => ({
             id: s.id,
             engine: s.engine,
             query: s.query,
@@ -275,14 +275,14 @@ export async function POST(request: NextRequest) {
         });
 
         // Calculate citation capture trends
-        const citationScores = snapshots.map((s) => {
+        const citationScores = snapshots.map((s: { citations: unknown }) => {
           const citations = Array.isArray(s.citations) ? s.citations : [];
           return citations.length > 0 ? 1.0 : 0.0; // Simplified
         });
 
         return NextResponse.json({
           success: true,
-          snapshots: snapshots.map((s) => ({
+          snapshots: snapshots.map((s: { id: string; engine: string; query: string; answer: string; citations: unknown; tone: string | null; createdAt: Date }) => ({
             id: s.id,
             engine: s.engine,
             query: s.query,
