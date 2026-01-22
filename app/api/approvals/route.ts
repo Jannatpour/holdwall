@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
           });
 
           // Add Legal as a required approver (using role name as identifier)
-          approvers = ["Legal", ...legalApprovers.map((u) => u.id)];
+          approvers = ["Legal", ...legalApprovers.map((u: { id: string }) => u.id)];
         } else {
           // Standard approval flow
           approvers =
