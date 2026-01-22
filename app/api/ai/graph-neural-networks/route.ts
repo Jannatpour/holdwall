@@ -223,20 +223,20 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    const beliefNodes = nodes.map(n => ({
+    const beliefNodes = nodes.map((n: { id: string; tenantId: string; type: { toString(): string }; content: string; trustScore: number; decisiveness: number; actorWeights: unknown; createdAt: Date; updatedAt: Date; decayFactor: number }) => ({
       node_id: n.id,
       tenant_id: n.tenantId,
-      type: n.type.toLowerCase() as any,
+      type: n.type.toString().toLowerCase() as any,
       content: n.content,
       trust_score: n.trustScore,
       decisiveness: n.decisiveness,
       actor_weights: n.actorWeights as any,
       created_at: n.createdAt.toISOString(),
-      updated_at: n.updatedAt?.toISOString(),
+      updated_at: n.updatedAt.toISOString(),
       decay_factor: n.decayFactor,
     }));
 
-    const beliefEdges = edges.map(e => ({
+    const beliefEdges = edges.map((e: { id: string; tenantId: string; fromNodeId: string; toNodeId: string; type: { toString(): string }; weight: number; actorWeights: unknown; createdAt: Date; updatedAt: Date }) => ({
       edge_id: e.id,
       tenant_id: e.tenantId,
       from_node_id: e.fromNodeId,
