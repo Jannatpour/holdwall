@@ -41,6 +41,7 @@ describe("ANP Protocol Health Monitoring and Routing", () => {
       version: "1.0.0",
       capabilities: ["text_generation"],
       endpoint: "http://localhost:3000",
+      publicKey: "test-public-key",
     });
 
     const health = await protocol.checkAgentHealth("test-agent");
@@ -57,6 +58,7 @@ describe("ANP Protocol Health Monitoring and Routing", () => {
       version: "1.0.0",
       capabilities: ["text_generation"],
       endpoint: "http://localhost:3001",
+      publicKey: "test-public-key-1",
     });
 
     await a2aProtocol.registerAgent({
@@ -65,6 +67,7 @@ describe("ANP Protocol Health Monitoring and Routing", () => {
       version: "1.0.0",
       capabilities: ["data_analysis"],
       endpoint: "http://localhost:3002",
+      publicKey: "test-public-key-2",
     });
 
     const network: AgentNetwork = {
@@ -92,6 +95,7 @@ describe("ANP Protocol Health Monitoring and Routing", () => {
       version: "1.0.0",
       capabilities: ["text_generation"],
       endpoint: "http://localhost:3001",
+      publicKey: "test-public-key-route-1",
     });
 
     await a2aProtocol.registerAgent({
@@ -100,6 +104,7 @@ describe("ANP Protocol Health Monitoring and Routing", () => {
       version: "1.0.0",
       capabilities: ["data_analysis"],
       endpoint: "http://localhost:3002",
+      publicKey: "test-public-key-route-2",
     });
 
     const network: AgentNetwork = {
@@ -134,6 +139,7 @@ describe("ANP Protocol Health Monitoring and Routing", () => {
       version: "1.0.0",
       capabilities: ["text_generation", "data_analysis"],
       endpoint: "http://localhost:3001",
+      publicKey: "test-public-key-select-1",
     });
 
     await a2aProtocol.registerAgent({
@@ -142,6 +148,7 @@ describe("ANP Protocol Health Monitoring and Routing", () => {
       version: "1.0.0",
       capabilities: ["code_execution"],
       endpoint: "http://localhost:3002",
+      publicKey: "test-public-key-select-2",
     });
 
     const network: AgentNetwork = {

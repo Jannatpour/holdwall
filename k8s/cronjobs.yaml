@@ -14,7 +14,8 @@ spec:
           serviceAccountName: holdwall-worker
           containers:
             - name: backup
-              image: holdwall-app:latest
+              image: 597743362576.dkr.ecr.us-east-1.amazonaws.com/holdwall-pos:20260122-141807
+              workingDir: /app
               command: ["node", "-e", "require('./lib/backup').createBackup()"]
               env:
                 - name: DATABASE_URL
@@ -24,11 +25,11 @@ spec:
                       key: DATABASE_URL
               resources:
                 requests:
-                  memory: "512Mi"
-                  cpu: "250m"
+                  memory: "256Mi"
+                  cpu: "100m"
                 limits:
-                  memory: "1Gi"
-                  cpu: "1000m"
+                  memory: "512Mi"
+                  cpu: "500m"
           restartPolicy: OnFailure
 ---
 apiVersion: batch/v1
@@ -47,7 +48,8 @@ spec:
           serviceAccountName: holdwall-worker
           containers:
             - name: reindex
-              image: holdwall-app:latest
+              image: 597743362576.dkr.ecr.us-east-1.amazonaws.com/holdwall-pos:20260122-141807
+              workingDir: /app
               command: ["node", "-e", "require('./lib/evidence/reindex').reindexLegacyEvidence()"]
               env:
                 - name: DATABASE_URL
@@ -62,11 +64,11 @@ spec:
                       key: CHROMA_URL
               resources:
                 requests:
-                  memory: "1Gi"
-                  cpu: "500m"
+                  memory: "512Mi"
+                  cpu: "250m"
                 limits:
-                  memory: "2Gi"
-                  cpu: "2000m"
+                  memory: "1Gi"
+                  cpu: "1000m"
           restartPolicy: OnFailure
 ---
 apiVersion: batch/v1
@@ -85,7 +87,8 @@ spec:
           serviceAccountName: holdwall-worker
           containers:
             - name: pos-cycle
-              image: holdwall-app:latest
+              image: 597743362576.dkr.ecr.us-east-1.amazonaws.com/holdwall-pos:20260122-141807
+              workingDir: /app
               command: ["node", "-e", "require('./lib/pos/cycle-worker').executePOSCycleForAllTenants()"]
               env:
                 - name: DATABASE_URL
@@ -95,9 +98,9 @@ spec:
                       key: DATABASE_URL
               resources:
                 requests:
-                  memory: "1Gi"
-                  cpu: "500m"
+                  memory: "512Mi"
+                  cpu: "250m"
                 limits:
-                  memory: "2Gi"
-                  cpu: "2000m"
+                  memory: "1Gi"
+                  cpu: "1000m"
           restartPolicy: OnFailure

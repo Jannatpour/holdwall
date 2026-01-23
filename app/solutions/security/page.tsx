@@ -43,6 +43,33 @@ export default function SolutionsSecurityPage() {
         <div className="grid gap-4 lg:grid-cols-3">
           <Card>
             <CardHeader>
+              <CardTitle className="text-base">Security Incident Integration</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground leading-6">
+              Connect with security tools (SIEM, SOAR) via webhooks. Automatically assess narrative risk 
+              when security incidents occur and generate AI-governed explanations.
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Narrative Risk Forecasting</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground leading-6">
+              Advanced forecasting models predict narrative outbreak probability for security incidents. 
+              Hawkes process and graph-based diffusion models identify high-risk scenarios.
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Preemption Playbooks</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground leading-6">
+              Automated playbooks for security incident narratives. Pre-built templates for data breaches, 
+              ransomware, DDoS, and other common security incidents.
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
               <CardTitle className="text-base">Audit bundle exports</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-6">
@@ -65,6 +92,15 @@ export default function SolutionsSecurityPage() {
               Consolidate trust artifacts, policies, and evidence so procurement and customers can self-serve.
             </CardContent>
           </Card>
+        </div>
+        <div className="rounded-lg border bg-primary/5 p-4">
+          <h3 className="font-semibold mb-2">Enhanced with Security Incident Capabilities</h3>
+          <p className="text-sm text-muted-foreground">
+            SKU B now includes security incident narrative management. When security incidents occur, 
+            automatically assess narrative risk, generate evidence-backed explanations, and ensure AI 
+            systems cite your authoritative voice. See <Link href="/solutions/security-incidents" className="text-primary underline">SKU D</Link> for 
+            dedicated security incident narrative management.
+          </p>
         </div>
       </div>
     </SiteShell>

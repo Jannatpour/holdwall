@@ -80,17 +80,9 @@ export class ProtocolSecurityService {
 
     this.agentIdentities.set(agentId, identity);
 
-    // Store public key securely
-    await secretsService.store(
-      "system", // tenantId for system keys
-      `agent_public_key_${agentId}`,
-      publicKey,
-      "certificate",
-      {
-        service: "protocol_security",
-        rotationPolicy: "manual",
-      }
-    );
+    // Public keys are not secrets. Persisting them in a secrets store makes rotation harder and
+    // introduces availability coupling to cache/DB. Keep them in-memory and (when available)
+    // rely on protocol registries (e.g. A2A AgentRegistry) for persistence.
 
     await this.audit("agent_identity_registered", {
       agentId,
@@ -105,7 +97,26 @@ export class ProtocolSecurityService {
    * Verify agent identity
    */
   async verifyAgentIdentity(agentId: string): Promise<SecurityContext | null> {
-    const identity = this.agentIdentities.get(agentId);
+    let identity = this.agentIdentities.get(agentId);
+    // Best-effort DB backfill for persisted agent registries (public keys are stored in Prisma AgentRegistry).
+    if (!identity) {
+      try {
+        const record = await db.agentRegistry.findUnique({
+          where: { agentId },
+          select: { publicKey: true, metadata: true },
+        });
+        if (record?.publicKey) {
+          identity = {
+            agentId,
+            publicKey: record.publicKey,
+            metadata: (record.metadata as Record<string, unknown>) || undefined,
+          };
+          this.agentIdentities.set(agentId, identity);
+        }
+      } catch {
+        // Ignore DB lookup failures (unit tests / offline DB)
+      }
+    }
     if (!identity) {
       return null;
     }
@@ -158,9 +169,12 @@ export class ProtocolSecurityService {
       useHSM?: boolean;
     }
   ): Promise<string> {
-    const keyPair = this.keyPairs.get(agentId);
-    if (!keyPair) {
-      throw new Error(`No key pair found for agent ${agentId}`);
+    // Only agents with locally-managed keys can be used for server-side signing.
+    // Typical agents sign with their own private keys externally; the server verifies via public keys.
+    if (!this.keyPairs.has(agentId)) {
+      // For internal/system agents we generate a signing key on first use.
+      // This requires SECRETS_ENCRYPTION_KEY to be configured.
+      await this.generateKeyPair(agentId, "RSA");
     }
 
     // In production, use KMS/HSM for signing
@@ -177,7 +191,7 @@ export class ProtocolSecurityService {
     sign.update(message);
     sign.end();
 
-    // In production, decrypt private key from secrets service
+    // Decrypt private key from secrets service
     const privateKey = await secretsService.retrieve("system", `agent_private_key_${agentId}`);
     if (!privateKey) {
       throw new Error(`Private key not found for agent ${agentId}`);
@@ -296,7 +310,7 @@ export class ProtocolSecurityService {
       a2a: ["register", "discover", "connect", "send_message", "receive_messages"],
       anp: ["discover_networks", "join_network", "send_network_message"],
       "ag-ui": ["start_session", "process_input"],
-      ap2: ["create_mandate", "approve_mandate"],
+      ap2: ["create_mandate", "approve_mandate", "execute_payment", "credit_wallet", "revoke_mandate", "get_audit_logs"],
       acp: ["send_message", "receive_message"],
       mcp: ["list_tools", "execute_tool"],
     };

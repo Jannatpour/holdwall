@@ -17,6 +17,7 @@ import {
   Brain,
   Building2,
   Presentation,
+  Briefcase,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -109,6 +110,12 @@ const navigation = [
     href: "/financial-services",
     icon: Building2,
     ariaLabel: "Navigate to Financial Services dashboard",
+  },
+  {
+    title: "Cases",
+    href: "/cases",
+    icon: Briefcase,
+    ariaLabel: "Navigate to case management",
   },
 ];
 

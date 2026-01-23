@@ -24,6 +24,7 @@ import { LLMCrawlerGuide } from "../seo/llm-crawler-guide";
 import { TopicalAuthority } from "../seo/topical-authority";
 import { AdvancedAIIntegration } from "../ai/integration";
 import { POSOrchestrator } from "../pos/orchestrator";
+import { NarrativeOrchestrator } from "./narrative-orchestrator";
 import type { Evidence } from "../evidence/vault";
 import type { ClaimCluster } from "../claims/extraction";
 
@@ -65,6 +66,7 @@ export class AutonomousOrchestrator {
   private topicalAuthority: TopicalAuthority;
   private aiIntegration: AdvancedAIIntegration;
   private posOrchestrator: POSOrchestrator;
+  private narrativeOrchestrator: NarrativeOrchestrator | null = null;
   private config: AutonomousOperationConfig;
 
   constructor(config: AutonomousOperationConfig) {
@@ -89,6 +91,28 @@ export class AutonomousOrchestrator {
       enableAIEvaluation: true,
     });
     this.posOrchestrator = new POSOrchestrator();
+    
+    // Initialize narrative orchestrator if enabled
+    if (config.enabledOperations.monitoring || config.enabledOperations.publishing) {
+      this.narrativeOrchestrator = new NarrativeOrchestrator({
+        tenant_id: config.tenantId,
+        brand_name: config.brandName,
+        autonomy_level: {
+          ingestion: config.enabledOperations.monitoring ?? true,
+          analysis: true,
+          drafting: config.enabledOperations.publishing ?? false,
+          measurement: true,
+          publishing: false, // Always human-gated
+        },
+        safety_checks: {
+          citation_grounded: true,
+          defamation: true,
+          privacy: true,
+          consistency: true,
+          escalation: true,
+        },
+      });
+    }
   }
 
   /**
@@ -230,17 +254,20 @@ export class AutonomousOrchestrator {
       let status: "completed" | "pending_approval" | "failed" = "completed";
 
       if (requiresApproval) {
-        const approval = await this.approvalGateway.requestApproval({
-          resourceType: "engagement",
-          resourceId: signal.url,
-          action: "publish",
-          content: response.response,
-          context: {
-            platform: signal.platform,
-            originalContent: signal.content,
+        const approval = await this.approvalGateway.requestApproval(
+          {
+            resourceType: "engagement",
+            resourceId: signal.url,
+            action: "publish",
+            content: response.response,
+            context: {
+              platform: signal.platform,
+              originalContent: signal.content,
+            },
+            priority: "medium",
           },
-          priority: "medium",
-        });
+          this.config.tenantId
+        );
 
         if (approval.status !== "approved") {
           status = "pending_approval";
@@ -251,6 +278,7 @@ export class AutonomousOrchestrator {
       let distributionResults: unknown = null;
       if (status === "completed") {
         distributionResults = await this.multiPlatformDistributor.distribute({
+          tenantId: this.config.tenantId,
           response: response.response,
           platforms: [signal.platform as any],
           originalPost: {
@@ -429,9 +457,47 @@ export class AutonomousOrchestrator {
   }
 
   /**
-   * Execute full autonomous cycle
+   * Execute full autonomous cycle (includes narrative orchestration)
    */
   async executeFullCycle(): Promise<AutonomousOperationResult[]> {
+    const results: AutonomousOperationResult[] = [];
+
+    // Execute narrative orchestration cycle if enabled
+    if (this.narrativeOrchestrator) {
+      try {
+        const narrativeResult = await this.narrativeOrchestrator.executeCycle();
+        results.push({
+          operationId: narrativeResult.cycle_id,
+          type: "monitor",
+          status: narrativeResult.status === "completed" ? "completed" : narrativeResult.status === "pending_approval" ? "pending_approval" : "failed",
+          results: narrativeResult,
+          timestamp: narrativeResult.created_at,
+        });
+      } catch (error) {
+        logger.error("Narrative orchestration cycle failed", {
+          error: error instanceof Error ? error.message : String(error),
+          tenant_id: this.config.tenantId,
+        });
+      }
+    }
+
+    // Execute legacy cycles (for backward compatibility)
+    if (this.config.enabledOperations.monitoring && !this.narrativeOrchestrator) {
+      const monitoringResult = await this.executeMonitoringCycle();
+      results.push(monitoringResult);
+    }
+
+    if (this.config.enabledOperations.publishing && !this.narrativeOrchestrator) {
+      // Legacy publishing cycle
+    }
+
+    return results;
+  }
+
+  /**
+   * Execute legacy full cycle (backward compatibility)
+   */
+  async executeLegacyFullCycle(): Promise<AutonomousOperationResult[]> {
     const results: AutonomousOperationResult[] = [];
 
     // 1. Monitoring

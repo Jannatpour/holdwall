@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { logger } from "@/lib/logging/logger";
 
 export interface UploadConfig {
   maxSize: number; // bytes
@@ -82,7 +83,9 @@ export class FileUploadService {
           };
         }
       } catch (error) {
-        console.warn("Cloud file scanning failed, trying ClamAV:", error);
+        logger.warn("Cloud file scanning failed, trying ClamAV", {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -105,7 +108,9 @@ export class FileUploadService {
         };
       }
     } catch (error) {
-      console.warn("ClamAV scanning unavailable:", error);
+      logger.warn("ClamAV scanning unavailable, using heuristic fallback", {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
 
     // Final fallback: Basic heuristic checks
@@ -255,7 +260,9 @@ export class FileUploadService {
               }
             } catch (presignError) {
               // Final fallback: store file_id and let caller handle upload
-              console.warn("S3 upload unavailable, using fallback storage:", presignError);
+              logger.warn("S3 upload unavailable, using fallback storage", {
+                error: presignError instanceof Error ? presignError.message : String(presignError),
+              });
               storageUrl = `pending://${file_id}`;
             }
           }
@@ -301,7 +308,10 @@ export class FileUploadService {
           if (importError.code === "MODULE_NOT_FOUND" || importError.message?.includes("Cannot find module")) {
             throw new Error("GCS support requires @google-cloud/storage package. Install with: npm install @google-cloud/storage");
           }
-          console.error("GCS file upload failed:", importError);
+          logger.error("GCS file upload failed", {
+            error: importError instanceof Error ? importError.message : String(importError),
+            stack: importError instanceof Error ? importError.stack : undefined,
+          });
           throw new Error(`GCS upload failed: ${importError.message}`);
         }
       } else if (storageProvider === "azure") {
@@ -357,7 +367,10 @@ export class FileUploadService {
           if (importError.code === "MODULE_NOT_FOUND" || importError.message?.includes("Cannot find module")) {
             throw new Error("Azure support requires @azure/storage-blob package. Install with: npm install @azure/storage-blob");
           }
-          console.error("Azure file upload failed:", importError);
+          logger.error("Azure file upload failed", {
+            error: importError instanceof Error ? importError.message : String(importError),
+            stack: importError instanceof Error ? importError.stack : undefined,
+          });
           throw new Error(`Azure upload failed: ${importError.message}`);
         }
       } else {
@@ -386,12 +399,17 @@ export class FileUploadService {
         }
       } catch (error) {
         // FileUpload model may not exist in schema - log but don't fail
-        console.warn("File metadata storage skipped (model not in schema):", error);
+        logger.warn("File metadata storage skipped (model not in schema)", {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
 
       return { success: true, file_id };
     } catch (error) {
-      console.error("File upload failed:", error);
+      logger.error("File upload failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       return {
         success: false,
         error: error instanceof Error ? error.message : "File upload failed",

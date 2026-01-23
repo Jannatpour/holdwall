@@ -11,6 +11,7 @@ import { ResponseGenerator } from "../engagement/response-generator";
 import { ApprovalGateway } from "../engagement/approval-gateway";
 
 export interface CommentPublishOptions {
+  tenantId: string;
   url: string;
   content: string;
   authorName?: string;
@@ -47,23 +48,26 @@ export class CommentPublisher {
   async publishComment(
     options: CommentPublishOptions
   ): Promise<CommentPublishResult> {
-    const { url, content, requireApproval = true } = options;
+    const { tenantId, url, content, requireApproval = true } = options;
 
     // Check if approval is required
     if (requireApproval) {
-      const approval = await this.approvalGateway.requestApproval({
-        resourceType: "comment",
-        resourceId: url,
-        action: "publish",
-        content,
-        context: {
-          forum: "unknown",
-          postUrl: url,
-          postAuthor: options.authorName || "System",
-          brandName: "Unknown",
+      const approval = await this.approvalGateway.requestApproval(
+        {
+          resourceType: "comment",
+          resourceId: url,
+          action: "publish",
+          content,
+          context: {
+            forum: "unknown",
+            postUrl: url,
+            postAuthor: options.authorName || "System",
+            brandName: "Unknown",
+          },
+          priority: "medium",
         },
-        priority: "medium",
-      });
+        tenantId
+      );
 
       if (approval.status !== "approved" && approval.decision !== "approved") {
         return {
@@ -407,15 +411,17 @@ export class CommentPublisher {
    * Publish comments to multiple high-authority sites
    */
   async publishToMultiple(
+    tenantId: string,
     content: string,
     urls: string[],
-    options?: Partial<CommentPublishOptions>
+    options?: Omit<Partial<CommentPublishOptions>, "tenantId">
   ): Promise<CommentPublishResult[]> {
     const results: CommentPublishResult[] = [];
 
     for (const url of urls) {
       try {
         const result = await this.publishComment({
+          tenantId,
           url,
           content,
           ...options,

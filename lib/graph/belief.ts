@@ -63,7 +63,7 @@ export class BeliefGraphService {
    * Create or update a belief node
    */
   async upsertNode(node: Omit<BeliefNode, "node_id" | "created_at">): Promise<string> {
-    const node_id = `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const node_id = `node-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     const fullNode: BeliefNode = {
       ...node,
       node_id,
@@ -97,7 +97,7 @@ export class BeliefGraphService {
    * Create or update a belief edge
    */
   async upsertEdge(edge: Omit<BeliefEdge, "edge_id" | "created_at">): Promise<string> {
-    const edge_id = `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const edge_id = `edge-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     const fullEdge: BeliefEdge = {
       ...edge,
       edge_id,

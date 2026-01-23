@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,23 +25,8 @@ export function PlaybooksPageClient({
 }: PlaybooksPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [createDialogOpen, setCreateDialogOpen] = useState(initialShowNewDialog);
-  const [activeTab, setActiveTab] = useState("catalog");
-
-  useEffect(() => {
-    if (initialShowNewDialog) {
-      setCreateDialogOpen(true);
-    }
-  }, [initialShowNewDialog]);
-
-  useEffect(() => {
-    if (executionId) {
-      setActiveTab("history");
-    }
-    if (playbookId) {
-      setActiveTab("catalog");
-    }
-  }, [executionId, playbookId]);
+  const [createDialogOpen, setCreateDialogOpen] = useState(() => initialShowNewDialog);
+  const [activeTab, setActiveTab] = useState(() => (executionId ? "history" : "catalog"));
 
   const handleDialogChange = (open: boolean) => {
     setCreateDialogOpen(open);

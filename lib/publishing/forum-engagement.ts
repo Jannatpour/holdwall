@@ -11,6 +11,7 @@ import { ApprovalGateway } from "../engagement/approval-gateway";
 import { BrowserAutomation } from "../monitoring/browser-automation";
 
 export interface ForumEngagementOptions {
+  tenantId: string;
   forum: "reddit" | "hackernews" | "stackoverflow" | "quora";
   query: string; // Search query to find relevant discussions
   brandName: string;
@@ -47,6 +48,7 @@ export class ForumEngagement {
     options: ForumEngagementOptions
   ): Promise<ForumEngagementResult[]> {
     const {
+      tenantId,
       forum,
       query,
       brandName,
@@ -89,19 +91,23 @@ export class ForumEngagement {
           status = "approved";
         } else {
           // Route for approval
-          const approval = await this.approvalGateway.requestApproval({
-            resourceType: "forum_response",
-            resourceId: post.postId,
-            action: "publish",
-            content: response.response,
-            context: {
-              forum: post.forum,
-              postUrl: post.url,
-              postAuthor: typeof post.author === "string" ? post.author : post.author?.username || "Unknown",
-              brandName: options.brandName,
+          const approval = await this.approvalGateway.requestApproval(
+            {
+              resourceType: "forum_response",
+              resourceId: post.postId,
+              action: "publish",
+              content: response.response,
+              context: {
+                forum: post.forum,
+                postUrl: post.url,
+                postAuthor:
+                  typeof post.author === "string" ? post.author : post.author?.username || "Unknown",
+                brandName: options.brandName,
+              },
+              priority: "medium",
             },
-            priority: "medium",
-          });
+            tenantId
+          );
 
           approvalId = approval.id;
           status = (approval.status === "approved" || approval.decision === "approved") ? "approved" : "pending";

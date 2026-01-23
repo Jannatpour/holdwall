@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle2, Clock, AlertCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, ArrowRight, Target, TrendingUp, Award } from "lucide-react";
 import { format } from "date-fns";
 
 interface WorkflowMilestone {
@@ -149,11 +149,16 @@ export function FinancialServicesWorkflow() {
 
   return (
     <div className="space-y-6">
-      {/* Status Summary */}
-      <Card>
+      {/* Strategic Status Summary */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
         <CardHeader>
-          <CardTitle>Workflow Status</CardTitle>
-          <CardDescription>Current stage and progress</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Target className="h-5 w-5 text-primary" />
+            Strategic Progression Status
+          </CardTitle>
+          <CardDescription className="text-base">
+            Track your journey from initial visibility to full operational maturity
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -177,42 +182,68 @@ export function FinancialServicesWorkflow() {
       </Card>
 
       {/* Day 1 Milestones */}
-      <Card>
+      <Card className="border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50/50 to-background dark:from-blue-950/20">
         <CardHeader>
-          <CardTitle>Day 1 - Visibility, Control, and Safety</CardTitle>
-          <CardDescription>
-            Create immediate situational awareness and eliminate blind spots
-          </CardDescription>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-xl">Day 1: Foundation & Awareness</CardTitle>
+              <CardDescription className="text-base mt-1">
+                Establish immediate situational awareness and eliminate operational blind spots
+              </CardDescription>
+            </div>
+            {milestonesByStage.day1.every(m => m.completed) && (
+              <Badge className="bg-green-600">
+                <Award className="mr-1 h-3 w-3" />
+                Complete
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {milestonesByStage.day1.map((milestone) => (
               <div
                 key={milestone.id}
-                className="flex items-start gap-4 p-4 border rounded-lg"
+                className={`flex items-start gap-4 p-4 border rounded-lg transition-all duration-200 ${
+                  milestone.completed 
+                    ? "bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-800 hover:shadow-md" 
+                    : "hover:border-primary/40 hover:shadow-sm"
+                }`}
               >
                 {milestone.completed ? (
-                  <CheckCircle2 className="size-5 text-green-600 mt-0.5" />
+                  <div className="p-1.5 bg-green-500/10 rounded-full">
+                    <CheckCircle2 className="size-5 text-green-600 dark:text-green-400" />
+                  </div>
                 ) : (
-                  <Clock className="size-5 text-muted-foreground mt-0.5" />
+                  <div className="p-1.5 bg-muted rounded-full">
+                    <Clock className="size-5 text-muted-foreground" />
+                  </div>
                 )}
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-medium">{milestone.name}</h4>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold text-base">{milestone.name}</h4>
                     {milestone.completed && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs bg-green-50 dark:bg-green-950/20">
+                        <CheckCircle2 className="mr-1 h-3 w-3" />
                         Completed
                         {milestone.completedAt &&
                           ` ${format(new Date(milestone.completedAt), "MMM d")}`}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground leading-6">
                     {milestone.description}
                   </p>
                   {milestone.requiredActions.length > 0 && (
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      Required: {milestone.requiredActions.join(", ")}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {milestone.requiredActions.map((action, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {action}
+                        </Badge>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -223,12 +254,25 @@ export function FinancialServicesWorkflow() {
       </Card>
 
       {/* Day 7 Milestones */}
-      <Card>
+      <Card className="border-yellow-200 dark:border-yellow-800 bg-gradient-to-br from-yellow-50/50 to-background dark:from-yellow-950/20">
         <CardHeader>
-          <CardTitle>Day 7 - Authority, Control, and De-Escalation</CardTitle>
-          <CardDescription>
-            Replace speculation and emotion with verified, authoritative explanations
-          </CardDescription>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-yellow-500/10 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-xl">Day 7: Authority & De-Escalation</CardTitle>
+              <CardDescription className="text-base mt-1">
+                Transform speculation into verified, authoritative explanations that build trust
+              </CardDescription>
+            </div>
+            {milestonesByStage.day7.length > 0 && milestonesByStage.day7.every(m => m.completed) && (
+              <Badge className="bg-green-600">
+                <Award className="mr-1 h-3 w-3" />
+                Complete
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -274,12 +318,25 @@ export function FinancialServicesWorkflow() {
       </Card>
 
       {/* Day 30 Milestones */}
-      <Card>
+      <Card className="border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50/50 to-background dark:from-green-950/20">
         <CardHeader>
-          <CardTitle>Day 30 - Governance, Proof, and Institutionalization</CardTitle>
-          <CardDescription>
-            Make narrative control part of financial risk governance
-          </CardDescription>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <Award className="h-5 w-5 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-xl">Day 30: Governance & Institutionalization</CardTitle>
+              <CardDescription className="text-base mt-1">
+                Integrate narrative control into your financial risk governance framework
+              </CardDescription>
+            </div>
+            {milestonesByStage.day30.length > 0 && milestonesByStage.day30.every(m => m.completed) && (
+              <Badge className="bg-purple-600">
+                <Award className="mr-1 h-3 w-3" />
+                Complete
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -324,19 +381,29 @@ export function FinancialServicesWorkflow() {
         </CardContent>
       </Card>
 
-      {/* Next Actions */}
+      {/* Strategic Next Actions */}
       {progress.nextActions.length > 0 && (
-        <Card>
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
           <CardHeader>
-            <CardTitle>Next Actions</CardTitle>
-            <CardDescription>Recommended next steps</CardDescription>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Target className="h-5 w-5 text-primary" />
+              Recommended Strategic Actions
+            </CardTitle>
+            <CardDescription className="text-base">
+              Prioritized next steps to advance your narrative governance maturity
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {progress.nextActions.map((action, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-sm">
-                  <ArrowRight className="size-4 text-muted-foreground" />
-                  <span>{action}</span>
+                <div 
+                  key={idx} 
+                  className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:border-primary/40 hover:shadow-sm transition-all duration-200"
+                >
+                  <div className="p-1 bg-primary/10 rounded-full mt-0.5">
+                    <ArrowRight className="size-4 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium leading-6 flex-1">{action}</span>
                 </div>
               ))}
             </div>

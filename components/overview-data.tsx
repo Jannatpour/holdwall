@@ -9,13 +9,91 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileText, Network, CheckCircle2, TrendingUp, AlertTriangle, Clock, ArrowRight, Shield, Target, Zap } from "lucide-react";
+import { FileText, Network, CheckCircle2, TrendingUp, AlertTriangle, Clock, ArrowRight, Shield, Target, Zap, Sparkles, BarChart3, Settings, Bell, RefreshCw, Lightbulb, Rocket, TrendingDown, Activity } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NarrativeRiskBrief } from "@/components/narrative-risk-brief";
 import { ExplainScoreDrawer } from "@/components/explain-score-drawer";
 import { RealtimeOpsFeed } from "@/components/realtime-ops-feed";
 import { EmptyState, ErrorState } from "@/components/ui/loading-states";
 import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatDistanceToNow } from "date-fns";
+
+// Security Incidents Widget Component
+function SecurityIncidentsWidget() {
+  const [incidents, setIncidents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchIncidents() {
+      try {
+        const res = await fetch("/api/security-incidents?limit=5&status=OPEN");
+        if (res.ok) {
+          const data = await res.json();
+          setIncidents(data.incidents || []);
+        }
+      } catch (err) {
+        // Silently fail - widget is optional
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchIncidents();
+  }, []);
+
+  if (loading) {
+    return <Skeleton className="h-24" />;
+  }
+
+  if (incidents.length === 0) {
+    return (
+      <div className="space-y-2">
+        <div className="text-sm text-muted-foreground text-center py-2">
+          No open security incidents
+        </div>
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href="/security-incidents">
+            View All Incidents
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {incidents.slice(0, 3).map((incident) => (
+        <div key={incident.id} className="flex items-center justify-between p-2 rounded border hover:bg-accent transition-colors">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm font-medium truncate">{incident.title}</span>
+              {incident.narrativeRiskScore && incident.narrativeRiskScore >= 0.7 && (
+                <Badge variant="destructive" className="text-xs">High Risk</Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              {incident.outbreakProbability && (
+                <span>Outbreak: {(incident.outbreakProbability * 100).toFixed(0)}%</span>
+              )}
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/security-incidents/${incident.id}`}>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      ))}
+      {incidents.length > 3 && (
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href="/security-incidents">
+            View {incidents.length - 3} more
+          </Link>
+        </Button>
+      )}
+    </div>
+  );
+}
 
 interface OverviewData {
   kpis: {
@@ -52,6 +130,8 @@ export function OverviewData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<"today" | "7d" | "30d">("7d");
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -115,10 +195,41 @@ export function OverviewData() {
     }
 
     fetchData();
+    
+    // Auto-refresh every 30 seconds if enabled
+    let interval: NodeJS.Timeout | null = null;
+    if (autoRefresh) {
+      interval = setInterval(() => {
+        fetchData();
+        setLastRefresh(new Date());
+      }, 30000);
+    }
+    
     return () => {
       cancelled = true;
+      if (interval) clearInterval(interval);
     };
-  }, [timeRange]);
+  }, [timeRange, autoRefresh]);
+  
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + R: Refresh data
+      if ((e.ctrlKey || e.metaKey) && e.key === 'r' && !e.shiftKey) {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+      }
+      // Ctrl/Cmd + Shift + R: Toggle auto-refresh
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
+        e.preventDefault();
+        setAutoRefresh(prev => !prev);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   if (loading) {
     return (
@@ -168,14 +279,113 @@ export function OverviewData() {
 
   return (
     <div className="space-y-6">
-      {/* Time Range Tabs */}
-      <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as "today" | "7d" | "30d")}>
-        <TabsList>
-          <TabsTrigger value="today">Today</TabsTrigger>
-          <TabsTrigger value="7d">7 Days</TabsTrigger>
-          <TabsTrigger value="30d">30 Days</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {/* Header with Quick Actions */}
+      <div className="flex items-center justify-between">
+        <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as "today" | "7d" | "30d")}>
+          <TabsList>
+            <TabsTrigger value="today">Today</TabsTrigger>
+            <TabsTrigger value="7d">7 Days</TabsTrigger>
+            <TabsTrigger value="30d">30 Days</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="flex items-center gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setLoading(true);
+                  setError(null);
+                }}
+                className="gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Refresh data (Ctrl/Cmd + R)</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={autoRefresh ? "default" : "outline"}
+                size="sm"
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className="gap-2"
+              >
+                <Activity className={`h-4 w-4 ${autoRefresh ? 'animate-pulse' : ''}`} />
+                Auto
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Auto-refresh every 30s (Ctrl/Cmd + Shift + R)</p>
+            </TooltipContent>
+          </Tooltip>
+          {lastRefresh && (
+            <span className="text-xs text-muted-foreground">
+              Updated {formatDistanceToNow(lastRefresh, { addSuffix: true })}
+            </span>
+          )}
+        </div>
+      </div>
+      
+      {/* Quick Actions Panel */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Rocket className="h-5 w-5 text-primary" />
+                Quick Actions
+              </CardTitle>
+              <CardDescription>Common tasks and shortcuts</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Button variant="outline" className="justify-start h-auto py-3" asChild>
+              <Link href="/signals">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                <div className="text-left">
+                  <div className="font-medium">View Signals</div>
+                  <div className="text-xs text-muted-foreground">Monitor incoming data</div>
+                </div>
+              </Link>
+            </Button>
+            <Button variant="outline" className="justify-start h-auto py-3" asChild>
+              <Link href="/claims">
+                <FileText className="mr-2 h-4 w-4" />
+                <div className="text-left">
+                  <div className="font-medium">Claim Clusters</div>
+                  <div className="text-xs text-muted-foreground">Review narratives</div>
+                </div>
+              </Link>
+            </Button>
+            <Button variant="outline" className="justify-start h-auto py-3" asChild>
+              <Link href="/studio">
+                <Sparkles className="mr-2 h-4 w-4" />
+                <div className="text-left">
+                  <div className="font-medium">Create Artifact</div>
+                  <div className="text-xs text-muted-foreground">AAAL Studio</div>
+                </div>
+              </Link>
+            </Button>
+            <Button variant="outline" className="justify-start h-auto py-3" asChild>
+              <Link href="/forecasts">
+                <TrendingUp className="mr-2 h-4 w-4" />
+                <div className="text-left">
+                  <div className="font-medium">Forecasts</div>
+                  <div className="text-xs text-muted-foreground">Outbreak probability</div>
+                </div>
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Top Row: 4 KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -323,9 +533,28 @@ export function OverviewData() {
                       </div>
                       <p className="text-xs text-muted-foreground">{rec.rationale}</p>
                     </div>
-                    <Button variant="ghost" size="sm">
-                      <Zap className="h-4 w-4" />
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              if (rec.cluster_id) {
+                                router.push(`/claims/${rec.cluster_id}`);
+                              } else if (rec.forecast_id) {
+                                router.push(`/forecasts?forecast=${rec.forecast_id}`);
+                              }
+                            }}
+                          >
+                            <Zap className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Execute action</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 ))}
               </div>
@@ -339,7 +568,7 @@ export function OverviewData() {
         </Card>
       </div>
 
-      {/* Bottom Row: Ops Feed + Active Incidents + Approvals */}
+      {/* Bottom Row: Ops Feed + Security Incidents + Approvals */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Ops Feed */}
         <Card className="lg:col-span-2">
@@ -352,6 +581,28 @@ export function OverviewData() {
           </CardContent>
         </Card>
 
+        {/* Security Incidents (SKU D) */}
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
+                  Security Incidents
+                </CardTitle>
+                <CardDescription>SKU D: Narrative Management</CardDescription>
+              </div>
+              <Badge variant="outline" className="text-xs">New</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <SecurityIncidentsWidget />
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Second Bottom Row: Approvals + Quick Links */}
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Approvals Pending */}
         <Card>
           <CardHeader>
@@ -371,6 +622,72 @@ export function OverviewData() {
                 No pending approvals
               </div>
             )}
+          </CardContent>
+        </Card>
+        
+        {/* Security Incidents Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Security Quick Actions
+            </CardTitle>
+            <CardDescription>SKU D features</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/security-incidents">
+                  <AlertTriangle className="mr-2 h-4 w-4" />
+                  View All Incidents
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/solutions/security-incidents">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Learn About SKU D
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/integrations">
+                  <Network className="mr-2 h-4 w-4" />
+                  Configure Webhooks
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* New Features Quick Links */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              New Features
+            </CardTitle>
+            <CardDescription>January 2026 updates</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/signals">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Signals Analytics
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/cases">
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Case Management
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/pos">
+                  <Network className="mr-2 h-4 w-4" />
+                  POS Dashboard
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

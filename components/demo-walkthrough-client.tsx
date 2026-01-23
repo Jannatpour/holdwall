@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, ArrowRight, Play, Pause, RotateCcw, ExternalLink, ChevronRight } from "lucide-react";
+import { CheckCircle2, Circle, ArrowRight, Play, Pause, RotateCcw, ExternalLink, ChevronRight, ChevronDown, HelpCircle, Clock, Sparkles, BookOpen, Zap, Target, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface DemoStep {
   id: string;
@@ -23,9 +25,17 @@ interface DemoStep {
   order: number;
 }
 
-// Complete list of ALL demo steps - NO MISSING SECTIONS
+interface SectionInfo {
+  name: string;
+  description: string;
+  icon: string;
+  estimatedTime: number;
+  importance: "essential" | "important" | "optional";
+}
+
+// Complete list of 52 categorized demo steps across 18 sections
 const DEMO_STEPS: DemoStep[] = [
-  // ========== SECTION 1: AUTHENTICATION & ONBOARDING ==========
+  // ========== CATEGORY 1: AUTHENTICATION & ONBOARDING ==========
   {
     id: "auth-signup",
     section: "Authentication & Onboarding",
@@ -51,11 +61,11 @@ const DEMO_STEPS: DemoStep[] = [
     id: "onboarding-sku",
     section: "Authentication & Onboarding",
     title: "SKU Selection",
-    description: "Choose your primary use case (SKU A, B, or C)",
+    description: "Choose your primary use case (SKU A, B, C, or D)",
     page: "Onboarding - SKU Selection",
     pageUrl: "/onboarding",
     actions: [
-      "Review SKU options (AI Answer Monitoring, Narrative Risk, Evidence Intake)",
+      "Review SKU options (AI Answer Monitoring, Narrative Risk, Evidence Intake, Security Incidents)",
       "Select appropriate SKU for your use case",
       "Click 'Continue'"
     ],
@@ -133,7 +143,7 @@ const DEMO_STEPS: DemoStep[] = [
     order: 5
   },
 
-  // ========== SECTION 2: OVERVIEW & DASHBOARD ==========
+  // ========== CATEGORY 2: OVERVIEW & DASHBOARD ==========
   {
     id: "overview-dashboard",
     section: "Overview & Dashboard",
@@ -182,7 +192,7 @@ const DEMO_STEPS: DemoStep[] = [
     order: 7
   },
 
-  // ========== SECTION 3: SIGNAL INGESTION & PROCESSING ==========
+  // ========== CATEGORY 3: SIGNAL INGESTION & PROCESSING ==========
   {
     id: "signals-overview",
     section: "Signal Ingestion & Processing",
@@ -252,7 +262,7 @@ const DEMO_STEPS: DemoStep[] = [
     order: 10
   },
 
-  // ========== SECTION 4: INTEGRATIONS & CONNECTORS ==========
+  // ========== CATEGORY 4: INTEGRATIONS & CONNECTORS ==========
   {
     id: "integrations-overview",
     section: "Integrations & Connectors",
@@ -323,7 +333,7 @@ const DEMO_STEPS: DemoStep[] = [
     order: 13
   },
 
-  // ========== SECTION 5: EVIDENCE VAULT & PROVENANCE ==========
+  // ========== CATEGORY 5: EVIDENCE VAULT & PROVENANCE ==========
   {
     id: "evidence-overview",
     section: "Evidence Vault & Provenance",
@@ -371,30 +381,30 @@ const DEMO_STEPS: DemoStep[] = [
     order: 15
   },
   {
-    id: "evidence-bundle",
+    id: "evidence-bundle-create",
     section: "Evidence Vault & Provenance",
     title: "Create Evidence Bundle",
-    description: "Create a Merkle bundle for legal case",
+    description: "Create a bundle of evidence items with Merkle tree",
     page: "Evidence Page",
     pageUrl: "/evidence",
     actions: [
       "Select multiple evidence items",
       "Click 'Create Bundle'",
-      "Fill in bundle details",
+      "Add bundle metadata",
       "Generate Merkle tree",
-      "View bundle with root hash"
+      "Save bundle"
     ],
     expectedResults: [
       "Bundle created successfully",
       "Merkle tree generated",
-      "Root hash displayed",
-      "Provenance chain complete"
+      "Bundle ID assigned",
+      "Ready for export"
     ],
     duration: 120,
     order: 16
   },
   {
-    id: "evidence-export",
+    id: "evidence-bundle-export",
     section: "Evidence Vault & Provenance",
     title: "Export Evidence Bundle",
     description: "Export bundle with C2PA manifest for legal use",
@@ -1263,15 +1273,151 @@ const DEMO_STEPS: DemoStep[] = [
   }
 ];
 
+// Section metadata for better user guidance
+const SECTION_INFO: Record<string, SectionInfo> = {
+  "Authentication & Onboarding": {
+    name: "Authentication & Onboarding",
+    description: "Get started with account creation, SKU selection, and initial setup",
+    icon: "🚀",
+    estimatedTime: 570, // 5 steps * ~114 seconds avg
+    importance: "essential"
+  },
+  "Overview & Dashboard": {
+    name: "Overview & Dashboard",
+    description: "Understand your narrative health and key metrics at a glance",
+    icon: "📊",
+    estimatedTime: 210,
+    importance: "essential"
+  },
+  "Signal Ingestion & Processing": {
+    name: "Signal Ingestion & Processing",
+    description: "Learn how to ingest and process signals from various sources",
+    icon: "📡",
+    estimatedTime: 300,
+    importance: "essential"
+  },
+  "Integrations & Connectors": {
+    name: "Integrations & Connectors",
+    description: "Connect data sources and manage integrations",
+    icon: "🔌",
+    estimatedTime: 390,
+    importance: "important"
+  },
+  "Evidence Vault & Provenance": {
+    name: "Evidence Vault & Provenance",
+    description: "Manage evidence with full provenance and chain of custody",
+    icon: "🔒",
+    estimatedTime: 390,
+    importance: "essential"
+  },
+  "Claim Extraction & Clustering": {
+    name: "Claim Extraction & Clustering",
+    description: "Extract and cluster claims from signals for analysis",
+    icon: "🎯",
+    estimatedTime: 300,
+    importance: "essential"
+  },
+  "Belief Graph Engineering": {
+    name: "Belief Graph Engineering",
+    description: "Explore narrative connections and neutralize weak nodes",
+    icon: "🕸️",
+    estimatedTime: 330,
+    importance: "important"
+  },
+  "Narrative Outbreak Forecasting": {
+    name: "Narrative Outbreak Forecasting",
+    description: "Forecast narrative outbreaks using advanced models",
+    icon: "📈",
+    estimatedTime: 330,
+    importance: "important"
+  },
+  "AI Answer Authority Layer (AAAL)": {
+    name: "AI Answer Authority Layer (AAAL)",
+    description: "Create AI-citable artifacts and rebuttals",
+    icon: "🤖",
+    estimatedTime: 390,
+    importance: "essential"
+  },
+  "Governance & Approvals": {
+    name: "Governance & Approvals",
+    description: "Manage approvals, audits, and compliance workflows",
+    icon: "✅",
+    estimatedTime: 300,
+    importance: "important"
+  },
+  "Publishing & Distribution (PADL)": {
+    name: "Publishing & Distribution (PADL)",
+    description: "Publish artifacts to multiple channels with structured data",
+    icon: "📤",
+    estimatedTime: 210,
+    importance: "essential"
+  },
+  "POS Components": {
+    name: "POS Components",
+    description: "Explore all Perception Operating System components",
+    icon: "⚙️",
+    estimatedTime: 450,
+    importance: "important"
+  },
+  "Trust Assets": {
+    name: "Trust Assets",
+    description: "Manage trust assets and identify trust gaps",
+    icon: "🛡️",
+    estimatedTime: 360,
+    importance: "important"
+  },
+  "Funnel Map": {
+    name: "Funnel Map",
+    description: "Visualize and control customer decision funnels",
+    icon: "🗺️",
+    estimatedTime: 210,
+    importance: "optional"
+  },
+  "Playbooks": {
+    name: "Playbooks",
+    description: "Create and execute automated response playbooks",
+    icon: "📋",
+    estimatedTime: 390,
+    importance: "important"
+  },
+  "AI Answer Monitor": {
+    name: "AI Answer Monitor",
+    description: "Monitor how AI systems cite your content",
+    icon: "👁️",
+    estimatedTime: 300,
+    importance: "important"
+  },
+  "Financial Services": {
+    name: "Financial Services",
+    description: "Financial services-specific features and workflows",
+    icon: "💳",
+    estimatedTime: 360,
+    importance: "optional"
+  },
+  "Metering": {
+    name: "Metering",
+    description: "Monitor usage, billing, and resource consumption",
+    icon: "📊",
+    estimatedTime: 90,
+    importance: "optional"
+  }
+};
+
 export function DemoWalkthroughClient() {
   const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentSection, setCurrentSection] = useState<string>("");
-  const [autoAdvanceTimer, setAutoAdvanceTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showWelcome, setShowWelcome] = useState(() => {
+    if (typeof window !== "undefined") {
+      return !localStorage.getItem("demo-welcome-dismissed");
+    }
+    return true;
+  });
+  const [tourMode, setTourMode] = useState<"guided" | "explore" | null>(null);
+  const [showCompletion, setShowCompletion] = useState(false);
 
-  const currentStep = DEMO_STEPS[currentStepIndex];
+  const currentStep = DEMO_STEPS[currentStepIndex] || DEMO_STEPS[0];
   const progress = ((currentStepIndex + 1) / DEMO_STEPS.length) * 100;
   const sections = Array.from(new Set(DEMO_STEPS.map(s => s.section)));
 
@@ -1281,21 +1427,59 @@ export function DemoWalkthroughClient() {
     return acc;
   }, {} as Record<string, DemoStep[]>);
 
-  useEffect(() => {
-    if (currentStep) {
-      setCurrentSection(currentStep.section);
-    }
-  }, [currentStep]);
+  // Initialize all sections as expanded by default
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set(sections));
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(section)) {
+        next.delete(section);
+      } else {
+        next.add(section);
+      }
+      return next;
+    });
+  };
+
+  const handleNext = useCallback(() => {
+    setCurrentStepIndex(prev => {
+      if (prev < DEMO_STEPS.length - 1) {
+        return prev + 1;
+      } else {
+        setIsPlaying(false);
+        return prev;
+      }
+    });
+  }, []);
+
+  const handlePrevious = useCallback(() => {
+    setCurrentStepIndex(prev => prev > 0 ? prev - 1 : prev);
+  }, []);
+
+  const handlePlayPause = useCallback(() => {
+    setIsPlaying(prev => !prev);
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setCurrentStepIndex(0);
+    setCompletedSteps(new Set());
+    setIsPlaying(false);
+  }, []);
+
+  const handleComplete = (stepId: string) => {
+    setCompletedSteps(prev => new Set([...prev, stepId]));
+    handleNext();
+  };
 
   useEffect(() => {
     if (isPlaying && currentStep) {
       const timer = setTimeout(() => {
         handleNext();
       }, currentStep.duration * 1000);
-      setAutoAdvanceTimer(timer);
       return () => clearTimeout(timer);
     }
-  }, [isPlaying, currentStepIndex]);
+  }, [isPlaying, currentStepIndex, currentStep]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -1334,36 +1518,7 @@ export function DemoWalkthroughClient() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentStepIndex, isPlaying]);
-
-  const handleNext = () => {
-    if (currentStepIndex < DEMO_STEPS.length - 1) {
-      setCurrentStepIndex(currentStepIndex + 1);
-    } else {
-      setIsPlaying(false);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStepIndex > 0) {
-      setCurrentStepIndex(currentStepIndex - 1);
-    }
-  };
-
-  const handleComplete = (stepId: string) => {
-    setCompletedSteps(prev => new Set([...prev, stepId]));
-    handleNext();
-  };
-
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleReset = () => {
-    setCurrentStepIndex(0);
-    setCompletedSteps(new Set());
-    setIsPlaying(false);
-  };
+  }, [currentStepIndex, isPlaying, handleNext, handlePrevious, handlePlayPause, handleReset]);
 
   const handleNavigateToPage = () => {
     if (currentStep) {
@@ -1382,6 +1537,59 @@ export function DemoWalkthroughClient() {
     return (completed / sectionSteps.length) * 100;
   };
 
+  // Calculate estimated time remaining
+  const getEstimatedTimeRemaining = () => {
+    const remainingSteps = DEMO_STEPS.slice(currentStepIndex);
+    const totalSeconds = remainingSteps.reduce((sum, step) => sum + step.duration, 0);
+    const minutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${remainingMinutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
+  // Get next step preview
+  const nextStep = currentStepIndex < DEMO_STEPS.length - 1 ? DEMO_STEPS[currentStepIndex + 1] : null;
+  
+  // Get current section info
+  const currentSectionInfo = SECTION_INFO[currentStep.section];
+
+  // Handle welcome dialog actions
+  const handleStartGuidedTour = () => {
+    setTourMode("guided");
+    setShowWelcome(false);
+    setIsPlaying(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("demo-welcome-dismissed", "true");
+    }
+  };
+
+  const handleStartExplore = () => {
+    setTourMode("explore");
+    setShowWelcome(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("demo-welcome-dismissed", "true");
+    }
+  };
+
+  const handleSkipWelcome = () => {
+    setShowWelcome(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("demo-welcome-dismissed", "true");
+    }
+  };
+
+  // Check for completion
+  useEffect(() => {
+    if (completedSteps.size === DEMO_STEPS.length && DEMO_STEPS.length > 0) {
+      setShowCompletion(true);
+      setIsPlaying(false);
+    }
+  }, [completedSteps.size]);
+
   if (!currentStep) {
     return (
       <div className="space-y-6">
@@ -1392,54 +1600,237 @@ export function DemoWalkthroughClient() {
     );
   }
 
+  const totalEstimatedTime = Math.floor(DEMO_STEPS.reduce((sum, step) => sum + step.duration, 0) / 60);
+
   return (
-    <div className="space-y-6">
-      {/* Controls */}
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleReset}
-        >
-          <RotateCcw className="h-4 w-4 mr-2" />
-          Reset
-        </Button>
-        <Button
-          variant={isPlaying ? "secondary" : "default"}
-          size="sm"
-          onClick={handlePlayPause}
-        >
-          {isPlaying ? (
-            <>
-              <Pause className="h-4 w-4 mr-2" />
-              Pause
-            </>
-          ) : (
-            <>
-              <Play className="h-4 w-4 mr-2" />
-              Auto-Play
-            </>
-          )}
-        </Button>
+    <>
+      {/* Completion Celebration */}
+      <Dialog open={showCompletion} onOpenChange={setShowCompletion}>
+        <DialogContent className="max-w-md" showCloseButton={false}>
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded-full">
+                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl">Congratulations! 🎉</DialogTitle>
+            <DialogDescription className="text-center text-base pt-2">
+              You've completed all <strong>52 steps</strong> across <strong>18 categories</strong>!
+              <br />
+              You now have a complete understanding of the Holdwall POS platform.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setShowCompletion(false)} className="w-full sm:w-auto">
+              Close
+            </Button>
+            <Button onClick={() => {
+              setShowCompletion(false);
+              handleReset();
+            }} className="w-full sm:w-auto">
+              Start Over
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Welcome Dialog */}
+      <Dialog open={showWelcome} onOpenChange={(open) => {
+        setShowWelcome(open);
+        if (!open && typeof window !== "undefined") {
+          localStorage.setItem("demo-welcome-dismissed", "true");
+        }
+      }}>
+        <DialogContent className="max-w-2xl" showCloseButton={false}>
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Sparkles className="h-6 w-6 text-primary" />
+              </div>
+              <DialogTitle className="text-2xl">Welcome to Holdwall POS Demo</DialogTitle>
+            </div>
+            <DialogDescription className="text-base pt-2">
+              Experience the complete platform with <strong>52 comprehensive steps</strong> organized into <strong>18 categories</strong>. 
+              Choose how you'd like to explore:
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Guided Tour Option */}
+              <Card className="border-2 border-primary/20 hover:border-primary transition-all duration-300 cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                    onClick={handleStartGuidedTour}>
+                <CardHeader>
+                  <div className="flex items-center gap-2 mb-2">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-lg">Guided Tour</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Auto-play through all steps with automatic progression. Perfect for a complete overview.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    <span>~{totalEstimatedTime} minutes total</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Explore Option */}
+              <Card className="border-2 hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                    onClick={handleStartExplore}>
+                <CardHeader>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="h-5 w-5 text-blue-500" />
+                    <CardTitle className="text-lg">Explore on Your Own</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Navigate at your own pace. Jump to any category or step. Perfect for focused learning.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Target className="h-4 w-4" />
+                    <span>Jump to any section</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Complete Coverage:</strong> All 52 steps ensure nothing is missed. You can always switch between modes, 
+                skip steps, or jump to specific sections using the sidebar.
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={handleSkipWelcome} className="w-full sm:w-auto">
+              Skip Introduction
+            </Button>
+            <Button onClick={handleStartExplore} className="w-full sm:w-auto">
+              Start Exploring
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <div className="space-y-6">
+      {/* Header with Controls and Info */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-lg font-semibold">Interactive Platform Demo</h2>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">
+                    Complete walkthrough of all 52 steps across 18 categories. 
+                    Use auto-play for guided tour or explore at your own pace.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              <span>~{getEstimatedTimeRemaining()} remaining</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <span>{completedSteps.size} completed</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Reset progress and start from beginning</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button
+            variant={isPlaying ? "secondary" : "default"}
+            size="sm"
+            onClick={handlePlayPause}
+          >
+            {isPlaying ? (
+              <>
+                <Pause className="h-4 w-4 mr-2" />
+                Pause
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4 mr-2" />
+                Auto-Play
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-medium">
-            Step {currentStepIndex + 1} of {DEMO_STEPS.length} • {currentStep.section}
-          </span>
-          <span className="text-muted-foreground">
-            {Math.round(progress)}% Complete
-          </span>
-        </div>
-        <Progress value={progress} className="h-2" />
-      </div>
+      {/* Enhanced Progress Bar */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-3">
+                <span className="font-medium">
+                  Step {currentStepIndex + 1} of {DEMO_STEPS.length}
+                </span>
+                <Badge variant="outline" className="text-xs">
+                  {currentStep.section}
+                </Badge>
+                {currentSectionInfo && (
+                  <span className="text-lg">{currentSectionInfo.icon}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">
+                  {Math.round(progress)}% Complete
+                </span>
+              </div>
+            </div>
+            <Progress value={progress} className="h-3" />
+            {currentSectionInfo && (
+              <p className="text-xs text-muted-foreground">
+                {currentSectionInfo.description}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Current Step - Matching platform card style */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border-2 border-primary">
+          {/* Next Step Preview */}
+          {nextStep && (
+            <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
+              <ArrowRight className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-sm">
+                <strong>Next:</strong> {nextStep.title} ({nextStep.section})
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <Card className="border-2 border-primary shadow-lg transition-all duration-200 hover:shadow-xl">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -1502,11 +1893,25 @@ export function DemoWalkthroughClient() {
                 </ul>
               </div>
 
-              {/* Duration */}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>Estimated duration: {currentStep.duration} seconds</span>
-                {isPlaying && (
-                  <span>• Auto-advancing in {currentStep.duration}s</span>
+              {/* Duration and Tips */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>Estimated duration: {currentStep.duration} seconds</span>
+                  {isPlaying && (
+                    <>
+                      <span>•</span>
+                      <span className="text-primary font-medium">Auto-advancing in {currentStep.duration}s</span>
+                    </>
+                  )}
+                </div>
+                {currentSectionInfo && currentSectionInfo.importance === "essential" && (
+                  <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+                    <Info className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-xs">
+                      <strong>Essential Step:</strong> This is a core feature that's important to understand.
+                    </AlertDescription>
+                  </Alert>
                 )}
               </div>
 
@@ -1551,70 +1956,149 @@ export function DemoWalkthroughClient() {
           {/* Section Progress */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Sections Progress</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Sections Progress
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Track your progress across all categories
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {sections.map((section) => {
                 const sectionProgress = getSectionProgress(section);
                 const sectionSteps = stepsBySection[section];
                 const isCurrent = currentStep.section === section;
+                const sectionInfo = SECTION_INFO[section];
+                const completedCount = sectionSteps.filter(s => completedSteps.has(s.id)).length;
+                const isComplete = completedCount === sectionSteps.length;
+                
                 return (
                   <div
                     key={section}
-                    className={`p-3 rounded-lg border transition-colors ${
-                      isCurrent ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"
+                    className={`p-3 rounded-lg border transition-all ${
+                      isCurrent 
+                        ? "border-primary bg-primary/5 shadow-sm" 
+                        : isComplete
+                        ? "border-green-200 bg-green-50 dark:bg-green-950/20"
+                        : "border-border hover:bg-muted/50"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">{section}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {sectionSteps.filter(s => completedSteps.has(s.id)).length}/
-                        {sectionSteps.length}
-                      </span>
+                    <div className="flex items-start justify-between mb-2 gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {sectionInfo && <span className="text-base">{sectionInfo.icon}</span>}
+                          <span className="text-sm font-medium truncate">{section}</span>
+                          {isComplete && (
+                            <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          )}
+                        </div>
+                        {sectionInfo && (
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {sectionInfo.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-medium">
+                          {completedCount}/{sectionSteps.length}
+                        </span>
+                        {sectionInfo && (
+                          <span className="text-xs text-muted-foreground">
+                            ~{Math.floor(sectionInfo.estimatedTime / 60)}m
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <Progress value={sectionProgress} className="h-1.5" />
+                    <Progress 
+                      value={sectionProgress} 
+                      className={`h-1.5 ${isComplete ? "bg-green-200" : ""}`}
+                    />
                   </div>
                 );
               })}
             </CardContent>
           </Card>
 
-          {/* Step Navigation */}
+          {/* Step Navigation - Click to jump to any step with collapsible categories */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">All Steps</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                All Steps by Category
+              </CardTitle>
               <CardDescription className="text-sm">
-                Click to jump to any step
+                <span className="font-medium">52 steps</span> organized into <span className="font-medium">18 categories</span>
+                <br />
+                Click categories to expand/collapse • Click steps to jump
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-1 max-h-[600px] overflow-y-auto">
-                {DEMO_STEPS.map((step, index) => {
-                  const isCurrent = index === currentStepIndex;
-                  const isCompleted = completedSteps.has(step.id);
+                {sections.map((section) => {
+                  const sectionSteps = stepsBySection[section];
+                  const isExpanded = expandedSections.has(section);
+                  const isCurrentSection = currentStep.section === section;
+                  const completedCount = sectionSteps.filter(s => completedSteps.has(s.id)).length;
+                  
                   return (
-                    <button
-                      key={step.id}
-                      onClick={() => handleJumpToStep(index)}
-                      className={`w-full text-left p-2 rounded text-sm transition-colors ${
-                        isCurrent
-                          ? "bg-primary text-primary-foreground"
-                          : isCompleted
-                          ? "bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-950/30"
-                          : "hover:bg-muted"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {isCompleted ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        ) : (
-                          <Circle className="h-4 w-4 flex-shrink-0" />
-                        )}
-                        <span className="truncate">
-                          {step.order}. {step.title}
-                        </span>
-                      </div>
-                    </button>
+                    <div key={section} className="space-y-1">
+                      <button
+                        onClick={() => toggleSection(section)}
+                        className={`w-full flex items-center justify-between px-2 py-2 rounded text-sm font-semibold transition-all duration-200 ${
+                          isCurrentSection
+                            ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
+                            : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground hover:shadow-sm"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                          )}
+                          <span className="truncate text-xs uppercase tracking-wide">
+                            {section}
+                          </span>
+                          <Badge variant="secondary" className="ml-auto text-xs">
+                            {completedCount}/{sectionSteps.length}
+                          </Badge>
+                        </div>
+                      </button>
+                      {isExpanded && (
+                        <div className="ml-4 space-y-0.5 border-l-2 border-muted pl-2">
+                          {sectionSteps.map((step) => {
+                            const stepIndex = DEMO_STEPS.findIndex(s => s.id === step.id);
+                            const isCurrent = stepIndex === currentStepIndex;
+                            const isCompleted = completedSteps.has(step.id);
+                            return (
+                          <button
+                            key={step.id}
+                            onClick={() => handleJumpToStep(stepIndex)}
+                            className={`w-full text-left p-2 rounded text-sm transition-all duration-200 ${
+                              isCurrent
+                                ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                                : isCompleted
+                                ? "bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-950/30 hover:shadow-sm"
+                                : "hover:bg-muted hover:shadow-sm"
+                            }`}
+                          >
+                                <div className="flex items-center gap-2">
+                                  {isCompleted ? (
+                                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                  ) : (
+                                    <Circle className={`h-4 w-4 flex-shrink-0 ${isCurrent ? "text-primary-foreground" : "text-muted-foreground"}`} />
+                                  )}
+                                  <span className="truncate">
+                                    {step.order}. {step.title}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -1622,6 +2106,7 @@ export function DemoWalkthroughClient() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

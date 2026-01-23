@@ -170,6 +170,12 @@ export interface ACPClient {
     options?: {
       correlation_id?: string;
       causation_id?: string;
+      /** Explicit tenant context for the envelope (required in production flows). */
+      tenant_id?: string;
+      /** Explicit actor context for the envelope (required in production flows). */
+      actor_id?: string;
+      /** Optional additional metadata to attach to the envelope. */
+      metadata?: Record<string, unknown>;
     }
   ): Promise<string>; // Returns message_id
 

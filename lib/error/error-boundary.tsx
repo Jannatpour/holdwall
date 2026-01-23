@@ -48,8 +48,24 @@ export class ErrorBoundary extends Component<Props, State> {
       errorInfo,
     });
 
-    // Log error
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    // Log error using structured logger if available
+    if (typeof window !== "undefined") {
+      // Import logger dynamically to avoid SSR issues
+      import("@/lib/logging/logger").then(({ logger }) => {
+        logger.error("ErrorBoundary caught an error", {
+          error: error.message,
+          stack: error.stack,
+          componentStack: errorInfo.componentStack,
+          errorName: error.name,
+        });
+      }).catch(() => {
+        // Fallback to console if logger import fails
+        console.error("ErrorBoundary caught an error:", error, errorInfo);
+      });
+    } else {
+      // Server-side fallback
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
+    }
 
     // Check if it's a ChunkLoadError
     const isChunkLoadError = 
@@ -59,13 +75,23 @@ export class ErrorBoundary extends Component<Props, State> {
       error.message.includes("turbopack");
 
     if (isChunkLoadError && typeof window !== "undefined") {
-      console.warn(
+      const warningMessage =
         "ChunkLoadError detected. This usually means:\n" +
         "1. The service worker is caching stale chunks\n" +
         "2. The .next directory needs to be cleared\n" +
         "3. Browser cache needs to be cleared\n\n" +
-        "Try: Unregister service worker, clear cache, and reload."
-      );
+        "Try: Unregister service worker, clear cache, and reload.";
+
+      // Log using structured logger if available
+      import("@/lib/logging/logger").then(({ logger }) => {
+        logger.warn("ChunkLoadError detected", {
+          error: error.message,
+          stack: error.stack,
+          componentStack: errorInfo.componentStack,
+        });
+      }).catch(() => {
+        console.warn(warningMessage);
+      });
     }
 
     // Report to error tracking service

@@ -6,6 +6,7 @@
  */
 
 export interface SocialPublishOptions {
+  tenantId?: string; // Optional for backward compatibility
   platforms: Array<"twitter" | "linkedin" | "facebook">;
   content: string;
   link?: string;

@@ -19,6 +19,7 @@ import {
   Shield,
   Users,
   MessageSquare,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -135,15 +136,15 @@ export function FinancialServicesExplanationsGenerator() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Generate Evidence-Backed Explanations
+          <CardTitle className="flex items-center gap-2 text-2xl">
+            <Sparkles className="h-6 w-6 text-primary" />
+            AI-Powered Explanation Generator
           </CardTitle>
-          <CardDescription>
-            Create public explanations, internal risk briefs, and support playbooks from narrative
-            clusters
+          <CardDescription className="text-base">
+            Transform narrative clusters into comprehensive evidence-backed explanations: public-facing responses, 
+            internal risk briefs, support playbooks, and regulatory-ready audit bundles
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

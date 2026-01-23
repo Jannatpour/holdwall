@@ -25,6 +25,9 @@ jest.mock("@/lib/db/client", () => ({
     claim: {
       findMany: jest.fn(),
     },
+    evidence: {
+      findMany: jest.fn(),
+    },
     event: {
       create: jest.fn(),
     },
@@ -84,6 +87,13 @@ describe("Claims API", () => {
   describe("POST /api/claims", () => {
     it("should extract claims from evidence", async () => {
       const { POST } = require("@/app/api/claims/route");
+      const { db } = require("@/lib/db/client");
+      
+      // Mock evidence validation
+      db.evidence.findMany.mockResolvedValue([
+        { id: "ev-123", tenantId: "tenant-123" },
+      ]);
+      
       mockExtractClaims.mockResolvedValue([
         {
           claim_id: "claim-new",

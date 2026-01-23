@@ -39,6 +39,10 @@ export const sortSchema = z.object({
 
 // Date range
 export const dateRangeSchema = z.object({
-  start: z.string().datetime(),
-  end: z.string().datetime(),
+  start: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Invalid datetime format",
+  }),
+  end: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Invalid datetime format",
+  }),
 });

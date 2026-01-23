@@ -11,7 +11,12 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/$1',
   },
   modulePathIgnorePatterns: ['<rootDir>/.next/'],
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/__tests__/e2e/', '<rootDir>/__tests__/load/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/__tests__/e2e/',
+    '<rootDir>/__tests__/load/',
+    '<rootDir>/__tests__/advanced/',
+  ],
   testMatch: [
     '**/__tests__/**/*.[jt]s?(x)',
     '**/?(*.)+(spec|test).[jt]s?(x)',

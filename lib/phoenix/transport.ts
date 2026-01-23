@@ -553,7 +553,7 @@ export class GatewayTransport implements ACPTransport {
       this.ws.send(JSON.stringify(envelope));
     } else if (this.protocol === "http") {
       // HTTP POST to gateway
-      const response = await fetch(`${this.gatewayUrl}/acp/messages`, {
+      const response = await fetch(`${this.gatewayUrl}/api/acp/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(envelope),
@@ -579,11 +579,11 @@ export class GatewayTransport implements ACPTransport {
     // For HTTP, use polling or SSE
     if (this.protocol === "http") {
       // Use Server-Sent Events if available
-      const eventSource = new EventSource(`${this.gatewayUrl}/acp/messages/stream`);
-      
-      eventSource.onmessage = async (event) => {
+      const eventSource = new EventSource(`${this.gatewayUrl}/api/acp/messages/stream`);
+
+      const onEnvelope = async (raw: string) => {
         try {
-          const envelope: ACPMessageEnvelope = JSON.parse(event.data);
+          const envelope: ACPMessageEnvelope = JSON.parse(raw);
           await handler(envelope);
         } catch (error) {
           logger.error("Error handling gateway SSE message", {
@@ -592,6 +592,13 @@ export class GatewayTransport implements ACPTransport {
             gatewayUrl: this.gatewayUrl,
           });
         }
+      };
+
+      eventSource.addEventListener("acp.message", async (event: MessageEvent) => {
+        await onEnvelope(event.data);
+      });
+      eventSource.onmessage = async (event) => {
+        await onEnvelope(event.data);
       };
 
       eventSource.onerror = (error) => {

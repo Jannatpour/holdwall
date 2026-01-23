@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ExternalLink, AlertTriangle, Shield } from "lucide-react";
+import { ExternalLink, AlertTriangle, Shield, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
 interface NarrativeCluster {
@@ -63,8 +63,11 @@ export function FinancialServicesNarrativeClusters() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Financial Narrative Clusters</CardTitle>
-          <CardDescription>Loading clusters...</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Financial Narrative Intelligence
+          </CardTitle>
+          <CardDescription className="text-base">Analyzing narrative clusters...</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -79,8 +82,11 @@ export function FinancialServicesNarrativeClusters() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Financial Narrative Clusters</CardTitle>
-          <CardDescription>Error loading clusters</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Financial Narrative Intelligence
+          </CardTitle>
+          <CardDescription className="text-base">Error loading narrative clusters</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-destructive">{error}</div>
@@ -103,10 +109,12 @@ export function FinancialServicesNarrativeClusters() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Financial Narrative Clusters</CardTitle>
-        <CardDescription>
-          Top narrative clusters categorized by financial services risk type with escalation
-          routing
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          Financial Narrative Intelligence
+        </CardTitle>
+        <CardDescription className="text-base">
+          Critical narrative clusters categorized by financial services risk type with automated escalation routing and severity assessment
         </CardDescription>
       </CardHeader>
       <CardContent>

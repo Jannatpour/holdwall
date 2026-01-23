@@ -495,43 +495,6 @@ export function SignalsData({ tabFilter = "all" }: SignalsDataProps = {}) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-32 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <ErrorState
-        error={error}
-        onRetry={() => {
-          setLoading(true);
-          setError(null);
-        }}
-        title="Failed to load signals"
-        description="Unable to fetch signals. Please try again."
-      />
-    );
-  }
-
-  if (signals.length === 0) {
-    return (
-      <EmptyState
-        title="No signals found"
-        description="Connect sources to start ingesting signals"
-        action={{
-          label: "Go to Sources",
-          onClick: () => router.push("/governance/sources"),
-        }}
-      />
-    );
-  }
-
   const evidenceFilter = searchParams.get("evidence");
   const authorFilter = searchParams.get("author");
 
@@ -739,6 +702,43 @@ export function SignalsData({ tabFilter = "all" }: SignalsDataProps = {}) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedSignals, paginatedSignals, totalPages]);
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-32 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        error={error}
+        onRetry={() => {
+          setLoading(true);
+          setError(null);
+        }}
+        title="Failed to load signals"
+        description="Unable to fetch signals. Please try again."
+      />
+    );
+  }
+
+  if (signals.length === 0) {
+    return (
+      <EmptyState
+        title="No signals found"
+        description="Connect sources to start ingesting signals"
+        action={{
+          label: "Go to Sources",
+          onClick: () => router.push("/governance/sources"),
+        }}
+      />
+    );
+  }
 
   if (sortedSignals.length === 0) {
     return (

@@ -2,8 +2,14 @@
  * Approval Gateway
  * 
  * Human-gated approval system for autonomous operations.
- * Routes critical actions through approval workflows.
+ * Routes critical actions through approval workflows with multi-step support,
+ * break-glass procedures, and workspace scoping.
  */
+
+import { db } from "@/lib/db/client";
+import { logger } from "@/lib/logging/logger";
+import { DatabaseAuditLog } from "@/lib/audit/log-db";
+import { randomUUID } from "crypto";
 
 export interface ApprovalRequest {
   resourceType: string;
@@ -13,6 +19,8 @@ export interface ApprovalRequest {
   context?: Record<string, unknown>;
   priority?: "low" | "medium" | "high" | "critical";
   requesterId?: string;
+  workspaceId?: string;
+  workflowId?: string;
 }
 
 export interface Approval {
@@ -40,9 +48,10 @@ export interface ApprovalPolicy {
 
 export class ApprovalGateway {
   private policies: Map<string, ApprovalPolicy> = new Map();
-  private pendingApprovals: Map<string, Approval> = new Map();
+  private auditLog: DatabaseAuditLog;
 
   constructor() {
+    this.auditLog = new DatabaseAuditLog();
     this.createDefaultPolicies();
   }
 
@@ -93,60 +102,184 @@ export class ApprovalGateway {
   }
 
   /**
-   * Request approval
+   * Request approval with multi-step workflow support
    */
-  async requestApproval(request: ApprovalRequest): Promise<Approval> {
-    // Check if approval is required
-    const policy = this.getPolicy(request.resourceType, request.action);
+  async requestApproval(
+    request: ApprovalRequest,
+    tenantId: string
+  ): Promise<Approval> {
+    try {
+      // Check if approval is required
+      const policy = this.getPolicy(request.resourceType, request.action);
 
-    if (!policy || !policy.requiresApproval) {
-      // Check auto-approve conditions
-      if (policy?.autoApproveConditions) {
-        const canAutoApprove = await this.checkAutoApproveConditions(
-          request,
-          policy.autoApproveConditions
-        );
-
-        if (canAutoApprove) {
-          return {
-            id: crypto.randomUUID(),
+      if (!policy || !policy.requiresApproval) {
+        // Check auto-approve conditions
+        if (policy?.autoApproveConditions) {
+          const canAutoApprove = await this.checkAutoApproveConditions(
             request,
-            status: "approved",
-            decision: "approved",
-            createdAt: new Date().toISOString(),
-            decidedAt: new Date().toISOString(),
-          };
+            policy.autoApproveConditions
+          );
+
+          if (canAutoApprove) {
+            // Create auto-approved approval record
+            const approval = await db.approval.create({
+              data: {
+                tenantId,
+                workspaceId: request.workspaceId || undefined,
+                resourceType: request.resourceType,
+                resourceId: request.resourceId,
+                action: request.action,
+                requesterId: request.requesterId || "system",
+                approvers: [],
+                decision: "APPROVED",
+                approverId: "system",
+                reason: "Auto-approved based on policy",
+                currentStep: 0,
+                totalSteps: 1,
+                decidedAt: new Date(),
+              },
+            });
+
+            return this.mapToApproval(approval);
+          }
+        } else {
+          // No policy means auto-approve
+          const approval = await db.approval.create({
+            data: {
+              tenantId,
+              workspaceId: request.workspaceId || undefined,
+              resourceType: request.resourceType,
+              resourceId: request.resourceId,
+              action: request.action,
+              requesterId: request.requesterId || "system",
+              approvers: [],
+              decision: "APPROVED",
+              approverId: "system",
+              reason: "No approval required",
+              currentStep: 0,
+              totalSteps: 1,
+              decidedAt: new Date(),
+            },
+          });
+
+          return this.mapToApproval(approval);
+        }
+      }
+
+      // Get workflow or create default
+      let workflowId: string | undefined;
+      let totalSteps = 1;
+      let approvers: string[] = policy.approvers || [];
+
+      if (request.workflowId) {
+        workflowId = request.workflowId;
+        const workflow = await db.approvalWorkflow.findUnique({
+          where: { id: request.workflowId },
+        });
+        if (workflow) {
+          const steps = (workflow.steps as any[]) || [];
+          totalSteps = steps.length;
+          approvers = steps.map((s) => s.approverId || s.approverRole || "").filter(Boolean);
         }
       } else {
-        // No policy means auto-approve
-        return {
-          id: crypto.randomUUID(),
-          request,
-          status: "approved",
-          decision: "approved",
-          createdAt: new Date().toISOString(),
-          decidedAt: new Date().toISOString(),
-        };
+        // Create default single-step workflow
+        approvers = policy.approvers || await this.getDefaultApprovers(tenantId, request.workspaceId);
       }
+
+      // Create approval
+      const approval = await db.approval.create({
+        data: {
+          tenantId,
+          workspaceId: request.workspaceId || undefined,
+          resourceType: request.resourceType,
+          resourceId: request.resourceId,
+          action: request.action,
+          requesterId: request.requesterId || "system",
+          approvers,
+          workflowId: workflowId || undefined,
+          currentStep: 0,
+          totalSteps,
+        },
+      });
+
+      // Create approval steps if multi-step
+      if (totalSteps > 1 && request.workflowId) {
+        const workflow = await db.approvalWorkflow.findUnique({
+          where: { id: request.workflowId },
+        });
+        if (workflow) {
+          const steps = (workflow.steps as any[]) || [];
+          for (let i = 0; i < steps.length; i++) {
+            await db.approvalStep.create({
+              data: {
+                approvalId: approval.id,
+                stepNumber: i + 1,
+                approverId: steps[i].approverId || "",
+                approverRole: steps[i].approverRole || undefined,
+                status: i === 0 ? "PENDING" : "PENDING",
+              },
+            });
+          }
+        }
+      } else {
+        // Single-step approval
+        await db.approvalStep.create({
+          data: {
+            approvalId: approval.id,
+            stepNumber: 1,
+            approverId: approvers[0] || "",
+            status: "PENDING",
+          },
+        });
+      }
+
+      // Audit log
+      await this.auditLog.append({
+        audit_id: randomUUID(),
+        tenant_id: tenantId,
+        actor_id: request.requesterId || "system",
+        type: "event",
+        timestamp: new Date().toISOString(),
+        correlation_id: randomUUID(),
+        data: {
+          event_id: randomUUID(),
+          tenant_id: tenantId,
+          actor_id: request.requesterId || "system",
+          type: "approval.requested",
+          occurred_at: new Date().toISOString(),
+          correlation_id: randomUUID(),
+          schema_version: "1.0",
+          evidence_refs: [],
+          payload: {
+            approval_id: approval.id,
+            resource_type: request.resourceType,
+            resource_id: request.resourceId,
+            action: request.action,
+            total_steps: totalSteps,
+          },
+          signatures: [],
+        } as any,
+        evidence_refs: [],
+      });
+
+      logger.info("Approval requested", {
+        approval_id: approval.id,
+        resource_type: request.resourceType,
+        resource_id: request.resourceId,
+        tenant_id: tenantId,
+        total_steps: totalSteps,
+      });
+
+      return this.mapToApproval(approval);
+    } catch (error) {
+      logger.error("Failed to request approval", {
+        error: error instanceof Error ? error.message : String(error),
+        resource_type: request.resourceType,
+        resource_id: request.resourceId,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
     }
-
-    // Create pending approval
-    const approval: Approval = {
-      id: crypto.randomUUID(),
-      request,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
-
-    this.pendingApprovals.set(approval.id, approval);
-
-    // In production, would:
-    // 1. Notify approvers
-    // 2. Create approval task
-    // 3. Wait for decision
-
-    // For now, return pending approval
-    return approval;
   }
 
   /**
@@ -195,67 +328,452 @@ export class ApprovalGateway {
   }
 
   /**
-   * Approve pending approval
+   * Approve step in multi-step workflow
    */
-  async approve(approvalId: string, approverId: string, reason?: string): Promise<Approval> {
-    const approval = this.pendingApprovals.get(approvalId);
-    
-    if (!approval) {
-      throw new Error(`Approval ${approvalId} not found`);
+  async approveStep(
+    approvalId: string,
+    stepNumber: number,
+    approverId: string,
+    tenantId: string,
+    reason?: string
+  ): Promise<Approval> {
+    try {
+      const approval = await db.approval.findUnique({
+        where: { id: approvalId },
+        include: { steps: { orderBy: { stepNumber: "asc" } } },
+      });
+
+      if (!approval || approval.tenantId !== tenantId) {
+        throw new Error("Approval not found or tenant mismatch");
+      }
+
+      // Find step
+      const step = approval.steps.find((s) => s.stepNumber === stepNumber);
+      if (!step) {
+        throw new Error(`Step ${stepNumber} not found`);
+      }
+
+      if (step.status !== "PENDING") {
+        throw new Error(`Step ${stepNumber} is not pending`);
+      }
+
+      // Update step
+      await db.approvalStep.update({
+        where: { id: step.id },
+        data: {
+          status: "APPROVED",
+          decision: "APPROVED",
+          reason: reason || undefined,
+          decidedAt: new Date(),
+        },
+      });
+
+      // Check if all steps approved
+      const allSteps = approval.steps;
+      const allApproved = allSteps.every((s) => s.status === "APPROVED" || s.status === "SKIPPED");
+
+      if (allApproved) {
+        // Final approval
+        await db.approval.update({
+          where: { id: approvalId },
+          data: {
+            decision: "APPROVED",
+            approverId,
+            reason: reason || undefined,
+            decidedAt: new Date(),
+            currentStep: stepNumber,
+          },
+        });
+      } else {
+        // Move to next step
+        const nextStep = allSteps.find((s) => s.stepNumber === stepNumber + 1);
+        if (nextStep) {
+          await db.approval.update({
+            where: { id: approvalId },
+            data: {
+              currentStep: stepNumber + 1,
+            },
+          });
+        }
+      }
+
+      // Audit log
+      await this.auditLog.append({
+        audit_id: randomUUID(),
+        tenant_id: tenantId,
+        actor_id: approverId,
+        type: "event",
+        timestamp: new Date().toISOString(),
+        correlation_id: randomUUID(),
+        data: {
+          event_id: randomUUID(),
+          tenant_id: tenantId,
+          actor_id: approverId,
+          type: "approval.step_approved",
+          occurred_at: new Date().toISOString(),
+          correlation_id: randomUUID(),
+          schema_version: "1.0",
+          evidence_refs: [],
+          payload: {
+            approval_id: approvalId,
+            step_number: stepNumber,
+            all_approved: allApproved,
+          },
+          signatures: [],
+        } as any,
+        evidence_refs: [],
+      });
+
+      const updated = await db.approval.findUnique({
+        where: { id: approvalId },
+        include: { steps: { orderBy: { stepNumber: "asc" } } },
+      });
+
+      return this.mapToApproval(updated!);
+    } catch (error) {
+      logger.error("Failed to approve step", {
+        error: error instanceof Error ? error.message : String(error),
+        approval_id: approvalId,
+        step_number: stepNumber,
+        approver_id: approverId,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
     }
-
-    approval.status = "approved";
-    approval.decision = "approved";
-    approval.approverId = approverId;
-    approval.reason = reason;
-    approval.decidedAt = new Date().toISOString();
-
-    this.pendingApprovals.set(approvalId, approval);
-
-    return approval;
   }
 
   /**
-   * Reject pending approval
+   * Reject step (rejects entire approval)
    */
-  async reject(approvalId: string, approverId: string, reason: string): Promise<Approval> {
-    const approval = this.pendingApprovals.get(approvalId);
-    
-    if (!approval) {
-      throw new Error(`Approval ${approvalId} not found`);
+  async rejectStep(
+    approvalId: string,
+    stepNumber: number,
+    approverId: string,
+    tenantId: string,
+    reason: string
+  ): Promise<Approval> {
+    try {
+      const approval = await db.approval.findUnique({
+        where: { id: approvalId },
+        include: { steps: { orderBy: { stepNumber: "asc" } } },
+      });
+
+      if (!approval || approval.tenantId !== tenantId) {
+        throw new Error("Approval not found or tenant mismatch");
+      }
+
+      // Find step
+      const step = approval.steps.find((s) => s.stepNumber === stepNumber);
+      if (!step) {
+        throw new Error(`Step ${stepNumber} not found`);
+      }
+
+      // Update step
+      await db.approvalStep.update({
+        where: { id: step.id },
+        data: {
+          status: "REJECTED",
+          decision: "REJECTED",
+          reason,
+          decidedAt: new Date(),
+        },
+      });
+
+      // Reject entire approval
+      await db.approval.update({
+        where: { id: approvalId },
+        data: {
+          decision: "REJECTED",
+          approverId,
+          reason,
+          decidedAt: new Date(),
+          currentStep: stepNumber,
+        },
+      });
+
+      // Audit log
+      await this.auditLog.append({
+        audit_id: randomUUID(),
+        tenant_id: tenantId,
+        actor_id: approverId,
+        type: "event",
+        timestamp: new Date().toISOString(),
+        correlation_id: randomUUID(),
+        data: {
+          event_id: randomUUID(),
+          tenant_id: tenantId,
+          actor_id: approverId,
+          type: "approval.rejected",
+          occurred_at: new Date().toISOString(),
+          correlation_id: randomUUID(),
+          schema_version: "1.0",
+          evidence_refs: [],
+          payload: {
+            approval_id: approvalId,
+            step_number: stepNumber,
+            reason,
+          },
+          signatures: [],
+        } as any,
+        evidence_refs: [],
+      });
+
+      const updated = await db.approval.findUnique({
+        where: { id: approvalId },
+        include: { steps: { orderBy: { stepNumber: "asc" } } },
+      });
+
+      return this.mapToApproval(updated!);
+    } catch (error) {
+      logger.error("Failed to reject step", {
+        error: error instanceof Error ? error.message : String(error),
+        approval_id: approvalId,
+        step_number: stepNumber,
+        approver_id: approverId,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
     }
+  }
 
-    approval.status = "rejected";
-    approval.decision = "rejected";
-    approval.approverId = approverId;
-    approval.reason = reason;
-    approval.decidedAt = new Date().toISOString();
+  /**
+   * Break-glass procedure (emergency override)
+   */
+  async breakGlass(
+    approvalId: string,
+    approverId: string,
+    tenantId: string,
+    reason: string,
+    justification?: string
+  ): Promise<Approval> {
+    try {
+      const approval = await db.approval.findUnique({
+        where: { id: approvalId },
+      });
 
-    this.pendingApprovals.set(approvalId, approval);
+      if (!approval || approval.tenantId !== tenantId) {
+        throw new Error("Approval not found or tenant mismatch");
+      }
 
-    return approval;
+      // Check if user has break-glass permission
+      const hasPermission = await this.checkBreakGlassPermission(approverId, tenantId);
+      if (!hasPermission) {
+        throw new Error("Insufficient permissions for break-glass procedure");
+      }
+
+      // Create break-glass record
+      await db.approvalBreakGlass.create({
+        data: {
+          approvalId,
+          tenantId,
+          triggeredBy: approverId,
+          reason,
+          justification: justification || undefined,
+        },
+      });
+
+      // Approve immediately
+      await db.approval.update({
+        where: { id: approvalId },
+        data: {
+          decision: "APPROVED",
+          approverId,
+          reason: `Break-glass: ${reason}`,
+          decidedAt: new Date(),
+          breakGlass: true,
+          breakGlassReason: reason,
+          breakGlassBy: approverId,
+          breakGlassAt: new Date(),
+        },
+      });
+
+      // Mark all steps as approved
+      await db.approvalStep.updateMany({
+        where: {
+          approvalId,
+          status: "PENDING",
+        },
+        data: {
+          status: "APPROVED",
+          decision: "APPROVED",
+          reason: "Break-glass override",
+          decidedAt: new Date(),
+        },
+      });
+
+      // Audit log
+      await this.auditLog.append({
+        audit_id: randomUUID(),
+        tenant_id: tenantId,
+        actor_id: approverId,
+        type: "event",
+        timestamp: new Date().toISOString(),
+        correlation_id: randomUUID(),
+        data: {
+          event_id: randomUUID(),
+          tenant_id: tenantId,
+          actor_id: approverId,
+          type: "approval.break_glass",
+          occurred_at: new Date().toISOString(),
+          correlation_id: randomUUID(),
+          schema_version: "1.0",
+          evidence_refs: [],
+          payload: {
+            approval_id: approvalId,
+            reason,
+            justification,
+          },
+          signatures: [],
+        } as any,
+        evidence_refs: [],
+      });
+
+      logger.warn("Break-glass procedure executed", {
+        approval_id: approvalId,
+        approver_id: approverId,
+        tenant_id: tenantId,
+        reason,
+      });
+
+      const updated = await db.approval.findUnique({
+        where: { id: approvalId },
+        include: { steps: { orderBy: { stepNumber: "asc" } } },
+      });
+
+      return this.mapToApproval(updated!);
+    } catch (error) {
+      logger.error("Failed to execute break-glass", {
+        error: error instanceof Error ? error.message : String(error),
+        approval_id: approvalId,
+        approver_id: approverId,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
   }
 
   /**
    * Get pending approvals
    */
-  getPendingApprovals(): Approval[] {
-    return Array.from(this.pendingApprovals.values())
-      .filter(a => a.status === "pending")
-      .sort((a, b) => {
-        // Sort by priority
-        const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-        const aPriority = priorityOrder[a.request.priority || "low"];
-        const bPriority = priorityOrder[b.request.priority || "low"];
-        return aPriority - bPriority;
-      });
+  async getPendingApprovals(tenantId: string, workspaceId?: string): Promise<Approval[]> {
+    const where: any = {
+      tenantId,
+      decision: null,
+    };
+
+    if (workspaceId) {
+      where.workspaceId = workspaceId;
+    }
+
+    const approvals = await db.approval.findMany({
+      where,
+      include: {
+        steps: { orderBy: { stepNumber: "asc" } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return approvals.map((a) => this.mapToApproval(a));
   }
 
   /**
    * Get approval by ID
    */
-  getApproval(approvalId: string): Approval | null {
-    return this.pendingApprovals.get(approvalId) || null;
+  async getApproval(approvalId: string, tenantId: string): Promise<Approval | null> {
+    const approval = await db.approval.findUnique({
+      where: { id: approvalId },
+      include: {
+        steps: { orderBy: { stepNumber: "asc" } },
+      },
+    });
+
+    if (!approval || approval.tenantId !== tenantId) {
+      return null;
+    }
+
+    return this.mapToApproval(approval);
+  }
+
+  /**
+   * Get default approvers for tenant/workspace
+   */
+  private async getDefaultApprovers(
+    tenantId: string,
+    workspaceId?: string
+  ): Promise<string[]> {
+    // Get approvers from workspace if specified
+    if (workspaceId) {
+      const workspace = await db.workspace.findUnique({
+        where: { id: workspaceId },
+        include: {
+          users: {
+            where: {
+              role: { in: ["APPROVER", "ADMIN"] },
+            },
+          },
+        },
+      });
+
+      if (workspace && workspace.users.length > 0) {
+        return workspace.users.map((u) => u.userId);
+      }
+    }
+
+    // Fallback to tenant-level approvers
+    const approvers = await db.user.findMany({
+      where: {
+        tenantId,
+        role: { in: ["APPROVER", "ADMIN"] as any },
+      },
+      select: { id: true },
+      take: 10,
+    });
+
+    return approvers.map((u) => u.id);
+  }
+
+  /**
+   * Check break-glass permission
+   */
+  private async checkBreakGlassPermission(
+    userId: string,
+    tenantId: string
+  ): Promise<boolean> {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { role: true, tenantId: true },
+    });
+
+    if (!user || user.tenantId !== tenantId) {
+      return false;
+    }
+
+    // Only ADMIN and APPROVER roles can break-glass
+    return user.role === "ADMIN" || user.role === "APPROVER";
+  }
+
+  /**
+   * Map database record to Approval
+   */
+  private mapToApproval(approval: any): Approval {
+    return {
+      id: approval.id,
+      request: {
+        resourceType: approval.resourceType,
+        resourceId: approval.resourceId,
+        action: approval.action,
+        content: "", // Not stored in approval table
+        requesterId: approval.requesterId,
+        workspaceId: approval.workspaceId || undefined,
+        workflowId: approval.workflowId || undefined,
+      },
+      status: approval.decision ? (approval.decision === "APPROVED" ? "approved" : "rejected") : "pending",
+      decision: approval.decision?.toLowerCase() as "approved" | "rejected" | undefined,
+      approverId: approval.approverId || undefined,
+      reason: approval.reason || undefined,
+      createdAt: approval.createdAt.toISOString(),
+      decidedAt: approval.decidedAt?.toISOString() || undefined,
+    };
   }
 
   /**

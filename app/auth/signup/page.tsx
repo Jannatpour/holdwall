@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense, useEffect } from "react";
+import { useState, Suspense, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -33,13 +33,6 @@ function SignUpPageContent() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
-  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>("");
-  const [passwordRequirements, setPasswordRequirements] = useState({
-    length: false,
-    uppercase: false,
-    lowercase: false,
-    number: false,
-  });
 
   const calculatePasswordStrength = (pwd: string): PasswordStrength => {
     if (!pwd) return "";
@@ -53,6 +46,17 @@ function SignUpPageContent() {
     if (score >= 2) return "medium";
     return "weak";
   };
+
+  const passwordRequirements = useMemo(() => {
+    return {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+    };
+  }, [password]);
+
+  const passwordStrength = useMemo(() => calculatePasswordStrength(password), [password]);
 
   const validateEmail = (value: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -84,7 +88,6 @@ function SignUpPageContent() {
       lowercase: /[a-z]/.test(value),
       number: /[0-9]/.test(value),
     };
-    setPasswordRequirements(requirements);
     
     if (!requirements.length || !requirements.lowercase || !requirements.uppercase || !requirements.number) {
       setPasswordError("Password must meet all requirements");
@@ -92,7 +95,6 @@ function SignUpPageContent() {
     }
     
     setPasswordError(null);
-    setPasswordStrength(calculatePasswordStrength(value));
     return true;
   };
 
@@ -202,15 +204,6 @@ function SignUpPageContent() {
         setOauthProviders({ google: false, github: false });
       });
   }, []);
-
-  useEffect(() => {
-    if (password) {
-      validatePassword(password);
-      if (confirmPassword) {
-        validateConfirmPassword(confirmPassword);
-      }
-    }
-  }, [password, confirmPassword]);
 
   const getStrengthColor = (strength: PasswordStrength) => {
     switch (strength) {
@@ -330,6 +323,7 @@ function SignUpPageContent() {
                     onChange={(e) => {
                       setPassword(e.target.value);
                       if (passwordError) validatePassword(e.target.value);
+                      if (confirmPassword) validateConfirmPassword(confirmPassword);
                     }}
                     onBlur={() => validatePassword(password)}
                     required

@@ -8,6 +8,9 @@ import type { AuditLog, AuditEntry } from "@/lib/audit/lineage";
 import type { EventEnvelope, EventStore } from "@/lib/events/types";
 import type { Evidence, EvidenceVault } from "@/lib/evidence/vault";
 import { MerkleTreeBuilder } from "@/lib/evidence/merkle-bundle";
+import { ChainOfCustodyService } from "@/lib/evidence/chain-of-custody";
+import { EvidenceAccessControlService } from "@/lib/evidence/access-control";
+import { EvidenceRedactionService } from "@/lib/evidence/redaction";
 import { logger } from "@/lib/logging/logger";
 
 export interface AuditBundle {
@@ -50,15 +53,51 @@ export interface AuditBundle {
       hash: string;
     }>;
   };
+  /** Chain of custody verification */
+  chain_of_custody?: {
+    evidence_id: string;
+    valid: boolean;
+    version_count: number;
+    latest_version: number;
+    integrity_verified: boolean;
+    merkle_verified: boolean;
+    chain_complete: boolean;
+    issues: string[];
+  }[];
+  /** Access logs */
+  access_logs?: Array<{
+    id: string;
+    evidence_id: string;
+    actor_id: string;
+    access_type: string;
+    created_at: string;
+  }>;
+  /** Redaction history */
+  redactions?: Array<{
+    id: string;
+    evidence_id: string;
+    redacted_by: string;
+    approved_by?: string;
+    status: string;
+    created_at: string;
+  }>;
   created_at: string;
 }
 
 export class AuditBundleService {
+  private chainOfCustody: ChainOfCustodyService;
+  private accessControl: EvidenceAccessControlService;
+  private redactionService: EvidenceRedactionService;
+
   constructor(
     private auditLog: AuditLog,
     private eventStore: EventStore,
     private evidenceVault: EvidenceVault
-  ) {}
+  ) {
+    this.chainOfCustody = new ChainOfCustodyService();
+    this.accessControl = new EvidenceAccessControlService();
+    this.redactionService = new EvidenceRedactionService();
+  }
 
   async createBundle(
     tenant_id: string,
@@ -98,7 +137,57 @@ export class AuditBundleService {
     );
     const valid_evidence = evidence.filter((e): e is Evidence => e !== null);
 
-    // 4. Create Merkle bundle for evidence (if enabled)
+    // 4. Get chain of custody verification for all evidence
+    const chainOfCustodyVerifications = await Promise.all(
+      valid_evidence.map(async (ev) => {
+        try {
+          return await this.chainOfCustody.verifyChainOfCustody(ev.evidence_id);
+        } catch (error) {
+          logger.warn("Failed to verify chain of custody", {
+            error: error instanceof Error ? error.message : String(error),
+            evidence_id: ev.evidence_id,
+          });
+          return null;
+        }
+      })
+    );
+    const validChainOfCustody = chainOfCustodyVerifications.filter(
+      (v): v is NonNullable<typeof v> => v !== null
+    );
+
+    // 5. Get access logs for all evidence
+    const accessLogs = await Promise.all(
+      valid_evidence.map(async (ev) => {
+        try {
+          return await this.accessControl.getAccessLog(ev.evidence_id, { limit: 100 });
+        } catch (error) {
+          logger.warn("Failed to get access logs", {
+            error: error instanceof Error ? error.message : String(error),
+            evidence_id: ev.evidence_id,
+          });
+          return [];
+        }
+      })
+    );
+    const allAccessLogs = accessLogs.flat();
+
+    // 6. Get redaction history for all evidence
+    const redactions = await Promise.all(
+      valid_evidence.map(async (ev) => {
+        try {
+          return await this.redactionService.getRedactionHistory(ev.evidence_id);
+        } catch (error) {
+          logger.warn("Failed to get redaction history", {
+            error: error instanceof Error ? error.message : String(error),
+            evidence_id: ev.evidence_id,
+          });
+          return [];
+        }
+      })
+    );
+    const allRedactions = redactions.flat();
+
+    // 7. Create Merkle bundle for evidence (if enabled)
     let merkleBundle = null;
     if (valid_evidence.length > 0 && process.env.ENABLE_MERKLE_BUNDLES === "true") {
       try {
@@ -113,7 +202,7 @@ export class AuditBundleService {
       }
     }
 
-    // 5. Generate executive summary
+    // 8. Generate executive summary
     const executive_summary = {
       title: `Audit Bundle: ${resource_type} ${resource_id}`,
       overview: `Complete audit trail for ${resource_type} ${resource_id} from ${time_range.start} to ${time_range.end}`,
@@ -121,6 +210,9 @@ export class AuditBundleService {
         `${audit_entries.length} audit entries`,
         `${events.length} events`,
         `${valid_evidence.length} evidence items`,
+        `${validChainOfCustody.length} evidence with chain of custody`,
+        `${allAccessLogs.length} access log entries`,
+        `${allRedactions.length} redaction records`,
       ],
       recommendations: [
         "Review all evidence references",
@@ -129,7 +221,7 @@ export class AuditBundleService {
       ],
     };
 
-    // 6. Create bundle
+    // 9. Create bundle
     const bundle: AuditBundle = {
       bundle_id,
       tenant_id,
@@ -150,6 +242,31 @@ export class AuditBundleService {
         root_hash: merkleBundle.root_hash,
         items: merkleBundle.items,
       } : undefined,
+      chain_of_custody: validChainOfCustody.map((v) => ({
+        evidence_id: v.evidence_id,
+        valid: v.valid,
+        version_count: v.version_count,
+        latest_version: v.latest_version,
+        integrity_verified: v.integrity_verified,
+        merkle_verified: v.merkle_verified,
+        chain_complete: v.chain_complete,
+        issues: v.issues,
+      })),
+      access_logs: allAccessLogs.map((log) => ({
+        id: log.id,
+        evidence_id: log.evidence_id,
+        actor_id: log.actor_id,
+        access_type: log.access_type,
+        created_at: log.created_at,
+      })),
+      redactions: allRedactions.map((r) => ({
+        id: r.id,
+        evidence_id: r.evidence_id,
+        redacted_by: r.redacted_by,
+        approved_by: r.approved_by,
+        status: r.status,
+        created_at: r.created_at,
+      })),
       created_at: new Date().toISOString(),
     };
 

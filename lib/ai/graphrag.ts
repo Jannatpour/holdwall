@@ -7,6 +7,7 @@
 
 import { EmbeddingService } from "@/lib/vector/embeddings";
 import { LLMProvider } from "@/lib/llm/providers";
+import { leidenClustering, type GraphNode, type GraphEdge, type Community } from "./leiden-clustering";
 import type { Evidence } from "../evidence/vault";
 
 export interface KnowledgeGraph {
@@ -21,6 +22,8 @@ export interface KnowledgeGraph {
     type: string;
     weight: number;
   }>;
+  communities?: Map<string, Community>; // Leiden clustering communities
+  hierarchy?: Map<number, Community[]>; // Hierarchical community structure
 }
 
 export interface GraphRAGResult {
@@ -79,9 +82,45 @@ export class GraphRAG {
       relationships.push(...extractedRelations);
     }
 
+    // Apply Leiden clustering for community detection
+    const graphNodes = new Map<string, GraphNode>();
+    const graphEdges: GraphEdge[] = [];
+
+    // Convert entities to graph nodes
+    for (const [entityId, entity] of entities.entries()) {
+      graphNodes.set(entityId, {
+        id: entityId,
+        neighbors: new Set(),
+        weight: 1.0,
+      });
+    }
+
+    // Convert relationships to graph edges
+    for (const rel of relationships) {
+      graphEdges.push({
+        from: rel.from,
+        to: rel.to,
+        weight: rel.weight,
+      });
+
+      // Update neighbors
+      const fromNode = graphNodes.get(rel.from);
+      const toNode = graphNodes.get(rel.to);
+      if (fromNode) fromNode.neighbors.add(rel.to);
+      if (toNode) toNode.neighbors.add(rel.from);
+    }
+
+    // Perform Leiden clustering
+    const clusteringResult = await leidenClustering.cluster(graphNodes, graphEdges, {
+      resolution: 1.0,
+      hierarchical: true,
+    });
+
     this.knowledgeGraph = {
       entities,
       relationships,
+      communities: clusteringResult.communities,
+      hierarchy: clusteringResult.hierarchy,
     };
 
     return this.knowledgeGraph;
@@ -468,6 +507,7 @@ Return a JSON array of relationships with this structure:
 
   /**
    * Traverse graph to find connected entities
+   * Enhanced with Leiden community-aware traversal
    */
   private traverseGraph(
     startEntities: string[],
@@ -475,6 +515,20 @@ Return a JSON array of relationships with this structure:
   ): string[] {
     const visited = new Set<string>();
     const queue: Array<{ entity: string; depth: number }> = startEntities.map(e => ({ entity: e, depth: 0 }));
+
+    // Use community information if available for more efficient traversal
+    const communities = this.knowledgeGraph.communities;
+    const startCommunities = new Set<string>();
+
+    if (communities) {
+      for (const entityId of startEntities) {
+        for (const [commId, community] of communities.entries()) {
+          if (community.nodes.has(entityId)) {
+            startCommunities.add(commId);
+          }
+        }
+      }
+    }
 
     while (queue.length > 0) {
       const { entity, depth } = queue.shift()!;
@@ -488,9 +542,26 @@ Return a JSON array of relationships with this structure:
       // Add connected entities
       for (const rel of this.knowledgeGraph.relationships) {
         if (rel.from === entity && !visited.has(rel.to)) {
-          queue.push({ entity: rel.to, depth: depth + 1 });
+          // Prioritize entities in same community
+          const shouldAdd = !communities || startCommunities.size === 0 || 
+            Array.from(startCommunities).some(commId => {
+              const comm = communities.get(commId);
+              return comm?.nodes.has(rel.to);
+            });
+
+          if (shouldAdd) {
+            queue.push({ entity: rel.to, depth: depth + 1 });
+          }
         } else if (rel.to === entity && !visited.has(rel.from)) {
-          queue.push({ entity: rel.from, depth: depth + 1 });
+          const shouldAdd = !communities || startCommunities.size === 0 ||
+            Array.from(startCommunities).some(commId => {
+              const comm = communities.get(commId);
+              return comm?.nodes.has(rel.from);
+            });
+
+          if (shouldAdd) {
+            queue.push({ entity: rel.from, depth: depth + 1 });
+          }
         }
       }
     }

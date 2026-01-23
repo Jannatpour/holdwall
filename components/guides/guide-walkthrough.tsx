@@ -5,7 +5,7 @@
 
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { GuideTooltip } from "./guide-tooltip";
 import { GuideModal } from "./guide-modal";
 import { useGuide } from "./guide-provider";
@@ -17,9 +17,18 @@ interface GuideWalkthroughProps {
 }
 
 export function GuideWalkthrough({ pageId }: GuideWalkthroughProps) {
+  const { state } = useGuide();
+  const runKey = useMemo(() => {
+    const startedAt = state.progress?.[pageId]?.startedAt ?? "none";
+    return `${pageId}:${state.activeGuide ?? "none"}:${startedAt}`;
+  }, [pageId, state.activeGuide, state.progress]);
+
+  return <GuideWalkthroughInner key={runKey} pageId={pageId} />;
+}
+
+function GuideWalkthroughInner({ pageId }: GuideWalkthroughProps) {
   const { state, isGuideActive, completeStep, stopGuide } = useGuide();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
   const guide = getGuide(pageId);
   const isActive = isGuideActive(pageId);
@@ -49,16 +58,6 @@ export function GuideWalkthrough({ pageId }: GuideWalkthroughProps) {
 
   const currentStepData = allSteps[currentStepIndex];
   const currentStep = currentStepData?.step;
-
-  useEffect(() => {
-    if (!isActive || allSteps.length === 0) {
-      return;
-    }
-
-    // Reset to first step when guide starts
-    setCurrentStepIndex(0);
-    setCurrentSectionIndex(0);
-  }, [isActive, allSteps.length]);
 
   const handleComplete = () => {
     if (!currentStep) return;

@@ -19,6 +19,10 @@ import type { EventEnvelope } from "@/lib/events/types";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 
+// Skip data collection during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const eventStore = new DatabaseEventStore();
 const evidenceVault = new DatabaseEvidenceVault();
 const studioService = new AAALStudioService(evidenceVault, eventStore);

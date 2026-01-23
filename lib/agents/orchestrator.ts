@@ -15,6 +15,8 @@ export interface AgentTask {
   parameters: Record<string, unknown>;
   priority: number;
   deadline?: string;
+  tenant_id: string;
+  actor_id: string;
 }
 
 export class AgentOrchestrator {
@@ -47,6 +49,13 @@ export class AgentOrchestrator {
       parameters: task.parameters,
       priority: task.priority,
       deadline: task.deadline,
+    }, {
+      tenant_id: task.tenant_id,
+      actor_id: task.actor_id,
+      metadata: {
+        protocol: "acp",
+        task_type: task.task_type,
+      },
     });
 
       // Listen for task updates

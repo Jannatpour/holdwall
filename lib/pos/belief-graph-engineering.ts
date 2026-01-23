@@ -102,10 +102,10 @@ export class EnhancedBeliefGraphEngineering {
 
     // Determine recommendation
     let recommendation: "isolate" | "neutralize" | "decay" | "reinforce";
-    if (isWeak && reinforcingEdges === 0) {
+    if (node.trustScore < -0.5) {
+      recommendation = "neutralize"; // Actively neutralize very negative content
+    } else if (isWeak && reinforcingEdges === 0) {
       recommendation = "isolate"; // Already isolated, keep it that way
-    } else if (node.trustScore < -0.5) {
-      recommendation = "neutralize"; // Actively neutralize negative content
     } else if (node.trustScore < 0) {
       recommendation = "decay"; // Let it decay naturally
     } else {

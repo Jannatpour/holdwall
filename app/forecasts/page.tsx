@@ -26,12 +26,22 @@ export default function ForecastsPage() {
     <AppShell>
       <GuideWalkthrough pageId="forecasts" />
       <div className="space-y-6">
-        <div className="flex items-start justify-between" data-guide="forecasts-header">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Forecasts</h1>
-            <p className="text-muted-foreground">
-              Diffusion, drift dashboards, and what-if simulations powered by Graph Neural Networks
-            </p>
+        <div className="flex items-start justify-between border-b pb-6" data-guide="forecasts-header">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary/10 rounded-lg">
+                <TrendingUp className="h-7 w-7 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Predictive Narrative Intelligence
+                </h1>
+                <p className="text-base text-muted-foreground mt-2 leading-6">
+                  Advanced outbreak probability forecasting, sentiment drift analysis, and what-if scenario 
+                  simulations powered by 7 Graph Neural Network models. Predict narrative trajectories before they escalate.
+                </p>
+              </div>
+            </div>
           </div>
           <GuideButton pageId="forecasts" />
         </div>

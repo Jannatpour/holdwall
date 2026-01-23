@@ -35,6 +35,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // If SKU D (Security Incident Narrative Management), enable security incident features
+    if (sku === "D" || sku === "d") {
+      // Enable security incident webhook integration
+      // This would configure default webhook endpoints
+      logger.info("Security Incident Narrative Management enabled for SKU D", {
+        tenant_id,
+      });
+    }
+
     // Save policy to Policy table (if it exists) or tenant settings
     const tenant = await db.tenant.findUnique({
       where: { id: tenant_id },

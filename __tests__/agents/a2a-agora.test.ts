@@ -1,14 +1,44 @@
+/** @jest-environment node */
 /**
  * A2A Protocol AGORA Optimization Tests
  */
 
 import { A2AProtocol } from "@/lib/a2a/protocol";
 import type { AgentIdentity } from "@/lib/a2a/protocol";
+import { createServer, type Server } from "http";
 
 describe("A2A Protocol AGORA Optimization", () => {
   let protocol: A2AProtocol;
   let agent1: AgentIdentity;
   let agent2: AgentIdentity;
+  let peerServer: Server;
+  let peerBaseUrl: string;
+
+  beforeAll(async () => {
+    peerServer = createServer((req, res) => {
+      if (req.method === "POST" && req.url === "/a2a/connect") {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ status: "connected" }));
+        return;
+      }
+      res.statusCode = 404;
+      res.end("not found");
+    });
+
+    await new Promise<void>((resolve) => {
+      peerServer.listen(0, "127.0.0.1", () => resolve());
+    });
+    const addr = peerServer.address();
+    if (!addr || typeof addr === "string") {
+      throw new Error("Failed to bind peer server");
+    }
+    peerBaseUrl = `http://127.0.0.1:${addr.port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((resolve) => peerServer.close(() => resolve()));
+  });
 
   beforeEach(() => {
     protocol = new A2AProtocol();
@@ -17,14 +47,16 @@ describe("A2A Protocol AGORA Optimization", () => {
       name: "Test Agent 1",
       version: "1.0.0",
       capabilities: ["text_generation", "data_analysis"],
-      endpoint: "http://localhost:3001",
+      endpoint: "http://127.0.0.1:0",
+      publicKey: "test-public-key-agent-1",
     };
     agent2 = {
       agentId: "agent-2",
       name: "Test Agent 2",
       version: "1.0.0",
       capabilities: ["text_generation", "code_execution"],
-      endpoint: "http://localhost:3002",
+      endpoint: peerBaseUrl,
+      publicKey: "test-public-key-agent-2",
     };
   });
 

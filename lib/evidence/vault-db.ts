@@ -9,14 +9,21 @@ import type { Evidence, EvidenceVault } from "./vault";
 import { EmbeddingService } from "@/lib/vector/embeddings";
 import { ChromaVectorDB } from "@/lib/search/vector-db-chroma";
 import { createHash, createHmac, randomBytes } from "node:crypto";
+import { ChainOfCustodyService } from "./chain-of-custody";
+import { EvidenceAccessControlService } from "./access-control";
+import { logger } from "@/lib/logging/logger";
 
 export class DatabaseEvidenceVault implements EvidenceVault {
   private embeddingService: EmbeddingService;
   private chromaDB: ChromaVectorDB | null = null;
   private static signingSecretEphemeral: string | null = null;
+  private chainOfCustody: ChainOfCustodyService;
+  private accessControl: EvidenceAccessControlService;
 
   constructor() {
     this.embeddingService = new EmbeddingService();
+    this.chainOfCustody = new ChainOfCustodyService();
+    this.accessControl = new EvidenceAccessControlService();
     
     // Initialize ChromaDB if available
     try {
@@ -24,7 +31,9 @@ export class DatabaseEvidenceVault implements EvidenceVault {
       const collectionName = process.env.CHROMA_COLLECTION || "holdwall-evidence";
       this.chromaDB = new ChromaVectorDB(chromaUrl, collectionName);
     } catch (error) {
-      console.warn("ChromaDB not available, embeddings will be stored in DB only:", error);
+      logger.warn("ChromaDB not available, embeddings will be stored in DB only", {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -59,7 +68,10 @@ export class DatabaseEvidenceVault implements EvidenceVault {
         embedding = embeddingResult.vector;
         embeddingModel = embeddingResult.model;
       } catch (error) {
-        console.warn("Failed to generate embedding for evidence:", error);
+        logger.warn("Failed to generate embedding for evidence", {
+          error: error instanceof Error ? error.message : String(error),
+          content_hash: finalContentHash,
+        });
       }
     }
 
@@ -116,9 +128,51 @@ export class DatabaseEvidenceVault implements EvidenceVault {
           },
         ]);
       } catch (error) {
-        console.warn("Failed to store embedding in ChromaDB:", error);
+        logger.warn("Failed to store embedding in ChromaDB", {
+          error: error instanceof Error ? error.message : String(error),
+          evidence_id: result.id,
+        });
         // Continue - embedding is stored in DB as fallback
       }
+    }
+
+    // Create immutable version for chain of custody
+    try {
+      const mappedEvidence = this.mapToEvidence(result);
+      await this.chainOfCustody.createVersion(
+        result.id,
+        mappedEvidence,
+        evidence.source.collected_by,
+        {
+          source_type: evidence.source.type,
+          source_id: evidence.source.id,
+          collection_method: evidence.provenance.collection_method,
+        }
+      );
+    } catch (error) {
+      logger.error("Failed to create evidence version", {
+        error: error instanceof Error ? error.message : String(error),
+        evidence_id: result.id,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      // Continue - versioning failure doesn't prevent evidence storage
+    }
+
+    // Log initial access (creation)
+    try {
+      await this.accessControl.logAccess({
+        evidence_id: result.id,
+        actor_id: evidence.source.collected_by,
+        tenant_id: evidence.tenant_id,
+        access_type: "WRITE",
+        reason: "Evidence creation",
+        allowed: true,
+      });
+    } catch (error) {
+      logger.warn("Failed to log evidence creation access", {
+        error: error instanceof Error ? error.message : String(error),
+        evidence_id: result.id,
+      });
     }
 
     return result.id;
@@ -184,13 +238,32 @@ export class DatabaseEvidenceVault implements EvidenceVault {
     return DatabaseEvidenceVault.signingSecretEphemeral;
   }
 
-  async get(evidence_id: string): Promise<Evidence | null> {
+  async get(evidence_id: string, actor_id?: string, tenant_id?: string): Promise<Evidence | null> {
     const result = await db.evidence.findUnique({
       where: { id: evidence_id },
     });
 
     if (!result) {
       return null;
+    }
+
+    // Log access if actor provided
+    if (actor_id && tenant_id) {
+      try {
+        await this.accessControl.logAccess({
+          evidence_id,
+          actor_id,
+          tenant_id,
+          access_type: "READ",
+          allowed: true,
+        });
+      } catch (error) {
+        logger.warn("Failed to log evidence access", {
+          error: error instanceof Error ? error.message : String(error),
+          evidence_id,
+          actor_id,
+        });
+      }
     }
 
     return this.mapToEvidence(result);
@@ -281,7 +354,9 @@ export class DatabaseEvidenceVault implements EvidenceVault {
         // Map to Evidence interface
         return evidenceRecords.map((result) => this.mapToEvidence(result));
       } catch (error) {
-        console.warn("ChromaDB search failed, falling back to DB search:", error);
+        logger.warn("ChromaDB search failed, falling back to DB search", {
+          error: error instanceof Error ? error.message : String(error),
+        });
         // Fall through to DB-based search
       }
     }

@@ -76,15 +76,15 @@ export function FinancialServicesAuditExport() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Regulatory Audit Export
+          <CardTitle className="flex items-center gap-2 text-2xl">
+            <Shield className="h-6 w-6 text-primary" />
+            Regulatory Compliance Export Center
           </CardTitle>
-          <CardDescription>
-            Export evidence bundles, approval trails, and publication history for regulatory exams
-            and internal audits
+          <CardDescription className="text-base">
+            Generate comprehensive audit-ready exports with evidence bundles, approval trails, 
+            and complete publication history for regulatory examinations and internal compliance reviews
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

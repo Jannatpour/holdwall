@@ -13,12 +13,24 @@ const globalForPrisma = globalThis as unknown as {
 
 function createPrismaClient() {
   const configuredUrl = process.env.DATABASE_URL;
+  const isDockerBuild = process.env.DOCKER_BUILD === "true";
+  const isNextBuild =
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    process.env.NEXT_PHASE === "phase-export" ||
+    process.env.npm_lifecycle_event === "build";
+  const isBuildTime = isDockerBuild || isNextBuild;
+
+  const isPlaceholderUrl = !configuredUrl || configuredUrl.includes("placeholder");
 
   // Prisma 7 client engine requires either a Driver Adapter or Accelerate URL.
   // We standardize on the Postgres driver adapter everywhere.
-  const databaseUrl =
-    configuredUrl && !configuredUrl.includes("placeholder")
-      ? configuredUrl
+  //
+  // During build (especially Docker/Next build-time route evaluation), we must not hard-fail
+  // if `DATABASE_URL` is unset/placeholder. The build should succeed; runtime will provide the real URL.
+  const databaseUrl = !isPlaceholderUrl
+    ? configuredUrl
+    : isBuildTime
+      ? "postgresql://build:build@localhost:5432/build"
       : process.env.NODE_ENV === "production"
         ? null
         : "postgresql://holdwall:holdwall@localhost:5432/holdwall";

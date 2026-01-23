@@ -30,7 +30,8 @@ spec:
         fsGroup: 1001
       containers:
         - name: pipeline-worker
-          image: holdwall-app:latest
+          image: 597743362576.dkr.ecr.us-east-1.amazonaws.com/holdwall-pos:20260122-141807
+          workingDir: /app
           command: ["node", "-e", "require('./lib/workers/pipeline-worker').start()"]
           env:
             - name: DATABASE_URL

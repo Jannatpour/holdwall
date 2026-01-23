@@ -89,8 +89,3 @@ export class HealthMonitor {
 }
 
 export const healthMonitor = new HealthMonitor();
-
-// Start health monitoring in production
-if (process.env.NODE_ENV === "production") {
-  healthMonitor.start();
-}

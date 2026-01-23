@@ -115,15 +115,15 @@ export function FinancialServicesMonthlyReportViewer() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Monthly Impact & Risk Report
+          <CardTitle className="flex items-center gap-2 text-2xl">
+            <BarChart3 className="h-6 w-6 text-primary" />
+            Executive Impact & Risk Intelligence Report
           </CardTitle>
-          <CardDescription>
-            Generate executive-ready reports showing outbreaks prevented, time-to-resolution
-            improvements, and cost reduction
+          <CardDescription className="text-base">
+            Generate comprehensive executive-ready reports demonstrating outbreaks prevented, 
+            time-to-resolution improvements, AI citation impact, and measurable cost reduction
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

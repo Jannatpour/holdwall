@@ -15,6 +15,8 @@ import {
   FileText,
   Shield,
   ExternalLink,
+  Target,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -149,19 +151,22 @@ export function FinancialServicesPerceptionBrief() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card>
+      {/* Strategic Header */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/5">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Financial Services Perception Brief</CardTitle>
-              <CardDescription>
-                Daily executive brief for {format(new Date(data.date), "MMMM d, yyyy")}
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <FileText className="h-6 w-6 text-primary" />
+                Executive Perception Intelligence
+              </CardTitle>
+              <CardDescription className="text-base">
+                Strategic narrative risk assessment for {format(new Date(data.date), "EEEE, MMMM d, yyyy")}
               </CardDescription>
             </div>
-            <Badge variant="outline">
+            <Badge variant="outline" className="text-sm px-3 py-1.5">
               <Shield className="mr-2 h-4 w-4" />
-              {data.governanceLevel} Governance
+              {data.governanceLevel.toUpperCase()} Mode
             </Badge>
           </div>
         </CardHeader>
@@ -189,12 +194,15 @@ export function FinancialServicesPerceptionBrief() {
         </CardContent>
       </Card>
 
-      {/* Narrative Clusters */}
+      {/* Strategic Narrative Intelligence */}
       <Card>
         <CardHeader>
-          <CardTitle>Financial Narrative Clusters</CardTitle>
-          <CardDescription>
-            Top narrative clusters categorized by financial services risk type
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Financial Narrative Intelligence
+          </CardTitle>
+          <CardDescription className="text-base">
+            Critical narrative clusters categorized by financial services risk type with escalation routing
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -258,12 +266,15 @@ export function FinancialServicesPerceptionBrief() {
         </CardContent>
       </Card>
 
-      {/* Recommended Actions */}
-      <Card>
+      {/* Strategic Recommendations */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
         <CardHeader>
-          <CardTitle>Recommended Actions</CardTitle>
-          <CardDescription>
-            Prioritized actions based on current narrative risk and Financial Services governance
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Target className="h-5 w-5 text-primary" />
+            Strategic Action Recommendations
+          </CardTitle>
+          <CardDescription className="text-base">
+            Prioritized actions based on current narrative risk assessment and financial-grade governance requirements
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -298,13 +309,16 @@ export function FinancialServicesPerceptionBrief() {
         </CardContent>
       </Card>
 
-      {/* Legal Approval Status */}
+      {/* Legal Compliance Status */}
       {data.pendingLegalApprovals > 0 && (
-        <Card>
+        <Card className="border-yellow-200 dark:border-yellow-800 bg-gradient-to-br from-yellow-50/50 to-background dark:from-yellow-950/20">
           <CardHeader>
-            <CardTitle>Legal Approval Status</CardTitle>
-            <CardDescription>
-              Artifacts awaiting legal review (required for Financial Services)
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Shield className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              Legal Review Queue
+            </CardTitle>
+            <CardDescription className="text-base">
+              {data.pendingLegalApprovals} artifact(s) awaiting legal review (mandatory for Financial Services compliance)
             </CardDescription>
           </CardHeader>
           <CardContent>

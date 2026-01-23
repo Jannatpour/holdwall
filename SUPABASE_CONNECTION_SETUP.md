@@ -1,8 +1,11 @@
 # 🔗 Supabase Connection String Setup
 
+**⚠️ SECURITY WARNING**: Never commit passwords or secrets to version control.  
+All sensitive credentials should be stored in environment variables or secure secret management systems.
+
 **Project**: holdwall-production  
 **Project Ref**: hrzxbonjpffluuiwpzwe  
-**Password**: @HoldWall2026.
+**Password**: `[REDACTED - Get from Supabase Dashboard or secure storage]`
 
 ---
 
@@ -57,13 +60,16 @@ If you know the region, you can construct it:
 
 **Session Mode (Port 5432):**
 ```
-postgresql://postgres.hrzxbonjpffluuiwpzwe:%40HoldWall2026%2E@aws-0-[REGION].pooler.supabase.com:5432/postgres
+postgresql://postgres.hrzxbonjpffluuiwpzwe:[URL_ENCODED_PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
 ```
 
 **Transaction Mode (Port 6543):**
 ```
-postgresql://postgres.hrzxbonjpffluuiwpzwe:%40HoldWall2026%2E@aws-0-[REGION].pooler.supabase.com:6543/postgres
+postgresql://postgres.hrzxbonjpffluuiwpzwe:[URL_ENCODED_PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
 ```
+
+**Note**: Replace `[URL_ENCODED_PASSWORD]` with your URL-encoded password.  
+The Supabase dashboard provides the correctly formatted connection string.
 
 **Common Regions:**
 - `us-east-1` (US East)

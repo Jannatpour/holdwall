@@ -29,6 +29,8 @@ export async function POST(request: NextRequest) {
       parameters: validated.parameters,
       priority: validated.priority || 5,
       deadline: validated.deadline,
+      tenant_id: (user as any).tenantId || "default",
+      actor_id: (user as any).id,
     };
 
     const result = await orchestrator.executeTask(task);

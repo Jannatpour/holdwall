@@ -10,6 +10,9 @@ import { requireAuth } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { metrics } from "@/lib/observability/metrics";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 

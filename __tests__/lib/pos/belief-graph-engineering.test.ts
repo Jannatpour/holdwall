@@ -5,7 +5,14 @@
 import { EnhancedBeliefGraphEngineering } from "@/lib/pos/belief-graph-engineering";
 import { db } from "@/lib/db/client";
 
-jest.mock("@/lib/db/client");
+jest.mock("@/lib/db/client", () => ({
+  db: {
+    beliefNode: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+    },
+  },
+}));
 jest.mock("@/lib/events/store-db");
 jest.mock("@/lib/logging/logger");
 jest.mock("@/lib/observability/metrics");
@@ -22,6 +29,7 @@ describe("EnhancedBeliefGraphEngineering", () => {
   describe("analyzeStructuralIrrelevance", () => {
     it("should identify weak nodes with low trust and no reinforcing edges", async () => {
       const nodeId = "test-node";
+      const { db } = require("@/lib/db/client");
       (db.beliefNode.findUnique as jest.Mock).mockResolvedValue({
         id: nodeId,
         tenantId,
@@ -48,6 +56,7 @@ describe("EnhancedBeliefGraphEngineering", () => {
 
     it("should identify strong nodes with high trust and reinforcing edges", async () => {
       const nodeId = "test-node";
+      const { db } = require("@/lib/db/client");
       (db.beliefNode.findUnique as jest.Mock).mockResolvedValue({
         id: nodeId,
         tenantId,
@@ -75,13 +84,16 @@ describe("EnhancedBeliefGraphEngineering", () => {
 
   describe("findWeakNodes", () => {
     it("should find weak nodes filtered by irrelevance threshold", async () => {
-      (db.beliefNode.findMany as jest.Mock).mockResolvedValue([
+      const { db } = require("@/lib/db/client");
+      (db.beliefNode.findMany as jest.Mock).mockResolvedValueOnce([
         {
           id: "node1",
           tenantId,
           type: "CLAIM",
           trustScore: -0.7,
           decisiveness: 0.2,
+          toEdges: [],
+          fromEdges: [],
         },
         {
           id: "node2",
@@ -89,8 +101,31 @@ describe("EnhancedBeliefGraphEngineering", () => {
           type: "CLAIM",
           trustScore: -0.5,
           decisiveness: 0.4,
+          toEdges: [],
+          fromEdges: [],
         },
       ]);
+
+      // Mock findUnique for analyzeStructuralIrrelevance calls
+      (db.beliefNode.findUnique as jest.Mock)
+        .mockResolvedValueOnce({
+          id: "node1",
+          tenantId,
+          type: "CLAIM",
+          trustScore: -0.7,
+          decisiveness: 0.2,
+          toEdges: [],
+          fromEdges: [],
+        })
+        .mockResolvedValueOnce({
+          id: "node2",
+          tenantId,
+          type: "CLAIM",
+          trustScore: -0.5,
+          decisiveness: 0.4,
+          toEdges: [],
+          fromEdges: [],
+        });
 
       const weakNodes = await bge.findWeakNodes(tenantId, {
         minIrrelevance: 0.6,

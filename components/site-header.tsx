@@ -38,6 +38,7 @@ const solutionsNav = [
   { href: "/solutions/comms", label: "Comms & PR", description: "SKU A: AI Answer Authority" },
   { href: "/solutions/security", label: "Security & Trust", description: "SKU B: Narrative Risk Early Warning" },
   { href: "/solutions/procurement", label: "Procurement", description: "SKU C: Evidence-Backed Intake" },
+  { href: "/solutions/security-incidents", label: "Security Incidents", description: "SKU D: AI-Governed Incident Narratives" },
   { href: "/solutions/support", label: "Support & Ops", description: "Incident narrative control" },
   { href: "/solutions/financial-services", label: "Financial Services", description: "Banks, FinTech, Payments, Insurance" },
 ];

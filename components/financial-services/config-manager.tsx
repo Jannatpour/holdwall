@@ -137,12 +137,15 @@ export function FinancialServicesConfigManager() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Financial Services Configuration</CardTitle>
-          <CardDescription>Loading configuration...</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Settings className="h-5 w-5 text-primary" />
+            Governance Configuration
+          </CardTitle>
+          <CardDescription className="text-base">Loading configuration settings...</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         </CardContent>
       </Card>
@@ -163,16 +166,17 @@ export function FinancialServicesConfigManager() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Financial Services Configuration
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <Settings className="h-6 w-6 text-primary" />
+                Governance Framework Configuration
               </CardTitle>
-              <CardDescription>
-                Manage governance settings, approval gates, and escalation rules
+              <CardDescription className="text-base">
+                Customize financial-grade governance settings, legal approval gates, evidence thresholds, 
+                and automated escalation rules to match your organization's risk profile
               </CardDescription>
             </div>
             <Button onClick={handleSave} disabled={saving}>

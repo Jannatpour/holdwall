@@ -7,16 +7,19 @@
 
 ## 🔑 Supabase Credentials
 
+**⚠️ SECURITY WARNING**: Never commit secrets to version control.  
+All sensitive credentials should be stored in environment variables or secure secret management systems.
+
 ### API Keys
 
-- **Publishable Key**: `sb_publishable_MVN2gi8t1HGggRon9K-3RA_iFQjPY-X.`
-- **Secret Key**: `sb_secret_y3sP0cCWnwVvvJ16jtxZdQ_fKkA1P8-`
+- **Publishable Key**: `[REDACTED - Get from Supabase Dashboard or NEXT_PUBLIC_SUPABASE_ANON_KEY env var]`
+- **Secret Key**: `[REDACTED - Get from Supabase Dashboard or SUPABASE_SERVICE_ROLE_KEY env var]`
 - **REST URL**: `https://hrzxbonjpffluuiwpzwe.supabase.co`
 
 ### Database Credentials
 
 - **Project Ref**: `hrzxbonjpffluuiwpzwe`
-- **Password**: `@HoldWall2026.`
+- **Password**: `[REDACTED - Get from Supabase Dashboard or secure storage]`
 - **Database**: `postgres`
 
 ---
@@ -57,8 +60,9 @@ If you want to use Supabase REST API in your application:
 
 ```bash
 # Add to Vercel environment variables
-echo 'sb_publishable_MVN2gi8t1HGggRon9K-3RA_iFQjPY-X.' | vc env add NEXT_PUBLIC_SUPABASE_ANON_KEY production
-echo 'sb_secret_y3sP0cCWnwVvvJ16jtxZdQ_fKkA1P8-' | vc env add SUPABASE_SERVICE_ROLE_KEY production
+# Get these values from Supabase Dashboard: https://supabase.com/dashboard/project/hrzxbonjpffluuiwpzwe/settings/api
+echo '[YOUR_PUBLISHABLE_KEY]' | vc env add NEXT_PUBLIC_SUPABASE_ANON_KEY production
+echo '[YOUR_SECRET_KEY]' | vc env add SUPABASE_SERVICE_ROLE_KEY production
 echo 'https://hrzxbonjpffluuiwpzwe.supabase.co' | vc env add NEXT_PUBLIC_SUPABASE_URL production
 ```
 

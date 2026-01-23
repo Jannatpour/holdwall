@@ -46,9 +46,18 @@ export function useOffline(): UseOfflineReturn {
     window.addEventListener("offline", handleOffline);
 
     // Load pending actions asynchronously after mount
-    void loadPendingActions();
+    let cancelled = false;
+    offlineStorage
+      .getPendingActions()
+      .then((actions) => {
+        if (!cancelled) setPendingActions(actions);
+      })
+      .catch((error) => {
+        console.error("Failed to load pending actions:", error);
+      });
 
     return () => {
+      cancelled = true;
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };

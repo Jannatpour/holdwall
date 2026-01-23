@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "__tests__/advanced",
+    "__tests__/e2e",
+    "__tests__/integration",
+    "__tests__/load",
+    "scripts",
+    ".next"
+  ]
+}
+

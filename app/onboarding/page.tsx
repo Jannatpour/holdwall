@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Shield, MessageSquare, FileText, Sparkles } from "lucide-react";
 
-type SKUType = "A" | "B" | "C" | null;
+type SKUType = "A" | "B" | "C" | "D" | null;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -41,6 +41,7 @@ export default function OnboardingPage() {
         "Outbreak forecasting (Hawkes + graph)",
         "Anomaly detection + drift",
         "Preemption playbooks",
+        "Security incident integration",
         "Timed publishing",
       ],
       useCase: "Financial, Regulated, Trust & Safety",
@@ -57,6 +58,20 @@ export default function OnboardingPage() {
         "CRM handoff",
       ],
       useCase: "Legal, Claims, Incident Response",
+    },
+    {
+      id: "D" as const,
+      title: "Security Incident Narrative Management",
+      description: "When security incidents happen, govern how AI systems understand and communicate about them",
+      icon: Shield,
+      features: [
+        "Security tool webhook integration",
+        "Automated narrative risk assessment",
+        "AI-governed incident explanations",
+        "Multi-stakeholder approvals",
+        "AI citation tracking",
+      ],
+      useCase: "CISO, Security, AI Governance",
     },
   ];
 

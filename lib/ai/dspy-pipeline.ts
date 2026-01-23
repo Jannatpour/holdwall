@@ -117,11 +117,11 @@ export class DSPyPipelineOptimizer {
     // Optimize each module sequentially
     const optimizedModules: DSPyModule[] = [];
 
-    for (const module of pipeline.modules) {
-      logger.info("DSPy: Optimizing module", { module_id: module.id, module_name: module.name });
+    for (const pipelineModule of pipeline.modules) {
+      logger.info("DSPy: Optimizing module", { module_id: pipelineModule.id, module_name: pipelineModule.name });
 
       const optimized = await this.optimizeModule(
-        module,
+        pipelineModule,
         pipeline.golden_set,
         pipeline.metrics,
         metricWeights,
@@ -182,7 +182,7 @@ export class DSPyPipelineOptimizer {
 
         // Record optimization
         const optimization: DSPyOptimization = {
-          run_id: `opt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          run_id: `opt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
           timestamp: new Date().toISOString(),
           metrics_before: metricsBefore,
           metrics_after: await this.evaluateModule(bestCandidate, goldenSet, metrics),

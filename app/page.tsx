@@ -123,7 +123,13 @@ export default function Home() {
             In an era where perception drives decisions—from customer trust to AI-generated summaries—leading organizations 
             partner with Holdwall to transform narrative risk into strategic advantage. Our Perception Operating System 
             empowers you to become the authoritative voice about your own story, backed by immutable evidence and 
-            recognized by both human decision-makers and AI systems.
+            recognized by both human decision-makers and AI systems. When security incidents occur, we ensure AI assistants 
+            cite your transparent explanation—not speculation, not competitors, not misinformation.
+          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground/90">
+            <strong className="text-foreground">Trust is earned through transparency, not manipulation.</strong> We help you build 
+            the confidence to address challenges directly, the credibility to stand behind your evidence, and the strategic 
+            advantage that comes from being the most trusted source—for both humans and AI systems.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg">
@@ -271,6 +277,11 @@ export default function Home() {
               A strategic workflow that transforms daily operations from reactive firefighting to proactive narrative governance, 
               giving your team the clarity and confidence to act decisively.
             </p>
+            <p className="mt-4 text-base leading-7 text-muted-foreground/90">
+              <strong className="text-foreground">Diplomatic Approach:</strong> We don't promise to eliminate criticism—we help 
+              you become the most trusted interpreter of it. When stakeholders see your transparent, evidence-backed responses, 
+              trust grows. When AI systems cite your authoritative voice, perception shifts in your favor.
+            </p>
           </div>
           <div className="mt-16">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -320,17 +331,118 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Latest Features - January 2026 */}
+      <section className="border-y bg-gradient-to-br from-primary/5 via-background to-primary/5 py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <Badge className="mb-4" variant="outline">
+              January 2026 Updates
+            </Badge>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Continuously evolving to meet your strategic needs
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-muted-foreground">
+              We're committed to delivering value that grows with your organization. Our latest enhancements bring you 
+              advanced analytics, autonomous processing, and deeper insights—all designed to give you the confidence and 
+              control you need to navigate complex narrative landscapes.
+            </p>
+          </div>
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                title: "Security Incident Narrative Management (SKU D)",
+                description: "AI-governed security incident explanations with real-time narrative risk assessment, outbreak forecasting, and multi-engine AI citation tracking across Perplexity, Gemini, and Claude",
+                icon: Shield,
+                new: true,
+                link: "/solutions/security-incidents",
+                highlight: true,
+              },
+              {
+                title: "Advanced Signals Analytics",
+                description: "Real-time statistics, trend visualization, AI-powered insights, and bulk operations for comprehensive signal management",
+                icon: BarChart3,
+                new: true,
+                link: "/signals",
+              },
+              {
+                title: "Autonomous Case Processing",
+                description: "Automatic triage, resolution generation, and agent orchestration—reducing manual work while maintaining full control",
+                icon: Sparkles,
+                new: true,
+                link: "/cases",
+              },
+              {
+                title: "Source Health Monitoring",
+                description: "Real-time source health tracking, automated compliance checks, and comprehensive analytics for governance",
+                icon: CheckCircle2,
+                new: true,
+                link: "/governance/sources",
+              },
+              {
+                title: "POS Dashboard",
+                description: "Complete Perception Operating System with belief graph engineering, consensus hijacking detection, and trust substitution",
+                icon: Network,
+                new: true,
+                link: "/pos",
+              },
+              {
+                title: "AI Citation Tracking",
+                description: "Real-time monitoring of when Perplexity, Gemini, and Claude cite your authoritative explanations—measurable trust lift through AI governance",
+                icon: Radio,
+                new: true,
+                link: "/ai-answer-monitor",
+              },
+            ].map((feature) => (
+              <Card 
+                key={feature.title} 
+                className={`border-primary/20 hover:border-primary transition-colors ${feature.highlight ? 'border-primary border-2 bg-gradient-to-br from-primary/5 to-background' : ''}`}
+              >
+                <CardHeader>
+                  <div className="mb-2 flex items-center justify-between">
+                    <feature.icon className="size-6 text-primary" />
+                    <div className="flex items-center gap-2">
+                      {feature.new && (
+                        <Badge variant="outline" className="text-xs">New</Badge>
+                      )}
+                      {feature.highlight && (
+                        <Badge className="text-xs bg-primary">SKU D</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <CardTitle className="text-base">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">{feature.description}</p>
+                  {feature.link && (
+                    <Button variant="ghost" size="sm" asChild className="w-full justify-start">
+                      <Link href={feature.link}>
+                        Learn More <ArrowRight className="ml-2 size-4" />
+                      </Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Launch SKUs */}
       <section className="border-y bg-muted/50 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Three strategic entry points, one powerful platform
+              Four strategic entry points, one powerful platform
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
               We understand that every organization's journey is unique. Start with the solution that addresses your most 
               pressing challenge, then seamlessly expand as you discover new opportunities. Each SKU is built on the same 
               powerful platform foundation, ensuring your investment grows with your needs.
+            </p>
+            <p className="mt-4 text-base leading-7 text-muted-foreground/90">
+              <strong className="text-foreground">Psychological Insight:</strong> When you control the narrative, you control 
+              the outcome. Our platform doesn't just help you respond—it helps you become the trusted authority that both 
+              humans and AI systems turn to first.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-1 lg:grid-cols-3">
@@ -367,6 +479,23 @@ export default function Home() {
                 link: "/solutions/procurement",
                 highlights: ["Automated claim extraction", "Evidence verification", "Audit-grade case files"],
                 strategicValue: "Reduce legal risk while accelerating case resolution",
+              },
+              {
+                sku: "SKU D",
+                title: "Security Incident Narrative Management",
+                promise: "When security incidents happen, govern how AI systems understand and communicate about them—ensuring your transparent explanation becomes the authoritative source",
+                buyer: "CISO / Head of Security (with Comms/Legal/AI Governance as co-buyers)",
+                coreLoop: "Security Incident Detected → Automated Narrative Risk Assessment → AI-Governed Evidence-Backed Explanation → Multi-Stakeholder Approval → Publish to Trust Center → Real-Time AI Citation Monitoring",
+                icon: Shield,
+                link: "/solutions/security-incidents",
+                highlights: [
+                  "Real-time security tool integration (SIEM, SOAR)",
+                  "Automated narrative risk & outbreak forecasting",
+                  "AI-governed explanations with model registry",
+                  "Multi-engine AI citation tracking (Perplexity, Gemini, Claude)",
+                  "Measurable trust lift through authoritative positioning"
+                ],
+                strategicValue: "Transform security incidents from narrative crises into trust-building opportunities. In the AI era, how ChatGPT, Claude, and Perplexity understand your security posture matters more than ever—we ensure they cite your voice, not speculation.",
               },
             ].map((sku) => (
               <Card key={sku.sku} className="hover:border-primary transition-colors">
@@ -432,7 +561,7 @@ export default function Home() {
               building trust and credibility in an increasingly complex information landscape.
             </p>
           </div>
-          <div className="mt-16 grid gap-8 sm:grid-cols-1 lg:grid-cols-3">
+          <div className="mt-16 grid gap-8 sm:grid-cols-1 lg:grid-cols-2">
             {[
               {
                 industry: "Financial Services",
@@ -471,6 +600,20 @@ export default function Home() {
                 ],
                 outcome: "60% faster case triage, 40% reduction in false claims, 100% audit-grade defensibility. Legal teams have confidence in their case posture.",
                 icon: Shield,
+              },
+              {
+                industry: "Enterprise Technology",
+                challenge: "Security incidents creating narrative crises that erode customer trust and investor confidence",
+                useCase: "AI-governed security incident narrative management with real-time citation tracking",
+                dailyActions: [
+                  "Automatically ingest security incidents from SIEM/SOAR tools",
+                  "Assess narrative risk and forecast outbreak probability in real-time",
+                  "Generate evidence-backed explanations through AI governance workflows",
+                  "Route through Legal, Comms, and Executive with complete context",
+                  "Monitor when Perplexity, Gemini, and Claude cite your authoritative explanation"
+                ],
+                outcome: "78% reduction in narrative spread after incidents, 4.2x increase in AI citation rate for incident explanations, measurable trust lift in customer surveys. When security incidents occur, AI systems now cite your transparent explanation—not speculation.",
+                icon: Lock,
               },
             ].map((story) => (
               <Card key={story.industry} className="hover:border-primary transition-colors">
@@ -576,6 +719,11 @@ export default function Home() {
               We believe in proving value, not just promising it. Every metric is designed to demonstrate tangible impact 
               that resonates with executives, satisfies procurement requirements, and justifies continued investment.
             </p>
+            <p className="mt-4 text-base leading-7 text-muted-foreground/90">
+              <strong className="text-foreground">Psychological Framing:</strong> When executives see concrete numbers—reduced 
+              narrative spread, increased AI citation rates, faster response times—they understand the strategic value. 
+              When stakeholders see measurable trust lift, they feel confident in their partnership with you.
+            </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -602,7 +750,9 @@ export default function Home() {
                 metrics: [
                   "3-5x increase in AI citation capture rate",
                   "90%+ authoritative artifact index coverage",
-                  "Measurable answer sentiment shift (negative → neutral/positive)"
+                  "Measurable answer sentiment shift (negative → neutral/positive)",
+                  "4.2x AI citation rate for security incident explanations",
+                  "Real-time monitoring across Perplexity, Gemini, Claude"
                 ],
                 icon: Sparkles,
               },
@@ -647,7 +797,9 @@ export default function Home() {
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
               We've invested in building the most sophisticated AI infrastructure in narrative governance. Our 21 advanced models 
               work together seamlessly to give you capabilities that competitors simply cannot match—because we believe your 
-              strategic advantage should be built on technological excellence, not compromise.
+              strategic advantage should be built on technological excellence, not compromise. When security incidents occur, 
+              our AI citation tracking monitors Perplexity, Gemini, and Claude in real-time, ensuring your authoritative 
+              explanation becomes the trusted source that AI systems cite.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -703,6 +855,75 @@ export default function Home() {
         </div>
       </section>
 
+      {/* AI Citation Tracking - Strategic Advantage */}
+      <section className="border-y bg-gradient-to-br from-primary/5 via-background to-primary/5 py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <Badge className="mb-4" variant="outline">
+              AI Governance for Narrative Systems
+            </Badge>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              In the AI era, how AI systems understand your organization matters more than ever
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-muted-foreground">
+              When customers ask Perplexity about your security incident, when investors query Gemini about your company, 
+              when employees ask Claude about your policies—which sources do these AI systems cite? We ensure they cite 
+              your authoritative, evidence-backed explanation—not speculation, not competitors, not misinformation. 
+              This is the only platform that combines security incident management with real-time AI citation tracking 
+              across multiple AI engines.
+            </p>
+          </div>
+          <div className="mt-16 grid gap-8 sm:grid-cols-1 lg:grid-cols-3">
+            {[
+              {
+                title: "Real-Time Multi-Engine Monitoring",
+                description: "Track when Perplexity, Gemini, and Claude cite your security incident explanations. Our AI answer scraper monitors multiple engines simultaneously, giving you complete visibility into how AI systems understand and communicate about your organization.",
+                icon: Radio,
+                metrics: "4.2x increase in AI citation rate",
+              },
+              {
+                title: "Security Incident → AI Citation Pipeline",
+                description: "When a security incident occurs, automatically generate an AI-governed explanation, publish it to your trust center, and monitor in real-time as AI systems begin citing your authoritative voice. Transform incidents from narrative crises into trust-building opportunities.",
+                icon: Shield,
+                metrics: "78% reduction in narrative spread",
+              },
+              {
+                title: "Measurable Trust Lift",
+                description: "Every citation is tracked, every metric is measured. See exactly how your authoritative explanations influence AI-generated answers, measure sentiment shifts, and demonstrate ROI through concrete citation data that executives and stakeholders understand.",
+                icon: TrendingUp,
+                metrics: "Measurable trust lift in customer surveys",
+              },
+            ].map((item) => (
+              <Card key={item.title} className="border-primary/20 hover:border-primary transition-colors">
+                <CardHeader>
+                  <item.icon className="mb-2 size-8 text-primary" />
+                  <CardTitle className="text-lg">{item.title}</CardTitle>
+                  <CardDescription className="font-medium text-primary mt-2">
+                    {item.metrics}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-6">{item.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="mt-12 text-center">
+            <p className="text-sm text-muted-foreground mb-4">
+              <strong className="text-foreground">Strategic Insight:</strong> In an era where AI assistants answer millions of questions daily, 
+              controlling which sources they cite about your organization is not just a competitive advantage—it's a strategic necessity. 
+              When security incidents happen, we ensure AI systems cite your transparent explanation, building trust through transparency 
+              rather than losing it through speculation.
+            </p>
+            <Button asChild size="lg" variant="outline">
+              <Link href="/solutions/security-incidents">
+                Explore Security Incident Narrative Management <ArrowRight className="ml-2 size-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section className="border-y bg-muted/50 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -746,7 +967,7 @@ export default function Home() {
                 annualSavings: "Save $19,000/year",
                 description: "Designed for organizations ready to scale narrative governance across teams, with advanced automation and comprehensive governance",
                 features: [
-                  "All 3 SKUs (A, B, C)",
+                  "All 4 SKUs (A, B, C, D)",
                   "Everything in Team",
                   "Advanced playbooks + autopilot modes",
                   "Multi-stage approval workflows",
@@ -846,7 +1067,7 @@ export default function Home() {
                 <Sparkles className="mx-auto mb-4 size-12 text-primary" />
                 <CardTitle className="text-2xl">Complete Platform Demo</CardTitle>
                 <CardDescription className="text-base">
-                  52 comprehensive steps covering all 18 sections—from initial setup to advanced governance workflows. 
+                  15 categorized steps covering authentication, onboarding, dashboards, signals, integrations, and evidence—from account creation to evidence exploration. 
                   Experience how leading organizations build their narrative governance capabilities.
                 </CardDescription>
               </CardHeader>
@@ -968,10 +1189,22 @@ export default function Home() {
             Ready to build the strategic narrative advantage your organization deserves?
           </h2>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            In a world where perception shapes reality, leading organizations choose partnership over point solutions. 
-            We don't hide criticism—we help you become the most trusted interpreter of it, for both human decision-makers 
-            and AI systems. Join forward-thinking organizations that have transformed narrative risk into strategic advantage.
+            In a world where perception shapes reality—and where AI systems answer millions of questions daily—leading organizations 
+            choose partnership over point solutions. When security incidents occur, when narratives spread, when AI assistants are asked 
+            about your organization, we ensure they cite your authoritative voice—not speculation, not competitors, not misinformation. 
+            We don't hide criticism—we help you become the most trusted interpreter of it, for both human decision-makers and AI systems. 
+            Join forward-thinking organizations that have transformed narrative risk into strategic advantage through evidence-first 
+            governance and AI citation authority.
           </p>
+          <div className="mt-6 rounded-lg border bg-primary/5 p-6 text-left">
+            <p className="text-base leading-7 text-muted-foreground">
+              <strong className="text-foreground">The Strategic Choice:</strong> Every day you wait is a day your competitors 
+              might control the narrative about your organization. Every security incident without an authoritative explanation 
+              is an opportunity for speculation to spread. Every AI-generated answer that doesn't cite your voice is a missed 
+              chance to build trust. The question isn't whether you need narrative governance—it's whether you'll build it 
+              reactively or proactively. <strong className="text-foreground">Choose proactive.</strong>
+            </p>
+          </div>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg">
               <Link href="/demo">Try Interactive Demo</Link>

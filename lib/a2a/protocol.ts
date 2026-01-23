@@ -156,11 +156,26 @@ export class A2AProtocol {
    * Register agent in the network with security verification
    */
   async registerAgent(identity: AgentIdentity): Promise<void> {
-    // Verify agent identity with protocol security
+    // Bootstrap identity if needed (first registration establishes the public key used for verification).
+    // Agents provide their public key; the server does not require the private key.
     const protocolSecurity = getProtocolSecurity();
-    const securityContext = await protocolSecurity.verifyAgentIdentity(identity.agentId);
+    let securityContext = await protocolSecurity.verifyAgentIdentity(identity.agentId);
+    if (!securityContext) {
+      if (!identity.publicKey) {
+        throw new Error(
+          `Initial agent registration requires a publicKey: ${identity.agentId}`
+        );
+      }
+      await protocolSecurity.registerAgentIdentity(identity.agentId, identity.publicKey, {
+        metadata: {
+          ...(identity.metadata || {}),
+          bootstrappedBy: "a2a.registerAgent",
+        },
+      });
+      securityContext = await protocolSecurity.verifyAgentIdentity(identity.agentId);
+    }
 
-    if (!securityContext || !securityContext.identityVerified) {
+    if (!securityContext?.identityVerified) {
       throw new Error(`Agent identity verification failed: ${identity.agentId}`);
     }
 

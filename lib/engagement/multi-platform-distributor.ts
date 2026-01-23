@@ -12,6 +12,7 @@ import { CommentPublisher } from "../publishing/comment-publisher";
 import { ForumMonitor } from "../monitoring/forum-monitor";
 
 export interface MultiPlatformDistributionOptions {
+  tenantId: string;
   response: string;
   platforms: Array<"twitter" | "linkedin" | "facebook" | "reddit" | "forum" | "comment">;
   originalPost?: {
@@ -52,7 +53,7 @@ export class MultiPlatformDistributor {
   async distribute(
     options: MultiPlatformDistributionOptions
   ): Promise<DistributionResult[]> {
-    const { response, platforms, originalPost, links = [], requireApproval = true } = options;
+    const { tenantId, response, platforms, originalPost, links = [], requireApproval = true } = options;
 
     const results: DistributionResult[] = [];
 
@@ -70,7 +71,7 @@ export class MultiPlatformDistributor {
           case "reddit":
           case "forum":
             if (originalPost) {
-              result = await this.distributeToForum(platform, response, originalPost);
+              result = await this.distributeToForum(platform, tenantId, response, originalPost);
             } else {
               result = {
                 platform,
@@ -82,7 +83,7 @@ export class MultiPlatformDistributor {
 
           case "comment":
             if (originalPost) {
-              result = await this.distributeAsComment(response, originalPost.url, requireApproval);
+              result = await this.distributeAsComment(tenantId, response, originalPost.url, requireApproval);
             } else {
               result = {
                 platform,
@@ -159,6 +160,7 @@ export class MultiPlatformDistributor {
    */
   private async distributeToForum(
     platform: "reddit" | "forum",
+    tenantId: string,
     response: string,
     originalPost: { url: string; platform: string; content: string }
   ): Promise<DistributionResult> {
@@ -178,6 +180,7 @@ export class MultiPlatformDistributor {
 
       // Use ForumEngagement to post reply
       const engagement = await this.forumEngagement.engage({
+        tenantId,
         forum: forumType,
         query: originalPost.content.substring(0, 100), // Use content as query
         brandName: "Holdwall", // Would be passed from options
@@ -219,12 +222,14 @@ export class MultiPlatformDistributor {
    * Distribute as comment
    */
   private async distributeAsComment(
+    tenantId: string,
     response: string,
     url: string,
     requireApproval: boolean
   ): Promise<DistributionResult> {
     try {
       const result = await this.commentPublisher.publishComment({
+        tenantId,
         url,
         content: response,
         requireApproval,
@@ -249,11 +254,13 @@ export class MultiPlatformDistributor {
    * Distribute to all platforms
    */
   async distributeToAll(
+    tenantId: string,
     response: string,
     originalPost?: { url: string; platform: string; content: string },
     links?: string[]
   ): Promise<DistributionResult[]> {
     return await this.distribute({
+      tenantId,
       response,
       platforms: ["twitter", "linkedin", "facebook", "reddit", "forum", "comment"],
       originalPost,

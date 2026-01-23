@@ -1,12 +1,14 @@
 /**
- * PWA Manifest Route
- * Next.js 13+ App Router manifest generation
+ * PWA Manifest Route Handler
+ * Serves the web manifest at /manifest.webmanifest
+ * This route file is required by Vercel to apply function configs from vercel.json
  */
 
 import { MetadataRoute } from "next";
+import { NextResponse } from "next/server";
 
-export default function manifest(): MetadataRoute.Manifest {
-  return {
+export async function GET() {
+  const manifest: MetadataRoute.Manifest = {
     name: "Holdwall POS",
     short_name: "Holdwall",
     description: "Evidence-first, agentic perception engineering for the AI era",
@@ -27,4 +29,10 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
   };
+
+  return NextResponse.json(manifest, {
+    headers: {
+      "Content-Type": "application/manifest+json",
+    },
+  });
 }

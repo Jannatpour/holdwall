@@ -11,6 +11,7 @@ import { ApprovalGateway } from "./approval-gateway";
 
 export interface CrisisAlert {
   id: string;
+  tenantId: string;
   type: "sentiment_spike" | "volume_spike" | "negative_narrative" | "coordinated_attack";
   severity: "low" | "medium" | "high" | "critical";
   description: string;
@@ -103,19 +104,22 @@ export class CrisisResponder {
       status = "approved";
     } else {
       // Route for approval
-      const approval = await this.approvalGateway.requestApproval({
-        resourceType: "crisis_response",
-        resourceId: alert.id,
-        action: "publish",
-        content: response,
-        context: {
-          forum: "crisis",
-          postUrl: "",
-          postAuthor: "System",
-          brandName: "Unknown",
+      const approval = await this.approvalGateway.requestApproval(
+        {
+          resourceType: "crisis_response",
+          resourceId: alert.id,
+          action: "publish",
+          content: response,
+          context: {
+            forum: "crisis",
+            postUrl: "",
+            postAuthor: "System",
+            brandName: "Unknown",
+          },
+          priority: "high",
         },
-        priority: "high",
-      });
+        alert.tenantId
+      );
 
       status = approval.status === "approved" ? "approved" : "pending";
     }
@@ -124,6 +128,7 @@ export class CrisisResponder {
     if (status === "approved") {
       try {
         const distributionResults = await this.distributor.distribute({
+          tenantId: alert.tenantId,
           response,
           platforms: playbook.platforms as any,
           requireApproval: false, // Already approved

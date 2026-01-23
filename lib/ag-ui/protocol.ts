@@ -679,9 +679,12 @@ export class AGUIProtocol {
    * Start session cleanup (remove old sessions)
    */
   private startSessionCleanup(): void {
-    setInterval(() => {
-      this.cleanupOldSessions();
+    if (process.env.NODE_ENV === "test") return;
+    const timer = setInterval(() => {
+      void this.cleanupOldSessions();
     }, 3600000); // Every hour
+    // Don't keep the process alive just for cleanup.
+    (timer as any).unref?.();
   }
 
   /**

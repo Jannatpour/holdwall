@@ -42,39 +42,51 @@ export function FinancialServicesPlaybookViewer() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card>
+      {/* Strategic Header */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/5">
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <Building2 className="h-8 w-8 text-blue-600" />
-            <div className="flex-1">
-              <CardTitle className="text-2xl">POS for Financial Services</CardTitle>
-              <CardDescription className="text-base mt-1">
-                Complete Business Operating Playbook for Banks · FinTech · Payments · Insurance
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-primary/10 rounded-xl">
+              <Building2 className="h-10 w-10 text-primary" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <CardTitle className="text-3xl font-bold tracking-tight">
+                Financial Services Operating Playbook
+              </CardTitle>
+              <CardDescription className="text-base leading-6">
+                Complete enterprise operating framework for Banks · FinTech · Payments · Insurance. 
+                Exhaustive, non-marketing documentation designed for direct use in enterprise sales, 
+                onboarding, compliance review, and executive briefings.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-sm">
+            <Badge variant="outline" className="text-sm px-4 py-2">
               <Shield className="mr-2 h-4 w-4" />
               Enterprise-Ready
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground italic">
-            This playbook is exhaustive, non-marketing, and written for direct use in enterprise
-            sales, onboarding, compliance review, and executive briefings.
-          </p>
+          <div className="rounded-lg border bg-muted/30 p-4">
+            <p className="text-sm text-muted-foreground leading-6 italic">
+              This playbook provides comprehensive, actionable guidance for implementing narrative 
+              risk governance in financial services organizations. Every section is designed for 
+              practical application, regulatory compliance, and strategic decision-making.
+            </p>
+          </div>
         </CardContent>
       </Card>
 
       <div className="grid lg:grid-cols-4 gap-6">
-        {/* Table of Contents */}
-        <Card className="lg:col-span-1">
+        {/* Strategic Table of Contents */}
+        <Card className="lg:col-span-1 border-primary/20">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Contents
+              <BookOpen className="h-5 w-5 text-primary" />
+              Navigation
             </CardTitle>
+            <CardDescription className="text-sm">
+              Quick access to playbook sections
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[calc(100vh-300px)]">

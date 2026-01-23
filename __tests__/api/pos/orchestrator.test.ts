@@ -1,11 +1,14 @@
 /**
  * API Tests for POS Orchestrator
+ * @jest-environment node
  */
 
 import { POST, GET } from "@/app/api/pos/orchestrator/route";
 import { NextRequest } from "next/server";
 
-jest.mock("@/lib/auth/server");
+jest.mock("@/lib/auth/session", () => ({
+  requireAuth: jest.fn().mockResolvedValue({ id: "user-1", tenantId: "tenant-1" }),
+}));
 jest.mock("@/lib/pos/orchestrator");
 
 describe("POS Orchestrator API", () => {
@@ -13,9 +16,8 @@ describe("POS Orchestrator API", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (require("@/lib/auth/server").requireAuth as jest.Mock) = jest
-      .fn()
-      .mockResolvedValue(mockUser);
+    const { requireAuth } = require("@/lib/auth/session");
+    (requireAuth as jest.Mock).mockResolvedValue(mockUser);
   });
 
   describe("GET /api/pos/orchestrator", () => {

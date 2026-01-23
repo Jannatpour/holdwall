@@ -1,8 +1,11 @@
 # 🗄️ Supabase Database Setup - holdwall-production
 
+**⚠️ SECURITY WARNING**: Never commit passwords or secrets to version control.  
+All sensitive credentials should be stored in environment variables or secure secret management systems.
+
 **Project**: holdwall-production  
 **Project Ref**: hrzxbonjpffluuiwpzwe  
-**Password**: @HoldWall2026.  
+**Password**: `[REDACTED - Get from Supabase Dashboard or secure storage]`  
 **Dashboard**: https://supabase.com/dashboard/project/hrzxbonjpffluuiwpzwe
 
 ---
@@ -81,7 +84,7 @@ npm run deploy:vercel
 
 - ✅ Supabase project: holdwall-production
 - ✅ Project ref: hrzxbonjpffluuiwpzwe
-- ✅ Password: @HoldWall2026.
+- ✅ Password: `[REDACTED - Configured in secure storage]`
 - ⚠️ Connection string: Need exact format from Supabase dashboard
 - ✅ DATABASE_URL placeholder: Updated in Vercel (needs correct connection string)
 

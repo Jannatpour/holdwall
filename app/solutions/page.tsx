@@ -37,7 +37,7 @@ const solutions = [
     title: "Narrative Risk Early Warning",
     promise: "Detect and defuse narrative outbreaks before virality",
     buyer: "Head of Trust & Safety / Risk",
-    description: "Ingest signals → diffusion forecasting (Hawkes + graph) → preemption playbooks → approvals → publish.",
+    description: "Ingest signals → diffusion forecasting (Hawkes + graph) → preemption playbooks → approvals → publish. Enhanced with security incident capabilities.",
     href: "/solutions/security",
     icon: Shield,
   },
@@ -49,6 +49,15 @@ const solutions = [
     description: "Evidence vault → claim extraction → verification → structured intake packet → CRM handoff.",
     href: "/solutions/procurement",
     icon: ShoppingCart,
+  },
+  {
+    sku: "SKU D",
+    title: "Security Incident Narrative Management",
+    promise: "When security incidents happen, govern how AI systems understand and communicate about them",
+    buyer: "CISO / Head of Security",
+    description: "Security Incident Detected → Narrative Risk Assessment → AI-Governed Explanation → Approvals → Publish → Monitor AI Citations.",
+    href: "/solutions/security-incidents",
+    icon: Shield,
   },
   {
     title: "Support & Ops",
@@ -122,7 +131,7 @@ export default function SolutionsPage() {
     <SiteShell>
       <div className="space-y-10">
         <div className="space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight">Three Launch SKUs</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Four Strategic SKUs</h1>
           <p className="max-w-2xl text-muted-foreground leading-7">
             Start with one wedge product. Each SKU has opinionated onboarding, pre-built workflows, 
             limited surface area, and clear ROI metrics—all using the same POS platform backbone.

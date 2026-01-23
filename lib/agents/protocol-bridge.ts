@@ -148,7 +148,15 @@ export class ProtocolBridge {
         type: ACPMessageType;
         payload: ACPMessagePayload;
       };
-      const messageId = await this.acpClient.send(type, payload);
+      const messageId = await this.acpClient.send(type, payload, {
+        tenant_id: request.tenantId,
+        actor_id: request.agentId || request.userId,
+        metadata: {
+          protocol: "acp",
+          initiator_user_id: request.userId,
+          initiator_agent_id: request.agentId,
+        },
+      });
       return { messageId };
     }
 

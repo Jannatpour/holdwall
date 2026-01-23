@@ -147,13 +147,11 @@ export class SecretsManagementService {
    * Retrieve a secret (with access logging)
    */
   async retrieve(tenantId: string, name: string): Promise<string | null> {
-    // Check cache first
-    const cached = await getCache<SecretMetadata>(`secret:meta:${tenantId}:${name}`);
-    if (!cached) {
-      return null;
-    }
+    // Cache is an optimization only. Always fall back to DB when cache misses.
+    const cacheKey = `secret:meta:${tenantId}:${name}`;
+    const cached = await getCache<SecretMetadata>(cacheKey);
 
-    // Fetch encrypted value from database
+    // Fetch encrypted value from database (source of truth)
     const secret = await db.secret.findFirst({
       where: {
         tenantId,
@@ -167,6 +165,26 @@ export class SecretsManagementService {
 
     if (!secret) {
       return null;
+    }
+
+    // Backfill metadata cache on miss (or if stale/mismatched)
+    if (!cached || cached.id !== secret.id) {
+      const metadata: SecretMetadata = {
+        id: secret.id,
+        name: secret.name,
+        type: secret.type as SecretMetadata["type"],
+        service: secret.service || undefined,
+        tenantId: secret.tenantId,
+        lastRotated: secret.lastRotated || undefined,
+        nextRotation: secret.nextRotation || undefined,
+        rotationPolicy: secret.rotationPolicy as SecretMetadata["rotationPolicy"],
+        rotationIntervalDays: secret.rotationIntervalDays || undefined,
+        accessCount: secret.accessCount,
+        lastAccessed: secret.lastAccessed || undefined,
+        createdAt: secret.createdAt,
+        updatedAt: secret.updatedAt,
+      };
+      await setCache(cacheKey, metadata, { ttl: 3600 });
     }
 
     // Decrypt

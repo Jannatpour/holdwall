@@ -13,14 +13,14 @@
 - ✅ **NEXT_PUBLIC_BASE_URL**: `https://holdwall.com`
 
 ### Supabase API Keys
-- ✅ **NEXT_PUBLIC_SUPABASE_ANON_KEY**: `sb_publishable_MVN2gi8t1HGggRon9K-3RA_iFQjPY-X.`
-- ✅ **SUPABASE_SERVICE_ROLE_KEY**: `sb_secret_y3sP0cCWnwVvvJ16jtxZdQ_fKkA1P8-`
+- ✅ **NEXT_PUBLIC_SUPABASE_ANON_KEY**: `[REDACTED - Configured in Vercel environment variables]`
+- ✅ **SUPABASE_SERVICE_ROLE_KEY**: `[REDACTED - Configured in Vercel environment variables]`
 - ✅ **NEXT_PUBLIC_SUPABASE_URL**: `https://hrzxbonjpffluuiwpzwe.supabase.co`
 
 ### Supabase Database
 - ✅ **Project**: holdwall-production
 - ✅ **Project Ref**: hrzxbonjpffluuiwpzwe
-- ✅ **Password**: @HoldWall2026.
+- ✅ **Password**: `[REDACTED - Get from Supabase Dashboard]`
 - ⚠️ **DATABASE_URL**: Needs exact connection string from Supabase dashboard
 
 ### Other Environment Variables

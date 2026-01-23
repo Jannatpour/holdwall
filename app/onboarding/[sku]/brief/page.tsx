@@ -45,6 +45,9 @@ export default function BriefPage() {
     // For SKU B (Financial Services), redirect to Financial Services dashboard
     if (sku === "B" || sku === "b") {
       router.push("/financial-services");
+    } else if (sku === "D" || sku === "d") {
+      // For SKU D (Security Incidents), redirect to overview with security incidents filter
+      router.push("/overview?filter=security_incidents");
     } else {
       router.push("/overview");
     }

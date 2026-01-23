@@ -25,6 +25,10 @@ import {
   Target,
   Zap,
   Settings,
+  RefreshCw,
+  Activity,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -109,232 +113,450 @@ export function FinancialServicesDashboardClient() {
   }, []);
 
   return (
+    <div className="space-y-6">
+      {/* Strategic Header */}
+      <div className="flex items-center justify-between border-b pb-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Building2 className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Financial Services Command Center
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Transform narrative risk into measurable, governable operational advantage
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setLoading(true);
+              setError(null);
+            }}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
+      </div>
+
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-      <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground overflow-x-auto w-full">
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="workflow">Workflow</TabsTrigger>
-        <TabsTrigger value="narratives">Clusters</TabsTrigger>
-        <TabsTrigger value="brief">Brief</TabsTrigger>
-        <TabsTrigger value="explanations">Explanations</TabsTrigger>
-        <TabsTrigger value="preemption">Preemption</TabsTrigger>
-        <TabsTrigger value="monthly-report">Monthly Report</TabsTrigger>
-        <TabsTrigger value="audit-export">Audit Export</TabsTrigger>
-        <TabsTrigger value="config">Config</TabsTrigger>
-        <TabsTrigger value="playbook">Playbook</TabsTrigger>
+      <TabsList className="inline-flex h-11 items-center justify-start rounded-lg bg-muted/50 p-1.5 text-muted-foreground overflow-x-auto w-full border">
+        <TabsTrigger 
+          value="overview" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Command Center
+        </TabsTrigger>
+        <TabsTrigger 
+          value="workflow" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Workflow
+        </TabsTrigger>
+        <TabsTrigger 
+          value="narratives" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Narratives
+        </TabsTrigger>
+        <TabsTrigger 
+          value="brief" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Executive Brief
+        </TabsTrigger>
+        <TabsTrigger 
+          value="explanations" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Explanations
+        </TabsTrigger>
+        <TabsTrigger 
+          value="preemption" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Preemption
+        </TabsTrigger>
+        <TabsTrigger 
+          value="monthly-report" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Impact Report
+        </TabsTrigger>
+        <TabsTrigger 
+          value="audit-export" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Audit Export
+        </TabsTrigger>
+        <TabsTrigger 
+          value="config" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Configuration
+        </TabsTrigger>
+        <TabsTrigger 
+          value="playbook" 
+          className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm px-4 py-2"
+        >
+          Playbook
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" className="space-y-6">
-        {/* Key Metrics */}
+        {/* Key Metrics with Enhanced Design */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {loading ? (
             <>
-              <Skeleton className="h-32" />
-              <Skeleton className="h-32" />
-              <Skeleton className="h-32" />
-              <Skeleton className="h-32" />
+              <Skeleton className="h-36 rounded-lg" />
+              <Skeleton className="h-36 rounded-lg" />
+              <Skeleton className="h-36 rounded-lg" />
+              <Skeleton className="h-36 rounded-lg" />
             </>
           ) : (
             <>
-              <Card>
+              <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Outbreak Probability</CardTitle>
-                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                  <div className="p-2 bg-destructive/10 rounded-lg">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-3xl font-bold mb-2">
                     {overview?.outbreakProbability ?? 0}%
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <Progress 
+                    value={overview?.outbreakProbability ?? 0} 
+                    className="h-2 mb-2"
+                  />
+                  <p className="text-xs text-muted-foreground">
                     Current narrative risk
                   </p>
                   {overview && overview.outbreakProbability >= 60 && (
-                    <Alert variant="destructive" className="mt-2">
+                    <Alert variant="destructive" className="mt-3 border-destructive/50">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription className="text-xs">
-                        High outbreak probability detected
+                        High outbreak probability detected - Immediate action recommended
                       </AlertDescription>
                     </Alert>
                   )}
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Active Clusters</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-3xl font-bold mb-2">
                     {overview?.activeClusters ?? 0}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <Progress 
+                    value={Math.min((overview?.activeClusters ?? 0) * 10, 100)} 
+                    className="h-2 mb-2"
+                  />
+                  <p className="text-xs text-muted-foreground">
                     Narrative clusters tracked
                   </p>
+                  <Button variant="ghost" size="sm" className="mt-2 h-auto p-0 text-xs" asChild>
+                    <Link href="/claims">
+                      View all <ArrowRight className="ml-1 h-3 w-3" />
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
-                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <div className="p-2 bg-yellow-500/10 rounded-lg">
+                    <Lock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-3xl font-bold mb-2">
                     {overview?.pendingLegalApprovals ?? 0}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  {overview && overview.pendingLegalApprovals > 0 && (
+                    <Progress 
+                      value={Math.min(overview.pendingLegalApprovals * 20, 100)} 
+                      className="h-2 mb-2"
+                    />
+                  )}
+                  <p className="text-xs text-muted-foreground">
                     Awaiting legal review
                   </p>
                   {overview && overview.pendingLegalApprovals > 0 && (
-                    <Button variant="link" size="sm" className="mt-2 p-0 h-auto" asChild>
-                      <Link href="/approvals">
-                        Review now <ExternalLink className="ml-1 h-3 w-3" />
+                    <Button variant="default" size="sm" className="mt-2 w-full" asChild>
+                      <Link href="/governance">
+                        Review Now <ExternalLink className="ml-1 h-3 w-3" />
                       </Link>
                     </Button>
                   )}
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Published Artifacts</CardTitle>
-                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <FileText className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-3xl font-bold mb-2">
                     {overview?.publishedArtifacts ?? 0}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <Progress 
+                    value={Math.min((overview?.publishedArtifacts ?? 0) * 5, 100)} 
+                    className="h-2 mb-2"
+                  />
+                  <p className="text-xs text-muted-foreground">
                     Evidence-backed explanations
                   </p>
+                  <Button variant="ghost" size="sm" className="mt-2 h-auto p-0 text-xs" asChild>
+                    <Link href="/studio">
+                      Create new <ArrowRight className="ml-1 h-3 w-3" />
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             </>
           )}
         </div>
 
-        {/* Governance Status */}
+        {/* Strategic Governance Status */}
         {overview && (
-          <Card>
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/5">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Financial Services Operating Mode</CardTitle>
-                  <CardDescription>
-                    Governance and compliance settings
+                <div className="space-y-1">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Shield className="h-5 w-5 text-primary" />
+                    Financial-Grade Governance Framework
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Enterprise risk management with regulatory compliance and legal oversight
                   </CardDescription>
                 </div>
-                <Badge variant="outline">
+                <Badge variant="outline" className="text-sm px-3 py-1.5">
                   <Shield className="mr-2 h-4 w-4" />
-                  {overview.governanceLevel.toUpperCase()} Governance
+                  {overview.governanceLevel.toUpperCase()} Mode
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Legal Approval Required</span>
-                  <Badge variant={overview.legalApprovalRequired ? "default" : "secondary"}>
-                    {overview.legalApprovalRequired ? "Enabled" : "Disabled"}
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                  <div className="space-y-0.5">
+                    <span className="text-sm font-medium">Legal Approval Gates</span>
+                    <span className="text-xs text-muted-foreground block">
+                      Required for all narrative responses
+                    </span>
+                  </div>
+                  <Badge variant={overview.legalApprovalRequired ? "default" : "secondary"} className="ml-4">
+                    {overview.legalApprovalRequired ? "Active" : "Inactive"}
                   </Badge>
                 </div>
-                <Alert>
-                  <Shield className="h-4 w-4" />
-                  <AlertTitle>Financial-Grade Governance Active</AlertTitle>
-                  <AlertDescription>
-                    Financial-grade governance is enabled with legal approval gates, higher evidence
-                    thresholds, and conservative publishing defaults. All narrative responses require
-                    legal review before publication.
-                  </AlertDescription>
-                </Alert>
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                  <div className="space-y-0.5">
+                    <span className="text-sm font-medium">Evidence Threshold</span>
+                    <span className="text-xs text-muted-foreground block">
+                      Higher standards for financial services
+                    </span>
+                  </div>
+                  <Badge variant="outline" className="ml-4">70% Minimum</Badge>
+                </div>
               </div>
+              <Alert className="border-primary/20 bg-primary/5">
+                <Shield className="h-5 w-5 text-primary" />
+                <AlertTitle className="text-base">Regulatory Compliance Active</AlertTitle>
+                <AlertDescription className="text-sm leading-6">
+                  Your organization operates under financial-grade governance with mandatory legal approval gates, 
+                  elevated evidence thresholds, and conservative publishing defaults. Every narrative response 
+                  undergoes legal review before publication, ensuring regulatory compliance and risk mitigation.
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
         )}
 
-        {/* Quick Actions */}
-        <Card>
+        {/* Strategic Quick Actions */}
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks for Financial Services operations</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Zap className="h-5 w-5 text-primary" />
+                  Strategic Operations Hub
+                </CardTitle>
+                <CardDescription className="text-base mt-1">
+                  Accelerate your narrative governance workflow with one-click access to critical operations
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => setActiveTab("workflow")}>
-                <Clock className="mr-2 h-4 w-4" />
-                <div className="text-left">
-                  <div className="font-medium">View Workflow Progress</div>
-                  <div className="text-xs text-muted-foreground">Day 1 → 7 → 30</div>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                onClick={() => setActiveTab("workflow")}
+              >
+                <div className="p-2 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors mr-3">
+                  <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
-              </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => setActiveTab("brief")}>
-                <FileText className="mr-2 h-4 w-4" />
-                <div className="text-left">
-                  <div className="font-medium">Generate Perception Brief</div>
-                  <div className="text-xs text-muted-foreground">Executive summary</div>
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-base">Workflow Progression</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Track Day 1 → 7 → 30 milestones</div>
                 </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" asChild>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                onClick={() => setActiveTab("brief")}
+              >
+                <div className="p-2 bg-purple-500/10 rounded-lg group-hover:bg-purple-500/20 transition-colors mr-3">
+                  <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-base">Executive Perception Brief</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Daily strategic intelligence</div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                asChild
+              >
                 <Link href="/claims">
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  <div className="text-left">
-                    <div className="font-medium">Review Claim Clusters</div>
-                    <div className="text-xs text-muted-foreground">Narrative analysis</div>
+                  <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors mr-3">
+                    <BarChart3 className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-base">Narrative Intelligence</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Analyze claim clusters</div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </Link>
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" asChild>
-                <Link href="/approvals">
-                  <Lock className="mr-2 h-4 w-4" />
-                  <div className="text-left">
-                    <div className="font-medium">Legal Approvals</div>
-                    <div className="text-xs text-muted-foreground">Review pending</div>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                asChild
+              >
+                <Link href="/governance">
+                  <div className="p-2 bg-yellow-500/10 rounded-lg group-hover:bg-yellow-500/20 transition-colors mr-3">
+                    <Lock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                   </div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-base">Legal Review Queue</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {overview?.pendingLegalApprovals ?? 0} pending approvals
+                    </div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </Link>
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" asChild>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                asChild
+              >
                 <Link href="/studio">
-                  <FileText className="mr-2 h-4 w-4" />
-                  <div className="text-left">
-                    <div className="font-medium">Create AAAL Artifact</div>
-                    <div className="text-xs text-muted-foreground">Evidence-backed response</div>
+                  <div className="p-2 bg-indigo-500/10 rounded-lg group-hover:bg-indigo-500/20 transition-colors mr-3">
+                    <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   </div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-base">Create Authoritative Response</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Evidence-backed artifacts</div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </Link>
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => setActiveTab("audit-export")}>
-                <Shield className="mr-2 h-4 w-4" />
-                <div className="text-left">
-                  <div className="font-medium">Export Audit Bundle</div>
-                  <div className="text-xs text-muted-foreground">Regulatory compliance</div>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                onClick={() => setActiveTab("audit-export")}
+              >
+                <div className="p-2 bg-red-500/10 rounded-lg group-hover:bg-red-500/20 transition-colors mr-3">
+                  <Shield className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-base">Regulatory Audit Export</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Compliance-ready bundles</div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => setActiveTab("explanations")}>
-                <FileText className="mr-2 h-4 w-4" />
-                <div className="text-left">
-                  <div className="font-medium">Generate Explanations</div>
-                  <div className="text-xs text-muted-foreground">Evidence-backed responses</div>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                onClick={() => setActiveTab("explanations")}
+              >
+                <div className="p-2 bg-teal-500/10 rounded-lg group-hover:bg-teal-500/20 transition-colors mr-3">
+                  <FileText className="h-5 w-5 text-teal-600 dark:text-teal-400" />
                 </div>
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-base">Generate Explanations</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">AI-powered responses</div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => setActiveTab("preemption")}>
-                <Zap className="mr-2 h-4 w-4" />
-                <div className="text-left">
-                  <div className="font-medium">Preemption Playbooks</div>
-                  <div className="text-xs text-muted-foreground">Predictive management</div>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                onClick={() => setActiveTab("preemption")}
+              >
+                <div className="p-2 bg-orange-500/10 rounded-lg group-hover:bg-orange-500/20 transition-colors mr-3">
+                  <Zap className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                 </div>
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-base">Predictive Preemption</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Stop outbreaks before they start</div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => setActiveTab("monthly-report")}>
-                <BarChart3 className="mr-2 h-4 w-4" />
-                <div className="text-left">
-                  <div className="font-medium">Monthly Report</div>
-                  <div className="text-xs text-muted-foreground">Executive impact report</div>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                onClick={() => setActiveTab("monthly-report")}
+              >
+                <div className="p-2 bg-cyan-500/10 rounded-lg group-hover:bg-cyan-500/20 transition-colors mr-3">
+                  <BarChart3 className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
                 </div>
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-base">Executive Impact Report</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Monthly ROI analysis</div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => setActiveTab("config")}>
-                <Settings className="mr-2 h-4 w-4" />
-                <div className="text-left">
-                  <div className="font-medium">Configuration</div>
-                  <div className="text-xs text-muted-foreground">Governance settings</div>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.02] group" 
+                onClick={() => setActiveTab("config")}
+              >
+                <div className="p-2 bg-gray-500/10 rounded-lg group-hover:bg-gray-500/20 transition-colors mr-3">
+                  <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                 </div>
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-base">Governance Configuration</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Customize operating mode</div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Button>
             </div>
           </CardContent>
@@ -386,5 +608,6 @@ export function FinancialServicesDashboardClient() {
         <FinancialServicesPlaybookViewer />
       </TabsContent>
     </Tabs>
+    </div>
   );
 }

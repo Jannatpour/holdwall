@@ -2426,3 +2426,572 @@
 {"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 08:36:54"}
 {"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 08:36:54"}
 {"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 08:36:54"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:43:26","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:43:26","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":45.53207986296569,"status":"ok","total":122699776,"used":55867760}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:43:26","uptime":833,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:43:26","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:43:26","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.41416529605263,"status":"ok","total":77824000,"used":53242640}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:43:26","uptime":1144,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:43:26","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:43:26","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":72.33073601541132,"status":"ok","total":77873152,"used":56326224}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:43:26","uptime":852,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:43:26","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:43:26","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":47.836269187849254,"status":"ok","total":120209408,"used":57503696}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:43:26","uptime":895,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":50.56454062659094,"status":"ok","total":128729088,"used":65091272}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:43:27","uptime":940,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":53.34265961282899,"status":"ok","total":126369792,"used":67409008}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:43:27","uptime":1091,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":48.994089413574024,"status":"ok","total":121847808,"used":59698224}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:43:27","uptime":882,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.95701443039802,"status":"ok","total":78004224,"used":53789384}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:43:27","uptime":1002,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":53.361873032637504,"status":"ok","total":123617280,"used":65964496}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:43:27","uptime":991,"version":"0.1.0"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:43:27"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":64.44409768425483,"status":"ok","total":75415552,"used":48600872}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":748,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":39.29486224828007,"status":"ok","total":114311168,"used":44918416}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":807,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.94648445582455,"status":"ok","total":79183872,"used":54594496}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":810,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":67.76487386118988,"status":"ok","total":78004224,"used":52859464}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":865,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":67.16390306122449,"status":"ok","total":80281600,"used":53920256}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":789,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":71.4570151914183,"status":"ok","total":79708160,"used":56957072}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":822,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":49.991812787450726,"status":"ok","total":124682240,"used":62330912}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":704,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":73.77327294383149,"status":"ok","total":81674240,"used":60253760}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":909,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":66.17289487519116,"status":"ok","total":74989568,"used":49622768}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":999,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":49.763048871081914,"status":"ok","total":124403712,"used":61907080}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":941,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":56.54445159978309,"status":"ok","total":128401408,"used":72603872}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":856,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01","value":0}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":54.640278522889844,"status":"ok","total":125976576,"used":68833952}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 10:44:01","uptime":977,"version":"0.1.0"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 10:44:01"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":69.7967362534153,"status":"ok","total":77955072,"used":54410096}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:01","uptime":1833,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":67.63607814477432,"status":"ok","total":77676544,"used":52537368}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:01","uptime":1390,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.44078244287283,"status":"ok","total":78331904,"used":53610968}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:01","uptime":1523,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":67.93696826329895,"status":"ok","total":81002496,"used":55030640}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:01","uptime":1237,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":40.34520561837366,"status":"ok","total":120537088,"used":48630936}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:01","uptime":1284,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":71.78871289624435,"status":"ok","total":79724544,"used":57233224}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:01","uptime":1236,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":69.46579518863732,"status":"ok","total":78331904,"used":54413880}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:01","uptime":1563,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":51.66798405540245,"status":"ok","total":123355136,"used":63735112}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:01","uptime":1281,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:01","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":48.39056888026103,"status":"ok","total":121454592,"used":58772568}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:01","uptime":1423,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":69.20134595697724,"status":"ok","total":77021184,"used":53299696}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:02","uptime":1819,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":54.35191843251745,"status":"ok","total":124338176,"used":67580184}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:02","uptime":1649,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":55.66857972363779,"status":"ok","total":125386752,"used":69801024}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:02","uptime":1870,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02","value":0}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":58.92161351940604,"status":"ok","total":130334720,"used":76795320}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:02","uptime":1882,"version":"0.1.0"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:02"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:52","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":65.46945473582474,"status":"ok","total":76283904,"used":49942656}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:53","uptime":1138,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":69.49127447883765,"status":"ok","total":77807616,"used":54069504}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:53","uptime":823,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.56465601481344,"status":"ok","total":77283328,"used":52989048}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:53","uptime":941,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":47.45743699083503,"status":"ok","total":120668160,"used":57266016}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:53","uptime":818,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":57.27595109031763,"status":"ok","total":82788352,"used":47417816}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:53","uptime":1005,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":66.82392447110423,"status":"ok","total":79380480,"used":53045152}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:53","uptime":1223,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":72.7813342776461,"status":"ok","total":84672512,"used":61625784}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:53","uptime":950,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:53","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.26479828042328,"status":"ok","total":77414400,"used":52846784}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:53","uptime":1403,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":72.39470056852869,"status":"ok","total":80510976,"used":58285680}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:54","uptime":1242,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":48.410523865944484,"status":"ok","total":120995840,"used":58574720}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:54","uptime":1299,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":0}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":50.033751646613645,"status":"ok","total":122044416,"used":61063400}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:54","uptime":1281,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":70.14905534599376,"status":"ok","total":78725120,"used":55224928}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:54","uptime":1355,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":61.64014432437695,"status":"ok","total":131481600,"used":81045448}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:54","uptime":1450,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":53.48162648587507,"status":"ok","total":126287872,"used":67540808}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:04:54","uptime":1527,"version":"0.1.0"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:04:54"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":66.22942146443069,"status":"ok","total":76693504,"used":50793664}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:06:45","uptime":890,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.35822539110904,"status":"ok","total":79331328,"used":54229488}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:06:45","uptime":711,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":66.83323572427004,"status":"ok","total":79118336,"used":52877344}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:06:45","uptime":745,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":72.68181958244843,"status":"ok","total":81002496,"used":58874088}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:06:45","uptime":719,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":66.0924203101694,"status":"ok","total":76890112,"used":50818536}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:06:45","uptime":784,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.90882907012508,"status":"ok","total":79904768,"used":55061440}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:06:45","uptime":820,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":53.07546609783185,"status":"ok","total":123551744,"used":65575664}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:06:45","uptime":771,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":56.22850053324211,"status":"ok","total":127221760,"used":71534888}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:06:45","uptime":796,"version":"0.1.0"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:06:45"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":64.01862453267229,"status":"ok","total":75595776,"used":48395376}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":1076,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.03603538475856,"status":"ok","total":77021184,"used":52402160}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":933,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":69.15445475630555,"status":"ok","total":79249408,"used":54804496}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":1114,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":67.29419701212323,"status":"ok","total":79904768,"used":53771272}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":1001,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":68.61521790140918,"status":"ok","total":79642624,"used":54646960}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":1098,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":48.7200182561583,"status":"ok","total":121716736,"used":59300416}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":994,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":66.19999849405654,"status":"ok","total":76496896,"used":50640944}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":1142,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":70.9268096383975,"status":"ok","total":78725120,"used":55837216}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":903,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":47.52680023032109,"status":"ok","total":120930304,"used":57474304}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":1010,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":47.57480140493697,"status":"ok","total":120881152,"used":57508968}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":1004,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":46.932649423024245,"status":"ok","total":119619584,"used":56140640}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":1038,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":69.9258412498822,"status":"ok","total":86933504,"used":60788984}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 12:07:40","uptime":1206,"version":"0.1.0"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 12:07:40"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25","value":1}
+{"checks":{"cache":"error","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":47.6261969600621,"status":"ok","total":123994112,"used":59053680}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 13:21:25","uptime":1652,"version":"0.1.0"}
+{"level":"info","message":"metric","name":"system_health_status","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25","value":0}
+{"level":"info","message":"metric","name":"system_uptime_seconds","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25","value":1}
+{"checks":{"cache":"ok","database":"error","external_services":{"anthropic":"not_configured","openai":"ok"},"memory":{"percentage":48.85293857669075,"status":"ok","total":128155648,"used":62607800}},"level":"warn","message":"System health check","service":"holdwall-pos","status":"unhealthy","timestamp":"2026-01-22 13:21:25","uptime":1539,"version":"0.1.0"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 13:21:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:00:41"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:16:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:20:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:22:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:26:02"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:27:16"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:29:40"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 14:30:35"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 16:29:25"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:06"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:18:57"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:19:52"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:24:26"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 17:44:18"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 18:55:36"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:14:30"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}
+{"level":"info","message":"Shutting down services...","service":"holdwall-pos","timestamp":"2026-01-22 19:21:01"}

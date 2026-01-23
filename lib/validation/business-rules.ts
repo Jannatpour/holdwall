@@ -223,7 +223,7 @@ export const ClaimValidationRules = {
       });
 
       if (evidence.length !== evidenceIds.length) {
-        const foundIds = new Set(evidence.map((e) => e.id));
+        const foundIds = new Set(evidence.map((e: { id: string }) => e.id));
         const missingIds = evidenceIds.filter((id) => !foundIds.has(id));
         errors.push(`Evidence not found: ${missingIds.join(", ")}`);
       }
@@ -404,6 +404,69 @@ export const ForecastValidationRules = {
 };
 
 /**
+ * Security Incident Validation Rules
+ */
+export const SecurityIncidentValidationRules = {
+  /**
+   * Validate security incident data
+   */
+  validateIncident: (data: {
+    title?: string;
+    description?: string;
+    type?: string;
+    severity?: string;
+    detectedAt?: Date | string;
+  }): { valid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    if (!data.title || data.title.trim().length === 0) {
+      errors.push("Title is required");
+    }
+
+    if (!data.description || data.description.trim().length === 0) {
+      errors.push("Description is required");
+    }
+
+    const validTypes = [
+      "DATA_BREACH",
+      "RANSOMWARE",
+      "DDOS",
+      "PHISHING",
+      "MALWARE",
+      "UNAUTHORIZED_ACCESS",
+      "INSIDER_THREAT",
+      "VULNERABILITY_EXPLOIT",
+      "ACCOUNT_COMPROMISE",
+      "SYSTEM_COMPROMISE",
+      "OTHER",
+    ];
+    if (data.type && !validTypes.includes(data.type)) {
+      errors.push(`Invalid incident type: ${data.type}`);
+    }
+
+    const validSeverities = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+    if (data.severity && !validSeverities.includes(data.severity)) {
+      errors.push(`Invalid severity: ${data.severity}`);
+    }
+
+    if (data.detectedAt) {
+      const date = typeof data.detectedAt === "string" ? new Date(data.detectedAt) : data.detectedAt;
+      if (isNaN(date.getTime())) {
+        errors.push("Invalid detectedAt date");
+      }
+      if (date > new Date()) {
+        errors.push("DetectedAt cannot be in the future");
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
+  },
+};
+
+/**
  * Playbook Validation Rules
  */
 export const PlaybookValidationRules = {
@@ -458,7 +521,7 @@ export const PlaybookValidationRules = {
  * Comprehensive validation function
  */
 export async function validateBusinessRules(
-  entityType: "signal" | "claim" | "artifact" | "forecast" | "playbook",
+  entityType: "signal" | "claim" | "artifact" | "forecast" | "playbook" | "SecurityIncident",
   data: Record<string, unknown>,
   tenantId: string
 ): Promise<{ valid: boolean; errors: string[] }> {
@@ -466,6 +529,11 @@ export async function validateBusinessRules(
 
   try {
     switch (entityType) {
+      case "SecurityIncident": {
+        const incidentValidation = SecurityIncidentValidationRules.validateIncident(data);
+        allErrors.push(...incidentValidation.errors);
+        break;
+      }
       case "signal": {
         const content = data.content as string;
         const contentValidation = SignalValidationRules.validateContent(content);
@@ -491,16 +559,23 @@ export async function validateBusinessRules(
       }
 
       case "claim": {
-        const text = data.text as string;
-        const textValidation = ClaimValidationRules.validateClaimText(text);
-        allErrors.push(...textValidation.errors);
+        // Only validate text if provided (e.g., when creating claims directly)
+        if (data.text) {
+          const text = data.text as string;
+          const textValidation = ClaimValidationRules.validateClaimText(text);
+          allErrors.push(...textValidation.errors);
+        }
 
+        // Only validate evidence if provided (e.g., when extracting from evidence)
         if (data.evidenceIds) {
-          const evidenceValidation = await ClaimValidationRules.validateEvidence(
-            tenantId,
-            data.evidenceIds as string[]
-          );
-          allErrors.push(...evidenceValidation.errors);
+          const evidenceIds = data.evidenceIds as string[];
+          if (Array.isArray(evidenceIds) && evidenceIds.length > 0) {
+            const evidenceValidation = await ClaimValidationRules.validateEvidence(
+              tenantId,
+              evidenceIds
+            );
+            allErrors.push(...evidenceValidation.errors);
+          }
         }
         break;
       }

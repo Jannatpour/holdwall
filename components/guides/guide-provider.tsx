@@ -34,26 +34,27 @@ interface GuideProviderProps {
 }
 
 export function GuideProvider({ children }: GuideProviderProps) {
-  const [state, setState] = useState<GuideState>({
-    activeGuide: undefined,
-    activeStep: undefined,
-    completedGuides: [],
-    progress: {} as Record<GuideId, GuideProgress>,
-    dismissed: [],
-  });
+  const [state, setState] = useState<GuideState>(() => {
+    const defaultState: GuideState = {
+      activeGuide: undefined,
+      activeStep: undefined,
+      completedGuides: [],
+      progress: {} as Record<GuideId, GuideProgress>,
+      dismissed: [],
+    };
 
-  // Load state from localStorage on mount
-  useEffect(() => {
+    if (typeof window === "undefined") return defaultState;
+
     try {
-      const saved = localStorage.getItem("holdwall-guide-state");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setState((prev) => ({ ...prev, ...parsed }));
-      }
+      const saved = window.localStorage.getItem("holdwall-guide-state");
+      if (!saved) return defaultState;
+      const parsed = JSON.parse(saved) as Partial<GuideState>;
+      return { ...defaultState, ...parsed };
     } catch (error) {
       console.error("Failed to load guide state:", error);
+      return defaultState;
     }
-  }, []);
+  });
 
   // Save state to localStorage whenever it changes
   useEffect(() => {

@@ -5,7 +5,7 @@
 
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useSyncExternalStore } from "react";
 import { X, ChevronRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,82 +29,72 @@ export function GuideTooltip({
   onNext,
   showNext = false,
 }: GuideTooltipProps) {
-  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
-  const targetRef = useRef<HTMLElement | null>(null);
+  const isBrowser = typeof window !== "undefined";
 
-  useEffect(() => {
-    if (!isActive || !step.targetSelector) {
-      setPosition(null);
-      return;
-    }
+  // Re-render on scroll/resize without setState in effects.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _viewportTick = useSyncExternalStore(
+    (onStoreChange) => {
+      if (typeof window === "undefined") return () => undefined;
+      window.addEventListener("resize", onStoreChange);
+      window.addEventListener("scroll", onStoreChange, true);
+      return () => {
+        window.removeEventListener("resize", onStoreChange);
+        window.removeEventListener("scroll", onStoreChange, true);
+      };
+    },
+    () => `${window.innerWidth}:${window.innerHeight}:${window.scrollX}:${window.scrollY}`,
+    () => "ssr"
+  );
 
-    const updatePosition = () => {
-      try {
-        const element = document.querySelector(step.targetSelector!) as HTMLElement;
-        if (!element) {
-          setPosition(null);
-          return;
-        }
-
-        targetRef.current = element;
-        const rect = element.getBoundingClientRect();
-        const tooltipRect = tooltipRef.current?.getBoundingClientRect();
-        const tooltipHeight = tooltipRect?.height || 200;
-        const tooltipWidth = tooltipRect?.width || 300;
-
-        let top = 0;
-        let left = 0;
-
-        switch (step.position) {
-          case "top":
-            top = rect.top - tooltipHeight - 12;
-            left = rect.left + rect.width / 2 - tooltipWidth / 2;
-            break;
-          case "bottom":
-            top = rect.bottom + 12;
-            left = rect.left + rect.width / 2 - tooltipWidth / 2;
-            break;
-          case "left":
-            top = rect.top + rect.height / 2 - tooltipHeight / 2;
-            left = rect.left - tooltipWidth - 12;
-            break;
-          case "right":
-            top = rect.top + rect.height / 2 - tooltipHeight / 2;
-            left = rect.right + 12;
-            break;
-          case "center":
-            top = window.innerHeight / 2 - tooltipHeight / 2;
-            left = window.innerWidth / 2 - tooltipWidth / 2;
-            break;
-          default:
-            top = rect.bottom + 12;
-            left = rect.left + rect.width / 2 - tooltipWidth / 2;
-        }
-
-        // Keep within viewport
-        top = Math.max(12, Math.min(top, window.innerHeight - tooltipHeight - 12));
-        left = Math.max(12, Math.min(left, window.innerWidth - tooltipWidth - 12));
-
-        setPosition({ top, left });
-      } catch (error) {
-        console.error("Failed to position tooltip:", error);
-        setPosition(null);
-      }
-    };
-
-    updatePosition();
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("scroll", updatePosition, true);
-
-    return () => {
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
-    };
-  }, [isActive, step.targetSelector, step.position]);
-
-  if (!isActive || !position) {
+  if (!isActive || !isBrowser) {
     return null;
+  }
+
+  let highlightRect: { top: number; left: number; width: number; height: number } | null = null;
+  let anchorTop = window.innerHeight / 2;
+  let anchorLeft = window.innerWidth / 2;
+  let transform = "translate(-50%, -50%)";
+
+  if (step.targetSelector) {
+    const element = document.querySelector(step.targetSelector) as HTMLElement | null;
+    if (!element) return null;
+
+    const rect = element.getBoundingClientRect();
+    highlightRect = {
+      top: rect.top - 4,
+      left: rect.left - 4,
+      width: rect.width + 8,
+      height: rect.height + 8,
+    };
+
+    switch (step.position) {
+      case "top":
+        anchorTop = rect.top - 12;
+        anchorLeft = rect.left + rect.width / 2;
+        transform = "translate(-50%, -100%)";
+        break;
+      case "bottom":
+        anchorTop = rect.bottom + 12;
+        anchorLeft = rect.left + rect.width / 2;
+        transform = "translate(-50%, 0)";
+        break;
+      case "left":
+        anchorTop = rect.top + rect.height / 2;
+        anchorLeft = rect.left - 12;
+        transform = "translate(-100%, -50%)";
+        break;
+      case "right":
+        anchorTop = rect.top + rect.height / 2;
+        anchorLeft = rect.right + 12;
+        transform = "translate(0, -50%)";
+        break;
+      case "center":
+      default:
+        anchorTop = window.innerHeight / 2;
+        anchorLeft = window.innerWidth / 2;
+        transform = "translate(-50%, -50%)";
+    }
   }
 
   return (
@@ -117,28 +107,28 @@ export function GuideTooltip({
       />
       
       {/* Highlight target element */}
-      {targetRef.current && (
+      {highlightRect ? (
         <div
           className="fixed z-41 pointer-events-none rounded-md border-2 border-primary shadow-lg"
           style={{
-            top: targetRef.current.getBoundingClientRect().top + window.scrollY - 4,
-            left: targetRef.current.getBoundingClientRect().left + window.scrollX - 4,
-            width: targetRef.current.getBoundingClientRect().width + 8,
-            height: targetRef.current.getBoundingClientRect().height + 8,
+            top: highlightRect.top,
+            left: highlightRect.left,
+            width: highlightRect.width,
+            height: highlightRect.height,
           }}
         />
-      )}
+      ) : null}
 
       {/* Tooltip */}
       <Card
-        ref={tooltipRef}
         className={cn(
           "fixed z-50 w-80 shadow-2xl",
           "animate-in fade-in-0 zoom-in-95 duration-200"
         )}
         style={{
-          top: `${position.top}px`,
-          left: `${position.left}px`,
+          top: anchorTop,
+          left: anchorLeft,
+          transform,
         }}
       >
         <CardHeader className="pb-3">

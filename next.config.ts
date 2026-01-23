@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* Production optimizations */
-  // output: 'standalone', // Only for Docker - disabled for Vercel
+  output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined, // Enable for Docker builds
   poweredByHeader: false, // Security
   compress: true,
   

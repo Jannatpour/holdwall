@@ -136,17 +136,17 @@ export function FinancialServicesPreemptionManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header Actions */}
-      <Card>
+      {/* Strategic Header */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
-                Preemption Playbooks
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <Zap className="h-6 w-6 text-primary" />
+                Predictive Preemption Engine
               </CardTitle>
-              <CardDescription>
-                Predictive narrative management with early signal drift detection
+              <CardDescription className="text-base">
+                Stop narrative outbreaks before they start with AI-powered early signal drift detection and automated response
               </CardDescription>
             </div>
             {playbooks.length === 0 && (

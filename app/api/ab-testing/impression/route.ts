@@ -3,6 +3,10 @@
  * Record impressions for A/B test variants
  */
 
+// Skip data collection during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
 import { abTesting } from "@/lib/publishing/ab-testing";

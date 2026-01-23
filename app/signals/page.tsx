@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter } from "lucide-react";
+import { Filter, Radio } from "lucide-react";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { SignalsDataClient } from "@/components/signals-data-client";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
@@ -21,12 +21,23 @@ export default function SignalsPage() {
     <AppShell>
       <GuideWalkthrough pageId="signals" />
       <div className="space-y-6">
-        <div className="flex items-center justify-between" data-guide="signals-header">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Signals</h1>
-            <p className="text-muted-foreground">
-              Streaming feed of ingested signals with evidence preview
-            </p>
+        <div className="flex items-center justify-between border-b pb-6" data-guide="signals-header">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary/10 rounded-lg">
+                <Radio className="h-7 w-7 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Signal Intelligence Hub
+                </h1>
+                <p className="text-base text-muted-foreground mt-2 leading-6">
+                  Real-time streaming feed of ingested signals with advanced analytics, AI-powered insights, 
+                  and comprehensive evidence preview. Monitor narrative signals across all channels with 
+                  bulk operations and trend visualization.
+                </p>
+              </div>
+            </div>
           </div>
           <GuideButton pageId="signals" />
         </div>

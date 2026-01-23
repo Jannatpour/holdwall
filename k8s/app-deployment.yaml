@@ -25,13 +25,22 @@ spec:
     spec:
       serviceAccountName: holdwall-app
       securityContext:
-        runAsNonRoot: true
+        runAsNonRoot: false
         runAsUser: 1001
         fsGroup: 1001
       initContainers:
         - name: db-migrate
-          image: holdwall-app:latest
-          command: ["npx", "prisma", "migrate", "deploy"]
+          image: 597743362576.dkr.ecr.us-east-1.amazonaws.com/holdwall-pos:20260122-141807
+          workingDir: /tmp
+          command: ["sh", "-c", "mkdir -p /tmp/prisma && cp /prisma-mount/schema.prisma /tmp/prisma/ && if [ -d /prisma-mount/migrations ]; then mkdir -p /tmp/prisma/migrations && for f in /prisma-mount/migrations/*.sql /prisma-mount/migrations/*.toml; do [ -f \"$f\" ] && cp \"$f\" /tmp/prisma/migrations/ || true; done; fi && cd /tmp && npx prisma migrate deploy --schema=/tmp/prisma/schema.prisma --datasource-url=\"$DATABASE_URL\""]
+          volumeMounts:
+            - name: prisma-schema
+              mountPath: /prisma-mount/schema.prisma
+              subPath: schema.prisma
+              readOnly: true
+            - name: prisma-migrations
+              mountPath: /prisma-mount/migrations
+              readOnly: true
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -47,7 +56,8 @@ spec:
               cpu: "500m"
       containers:
         - name: app
-          image: holdwall-app:latest
+          image: 597743362576.dkr.ecr.us-east-1.amazonaws.com/holdwall-pos:20260122-141807
+          workingDir: /tmp
           imagePullPolicy: Always
           ports:
             - name: http
@@ -126,3 +136,10 @@ spec:
             capabilities:
               drop:
                 - ALL
+      volumes:
+        - name: prisma-schema
+          configMap:
+            name: prisma-schema
+        - name: prisma-migrations
+          configMap:
+            name: prisma-migrations
