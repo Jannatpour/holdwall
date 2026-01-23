@@ -3,10 +3,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth/session";
+import { createApiHandler } from "@/lib/middleware/api-wrapper";
 import { AgentOrchestrator } from "@/lib/agents/orchestrator";
-import { logger } from "@/lib/logging/logger";
 import { z } from "zod";
+import crypto from "crypto";
 
 const orchestrator = new AgentOrchestrator();
 
@@ -17,9 +17,13 @@ const executeTaskSchema = z.object({
   deadline: z.string().datetime().optional(),
 });
 
-export async function POST(request: NextRequest) {
-  try {
-    const user = await requireAuth();
+export const POST = createApiHandler(
+  async (request: NextRequest, context?: { user?: any; tenantId?: string }) => {
+    const user = context?.user;
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const validated = executeTaskSchema.parse(body);
 
@@ -29,30 +33,19 @@ export async function POST(request: NextRequest) {
       parameters: validated.parameters,
       priority: validated.priority || 5,
       deadline: validated.deadline,
-      tenant_id: (user as any).tenantId || "default",
+      tenant_id: context?.tenantId || (user as any).tenantId || "default",
       actor_id: (user as any).id,
     };
 
     const result = await orchestrator.executeTask(task);
 
     return NextResponse.json(result);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.issues },
-        { status: 400 }
-      );
-    }
-    if ((error as Error).message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    logger.error("Error executing agent task", {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  },
+  {
+    requireAuth: true,
+    rateLimit: {
+      windowMs: 60 * 1000,
+      maxRequests: 20, // Stricter limit for agent execution
+    },
   }
-}
+);

@@ -11,6 +11,7 @@ import { db } from "@/lib/db/client";
 import { ForecastService } from "@/lib/forecasts/service";
 import { DatabaseEventStore } from "@/lib/events/store-db";
 import { BeliefGraphService } from "@/lib/graph/belief";
+import { AdvancedAIIntegration } from "@/lib/ai/integration";
 import { logger } from "@/lib/logging/logger";
 
 export async function GET(request: NextRequest) {
@@ -66,8 +67,68 @@ export async function GET(request: NextRequest) {
       }).catch(() => 0),
     ]);
 
-    // Sentiment is not stored on Claim in the current schema; keep this KPI grounded in available signals.
-    const positiveRatio = 0.5;
+    // Calculate sentiment ratio using AI-powered analysis (January 2026 enhancement)
+    // Analyze recent claims for sentiment using Adaptive RAG for cost-effective analysis
+    let positiveRatio = 0.5; // Default fallback
+    try {
+      const recentClaims = await db.claim.findMany({
+        where: {
+          tenantId: tenant_id,
+          createdAt: { gte: startDate },
+        },
+        take: 50, // Sample for efficiency
+        select: { canonicalText: true },
+      }).catch(() => []);
+
+      if (recentClaims.length > 0) {
+        const aiIntegration = new AdvancedAIIntegration({
+          tenantId: tenant_id,
+          enableAdvancedRAG: true,
+        });
+
+        // Use Adaptive RAG for efficient sentiment analysis
+        const sentimentQuery = `Analyze the sentiment of these claims and return a JSON object with:
+{
+  "positive_count": number,
+  "negative_count": number,
+  "neutral_count": number,
+  "total": number
+}
+
+Claims:
+${recentClaims.slice(0, 20).map(c => c.canonicalText).join("\n")}
+
+Classify each claim as positive, negative, or neutral based on its sentiment toward the subject.`;
+
+        const sentimentResult = await aiIntegration.queryAdaptiveRAG(
+          sentimentQuery,
+          {
+            model: "gpt-4o-mini", // Fast, cost-effective for sentiment analysis
+            temperature: 0.1, // Low temperature for consistent classification
+            maxTokens: 500,
+          }
+        );
+
+        if (sentimentResult) {
+          try {
+            const sentimentData = JSON.parse(sentimentResult.response);
+            if (sentimentData.total > 0) {
+              positiveRatio = sentimentData.positive_count / sentimentData.total;
+            }
+          } catch (parseError) {
+            logger.warn("Failed to parse sentiment analysis, using fallback", {
+              error: parseError instanceof Error ? parseError.message : String(parseError),
+            });
+          }
+        }
+      }
+    } catch (sentimentError) {
+      logger.warn("AI sentiment analysis failed, using fallback", {
+        error: sentimentError instanceof Error ? sentimentError.message : String(sentimentError),
+      });
+      // Continue with fallback value
+    }
+
     const highDecisivenessRatio = totalClaims > 0 ? highDecisivenessClaims / totalClaims : 0.5;
     const perceptionHealthScore =
       positiveRatio * 0.4 + highDecisivenessRatio * 0.3 + (trustAssetArtifactsCount > 0 ? 0.3 : 0);

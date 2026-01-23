@@ -11,6 +11,7 @@ import { db } from "@/lib/db/client";
 import { ForecastService } from "@/lib/forecasts/service";
 import { DatabaseEventStore } from "@/lib/events/store-db";
 import { BeliefGraphService } from "@/lib/graph/belief";
+import { AdvancedAIIntegration } from "@/lib/ai/integration";
 import { logger } from "@/lib/logging/logger";
 
 export async function GET(request: NextRequest) {
@@ -215,6 +216,107 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // 6. AI-Enhanced Recommendations using Adaptive RAG (January 2026)
+    // Use latest AI techniques to generate context-aware recommendations
+    if (recommendations.length < limit) {
+      try {
+        const aiIntegration = new AdvancedAIIntegration({
+          tenantId: tenant_id,
+          enableAdvancedRAG: true,
+        });
+
+        // Build context query for AI analysis
+        const contextQuery = `Based on the current state:
+- ${recentSignals.length} signals in the last 7 days
+- ${largeClusters.length} large claim clusters
+- ${pendingApprovals} pending approvals
+- ${unclusteredSignals} unclustered high-severity signals
+
+Generate ${limit - recommendations.length} additional strategic recommendations for narrative risk management. Focus on:
+1. Proactive narrative defense
+2. Evidence-backed action items
+3. Trust asset optimization
+4. Citation coverage improvement
+5. Outbreak prevention strategies
+
+Provide recommendations in JSON format with: id, priority (high/medium/low), action, rationale, and estimated_impact.`;
+
+        // Use Adaptive RAG for intelligent recommendation generation
+        const aiResult = await aiIntegration.queryAdaptiveRAG(
+          contextQuery,
+          {
+            model: "gpt-4o-mini", // Fast model for recommendations
+            temperature: 0.3, // Lower temperature for more focused recommendations
+            maxTokens: 2000,
+          }
+        );
+
+        if (!aiResult) {
+          logger.warn("Adaptive RAG returned null, skipping AI-enhanced recommendations");
+        } else {
+          // Parse AI-generated recommendations
+          try {
+            const aiRecommendations = JSON.parse(aiResult.response);
+            if (Array.isArray(aiRecommendations)) {
+              // Validate and add AI recommendations
+              for (const rec of aiRecommendations.slice(0, limit - recommendations.length)) {
+                if (rec.action && rec.rationale && rec.priority) {
+                  recommendations.push({
+                    id: rec.id || `rec-ai-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+                    priority: rec.priority.toLowerCase() as "high" | "medium" | "low",
+                    action: rec.action,
+                    rationale: rec.rationale,
+                    estimated_impact: rec.estimated_impact || "medium",
+                  });
+                }
+              }
+            } else if (aiRecommendations.recommendations && Array.isArray(aiRecommendations.recommendations)) {
+              // Handle nested recommendations structure
+              for (const rec of aiRecommendations.recommendations.slice(0, limit - recommendations.length)) {
+                if (rec.action && rec.rationale && rec.priority) {
+                  recommendations.push({
+                    id: rec.id || `rec-ai-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+                    priority: rec.priority.toLowerCase() as "high" | "medium" | "low",
+                    action: rec.action,
+                    rationale: rec.rationale,
+                    estimated_impact: rec.estimated_impact || "medium",
+                  });
+                }
+              }
+            }
+          } catch (parseError) {
+            // If JSON parsing fails, try to extract recommendations from text
+            logger.warn("Failed to parse AI recommendations as JSON, attempting text extraction", {
+              error: parseError instanceof Error ? parseError.message : String(parseError),
+            });
+            
+            // Fallback: Extract recommendations from text using regex
+            const recommendationPattern = /(?:recommendation|action|suggestion)[:\s]+([^\.]+)/gi;
+            const matches = aiResult.response.matchAll(recommendationPattern);
+            let extractedCount = 0;
+            for (const match of matches) {
+              if (extractedCount >= limit - recommendations.length) break;
+              if (match[1] && match[1].trim().length > 10) {
+                recommendations.push({
+                  id: `rec-ai-text-${Date.now()}-${extractedCount}`,
+                  priority: "medium" as const,
+                  action: match[1].trim(),
+                  rationale: "AI-generated recommendation based on current system state",
+                  estimated_impact: "medium",
+                });
+                extractedCount++;
+              }
+            }
+          }
+        }
+      } catch (aiError) {
+        logger.warn("AI-enhanced recommendations generation failed, using rule-based only", {
+          error: aiError instanceof Error ? aiError.message : String(aiError),
+        });
+        // Continue with rule-based recommendations only
+      }
+    }
+
     // Sort by priority (high > medium > low) and limit
     const sorted = recommendations.sort((a, b) => {
       const priorityOrder = { high: 3, medium: 2, low: 1 };
@@ -225,6 +327,7 @@ export async function GET(request: NextRequest) {
       recommendations: sorted.slice(0, limit),
       total: sorted.length,
       generated_at: new Date().toISOString(),
+      ai_enhanced: recommendations.length > sorted.slice(0, limit).filter(r => r.id?.startsWith('rec-ai-')).length,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

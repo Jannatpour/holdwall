@@ -572,7 +572,7 @@ export class AutonomousResolutionGenerator {
       tenant_id: input.tenantId,
       use_rag: true,
       use_kag: true,
-      model: "gpt-5.2-thinking",
+      model: "o1-mini", // Latest 2026 reasoning model for root cause analysis
       temperature: 0.3,
       max_tokens: 2000,
     });
@@ -611,7 +611,7 @@ export class AutonomousResolutionGenerator {
       tenant_id: input.tenantId,
       use_rag: true,
       use_kag: true,
-      model: "gpt-5.2-thinking",
+      model: "o1-mini", // Latest 2026 reasoning model for root cause analysis
       temperature: 0.4,
       max_tokens: 2000,
     });
@@ -883,7 +883,7 @@ Return JSON with structure matching ResolutionPlan interface.`;
       tenant_id: input.tenantId,
       use_rag: true,
       use_kag: true,
-      model: "gpt-5.2-thinking",
+      model: "o1-mini", // Latest 2026 reasoning model for root cause analysis
       temperature: 0.3,
       max_tokens: 4000,
     });
@@ -1016,7 +1016,7 @@ Return JSON with structure matching ResolutionPlan interface.`;
       query: prompt,
       tenant_id: input.tenantId,
       use_rag: true,
-      model: "gpt-5.2-thinking",
+      model: "o1-mini", // Latest 2026 reasoning model for root cause analysis
       temperature: 0.2,
       max_tokens: 1500,
     });

@@ -183,7 +183,7 @@ Return JSON:
         tenant_id: tenantId,
         use_rag: false,
         use_kag: false,
-        model: "gpt-5.2-thinking",
+        model: "o1-mini", // Latest 2026 reasoning model for graph reasoning
         temperature: 0.3,
         max_tokens: 2000,
       });
@@ -331,7 +331,7 @@ Return JSON:
         tenant_id: tenantId,
         use_rag: true,
         use_kag: true,
-        model: "gpt-5.2-thinking",
+        model: "o1-mini", // Latest 2026 reasoning model for graph reasoning
         temperature: 0.3,
         max_tokens: 3000,
       });

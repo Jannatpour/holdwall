@@ -286,7 +286,7 @@ export class AutonomousTriageAgent {
         tenant_id: input.tenantId,
         use_rag: true,
         use_kag: true, // Enable knowledge graph
-        model: "gpt-5.2-thinking", // Latest 2026 model
+        model: "o1-mini", // Latest 2026 reasoning model
         temperature: 0.3,
         max_tokens: 2000,
       });
@@ -566,8 +566,9 @@ export class AutonomousTriageAgent {
     // Build comprehensive prompt with context
     const prompt = this.buildAnalysisPrompt(input, context);
 
-    // Use ensemble of models for robust analysis
-    const models = ["gpt-5.2-thinking", "claude-opus-4.5", "gemini-3-pro"];
+    // Use ensemble of latest 2026 reasoning models for robust analysis
+    // Priority: o1/o3 for reasoning, GPT-5.2 for balanced, Claude Opus 4.5 for quality
+    const models = ["o1-mini", "gpt-5.2", "claude-opus-4.5"];
     const analyses: Array<{
       severity: CaseSeverity;
       priority: CasePriority;

@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createApiHandler } from "@/lib/middleware/api-wrapper";
 import { db } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
+import { surveyService } from "@/lib/engagement/survey-service";
 
 export const GET = createApiHandler(
   async (request: NextRequest, context?: { user?: any; tenantId?: string }) => {
@@ -26,31 +27,42 @@ export const GET = createApiHandler(
         where: { tenantId },
       });
 
-      // Customer satisfaction - would come from survey integration
-      // TODO: Integrate with survey service (e.g., SurveyMonkey, Typeform, or custom survey system)
-      // For now, using calculated value based on resolution outcomes
-      const resolvedCasesForSatisfaction = allCases.filter((c) => c.status === "RESOLVED" || c.status === "CLOSED");
-      const customerSatisfaction = resolvedCasesForSatisfaction.length > 0 
-        ? Math.min(5.0, Math.max(3.5, 4.0 + (resolvedCasesForSatisfaction.length / allCases.length) * 0.5))
-        : 4.2; // Default if no resolved cases
+      // Customer satisfaction - integrated with survey service
+      const surveyMetrics = await surveyService.getMetrics(tenantId, 30);
+      const customerSatisfaction = surveyMetrics.averageSatisfaction > 0
+        ? surveyMetrics.averageSatisfaction
+        : (() => {
+            // Fallback calculation from resolution outcomes if no survey data
+            const resolvedCasesForSatisfaction = allCases.filter((c) => c.status === "RESOLVED" || c.status === "CLOSED");
+            return resolvedCasesForSatisfaction.length > 0 
+              ? Math.min(5.0, Math.max(3.5, 4.0 + (resolvedCasesForSatisfaction.length / allCases.length) * 0.5))
+              : 4.2;
+          })();
       
-      const satisfactionTrend: Array<{ date: string; score: number }> = [];
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dayCases = allCases.filter((c) => {
-          const caseDate = c.createdAt;
-          return caseDate.toISOString().split("T")[0] === date.toISOString().split("T")[0];
-        });
-        const dayResolved = dayCases.filter((c) => c.status === "RESOLVED" || c.status === "CLOSED");
-        const dayScore = dayCases.length > 0
-          ? Math.min(5.0, Math.max(3.5, 4.0 + (dayResolved.length / dayCases.length) * 0.5))
-          : 4.0;
-        satisfactionTrend.push({
-          date: date.toISOString().split("T")[0],
-          score: dayScore,
-        });
-      }
+      // Use survey trend if available, otherwise calculate from cases
+      const satisfactionTrend = surveyMetrics.trend.length > 0
+        ? surveyMetrics.trend
+        : (() => {
+            // Fallback trend calculation
+            const trend: Array<{ date: string; score: number }> = [];
+            for (let i = 29; i >= 0; i--) {
+              const date = new Date();
+              date.setDate(date.getDate() - i);
+              const dayCases = allCases.filter((c) => {
+                const caseDate = c.createdAt;
+                return caseDate.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+              });
+              const dayResolved = dayCases.filter((c) => c.status === "RESOLVED" || c.status === "CLOSED");
+              const dayScore = dayCases.length > 0
+                ? Math.min(5.0, Math.max(3.5, 4.0 + (dayResolved.length / dayCases.length) * 0.5))
+                : 4.0;
+              trend.push({
+                date: date.toISOString().split("T")[0],
+                score: dayScore,
+              });
+            }
+            return trend;
+          })();
 
       // Common issue categories
       const commonIssueCategories = [

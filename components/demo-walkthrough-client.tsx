@@ -6,11 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, ArrowRight, Play, Pause, RotateCcw, ExternalLink, ChevronRight, ChevronDown, HelpCircle, Clock, Sparkles, BookOpen, Zap, Target, Info } from "lucide-react";
+import { CheckCircle2, Circle, ArrowRight, Play, Pause, RotateCcw, ExternalLink, ChevronRight, ChevronDown, HelpCircle, Clock, Sparkles, BookOpen, Zap, Target, Info, Trophy, Star, TrendingUp, ChevronLeft, SkipForward, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface DemoStep {
   id: string;
@@ -25,15 +26,162 @@ interface DemoStep {
   order: number;
 }
 
-interface SectionInfo {
+interface CategoryInfo {
   name: string;
   description: string;
   icon: string;
   estimatedTime: number;
   importance: "essential" | "important" | "optional";
+  order: number;
 }
 
-// Complete list of 52 categorized demo steps across 18 sections
+// Consolidated to 15 categories by merging related sections
+const CATEGORIES: CategoryInfo[] = [
+  {
+    name: "Authentication & Onboarding",
+    description: "Get started with account creation, SKU selection, and initial setup",
+    icon: "🚀",
+    estimatedTime: 570,
+    importance: "essential",
+    order: 1
+  },
+  {
+    name: "Overview & Analytics",
+    description: "Understand your narrative health, key metrics, and usage analytics",
+    icon: "📊",
+    estimatedTime: 300,
+    importance: "essential",
+    order: 2
+  },
+  {
+    name: "Data Ingestion & Integrations",
+    description: "Ingest signals, connect data sources, and manage integrations",
+    icon: "📡",
+    estimatedTime: 690,
+    importance: "essential",
+    order: 3
+  },
+  {
+    name: "Evidence Vault & Provenance",
+    description: "Manage evidence with full provenance and chain of custody",
+    icon: "🔒",
+    estimatedTime: 390,
+    importance: "essential",
+    order: 4
+  },
+  {
+    name: "Claim Extraction & Clustering",
+    description: "Extract and cluster claims from signals for analysis",
+    icon: "🎯",
+    estimatedTime: 300,
+    importance: "essential",
+    order: 5
+  },
+  {
+    name: "Belief Graph Engineering",
+    description: "Explore narrative connections and neutralize weak nodes",
+    icon: "🕸️",
+    estimatedTime: 330,
+    importance: "important",
+    order: 6
+  },
+  {
+    name: "Narrative Outbreak Forecasting",
+    description: "Forecast narrative outbreaks using advanced models",
+    icon: "📈",
+    estimatedTime: 330,
+    importance: "important",
+    order: 7
+  },
+  {
+    name: "AI Answer Authority Layer (AAAL)",
+    description: "Create AI-citable artifacts and rebuttals",
+    icon: "🤖",
+    estimatedTime: 390,
+    importance: "essential",
+    order: 8
+  },
+  {
+    name: "Governance & Approvals",
+    description: "Manage approvals, audits, and compliance workflows",
+    icon: "✅",
+    estimatedTime: 300,
+    importance: "important",
+    order: 9
+  },
+  {
+    name: "Publishing & Distribution (PADL)",
+    description: "Publish artifacts to multiple channels with structured data",
+    icon: "📤",
+    estimatedTime: 210,
+    importance: "essential",
+    order: 10
+  },
+  {
+    name: "POS Components",
+    description: "Explore all Perception Operating System components",
+    icon: "⚙️",
+    estimatedTime: 450,
+    importance: "important",
+    order: 11
+  },
+  {
+    name: "Trust Assets & Funnel Map",
+    description: "Manage trust assets, identify gaps, and visualize decision funnels",
+    icon: "🛡️",
+    estimatedTime: 570,
+    importance: "important",
+    order: 12
+  },
+  {
+    name: "Playbooks",
+    description: "Create and execute automated response playbooks",
+    icon: "📋",
+    estimatedTime: 390,
+    importance: "important",
+    order: 13
+  },
+  {
+    name: "AI Answer Monitor",
+    description: "Monitor how AI systems cite your content",
+    icon: "👁️",
+    estimatedTime: 300,
+    importance: "important",
+    order: 14
+  },
+  {
+    name: "Financial Services",
+    description: "Financial services-specific features and workflows",
+    icon: "💳",
+    estimatedTime: 360,
+    importance: "optional",
+    order: 15
+  }
+];
+
+// Map old section names to new category names
+const SECTION_TO_CATEGORY: Record<string, string> = {
+  "Authentication & Onboarding": "Authentication & Onboarding",
+  "Overview & Dashboard": "Overview & Analytics",
+  "Metering": "Overview & Analytics",
+  "Signal Ingestion & Processing": "Data Ingestion & Integrations",
+  "Integrations & Connectors": "Data Ingestion & Integrations",
+  "Evidence Vault & Provenance": "Evidence Vault & Provenance",
+  "Claim Extraction & Clustering": "Claim Extraction & Clustering",
+  "Belief Graph Engineering": "Belief Graph Engineering",
+  "Narrative Outbreak Forecasting": "Narrative Outbreak Forecasting",
+  "AI Answer Authority Layer (AAAL)": "AI Answer Authority Layer (AAAL)",
+  "Governance & Approvals": "Governance & Approvals",
+  "Publishing & Distribution (PADL)": "Publishing & Distribution (PADL)",
+  "POS Components": "POS Components",
+  "Trust Assets": "Trust Assets & Funnel Map",
+  "Funnel Map": "Trust Assets & Funnel Map",
+  "Playbooks": "Playbooks",
+  "AI Answer Monitor": "AI Answer Monitor",
+  "Financial Services": "Financial Services"
+};
+
+// Import all demo steps - keeping the same structure
 const DEMO_STEPS: DemoStep[] = [
   // ========== CATEGORY 1: AUTHENTICATION & ONBOARDING ==========
   {
@@ -143,7 +291,7 @@ const DEMO_STEPS: DemoStep[] = [
     order: 5
   },
 
-  // ========== CATEGORY 2: OVERVIEW & DASHBOARD ==========
+  // ========== CATEGORY 2: OVERVIEW & ANALYTICS ==========
   {
     id: "overview-dashboard",
     section: "Overview & Dashboard",
@@ -191,8 +339,31 @@ const DEMO_STEPS: DemoStep[] = [
     duration: 90,
     order: 7
   },
+  {
+    id: "metering-overview",
+    section: "Metering",
+    title: "View Metering Dashboard",
+    description: "Monitor usage and billing metrics",
+    page: "Metering Page",
+    pageUrl: "/metering",
+    actions: [
+      "Navigate to Metering page",
+      "View usage metrics",
+      "Check API call counts",
+      "View storage usage",
+      "See billing information"
+    ],
+    expectedResults: [
+      "Metering dashboard displayed",
+      "Usage metrics visible",
+      "API counts shown",
+      "Storage usage accessible"
+    ],
+    duration: 90,
+    order: 8
+  },
 
-  // ========== CATEGORY 3: SIGNAL INGESTION & PROCESSING ==========
+  // ========== CATEGORY 3: DATA INGESTION & INTEGRATIONS ==========
   {
     id: "signals-overview",
     section: "Signal Ingestion & Processing",
@@ -214,7 +385,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Processing status visible"
     ],
     duration: 90,
-    order: 8
+    order: 9
   },
   {
     id: "signal-ingest",
@@ -237,7 +408,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Cluster suggestions appear"
     ],
     duration: 120,
-    order: 9
+    order: 10
   },
   {
     id: "signal-stream",
@@ -259,10 +430,8 @@ const DEMO_STEPS: DemoStep[] = [
       "No page refresh needed"
     ],
     duration: 90,
-    order: 10
+    order: 11
   },
-
-  // ========== CATEGORY 4: INTEGRATIONS & CONNECTORS ==========
   {
     id: "integrations-overview",
     section: "Integrations & Connectors",
@@ -284,7 +453,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Sync history accessible"
     ],
     duration: 90,
-    order: 11
+    order: 12
   },
   {
     id: "connector-create",
@@ -307,7 +476,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Initial sync triggered"
     ],
     duration: 180,
-    order: 12
+    order: 13
   },
   {
     id: "connector-sync",
@@ -330,10 +499,10 @@ const DEMO_STEPS: DemoStep[] = [
       "New signals appear in Signals page"
     ],
     duration: 120,
-    order: 13
+    order: 14
   },
 
-  // ========== CATEGORY 5: EVIDENCE VAULT & PROVENANCE ==========
+  // ========== CATEGORY 4: EVIDENCE VAULT & PROVENANCE ==========
   {
     id: "evidence-overview",
     section: "Evidence Vault & Provenance",
@@ -342,7 +511,7 @@ const DEMO_STEPS: DemoStep[] = [
     page: "Evidence Page",
     pageUrl: "/evidence",
     actions: [
-      "Navigate to Evidence page (via Signals or direct)",
+      "Navigate to Evidence page",
       "View evidence list",
       "Filter by source, date, type",
       "View evidence details",
@@ -355,7 +524,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Details accessible"
     ],
     duration: 90,
-    order: 14
+    order: 15
   },
   {
     id: "evidence-detail",
@@ -378,7 +547,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Linked claims accessible"
     ],
     duration: 90,
-    order: 15
+    order: 16
   },
   {
     id: "evidence-bundle-create",
@@ -401,7 +570,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Ready for export"
     ],
     duration: 120,
-    order: 16
+    order: 17
   },
   {
     id: "evidence-bundle-export",
@@ -424,10 +593,10 @@ const DEMO_STEPS: DemoStep[] = [
       "Third-party verifiable"
     ],
     duration: 90,
-    order: 17
+    order: 18
   },
 
-  // ========== SECTION 6: CLAIM EXTRACTION & CLUSTERING ==========
+  // ========== CATEGORY 5: CLAIM EXTRACTION & CLUSTERING ==========
   {
     id: "claims-overview",
     section: "Claim Extraction & Clustering",
@@ -449,7 +618,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Evidence links accessible"
     ],
     duration: 90,
-    order: 18
+    order: 19
   },
   {
     id: "claim-detail",
@@ -472,7 +641,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Evidence links working"
     ],
     duration: 90,
-    order: 19
+    order: 20
   },
   {
     id: "claim-verify",
@@ -495,10 +664,10 @@ const DEMO_STEPS: DemoStep[] = [
       "Actionable insights shown"
     ],
     duration: 120,
-    order: 20
+    order: 21
   },
 
-  // ========== SECTION 7: BELIEF GRAPH ENGINEERING ==========
+  // ========== CATEGORY 6: BELIEF GRAPH ENGINEERING ==========
   {
     id: "graph-overview",
     section: "Belief Graph Engineering",
@@ -520,7 +689,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Smooth navigation"
     ],
     duration: 90,
-    order: 21
+    order: 22
   },
   {
     id: "graph-paths",
@@ -543,7 +712,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Activation scores shown"
     ],
     duration: 120,
-    order: 22
+    order: 23
   },
   {
     id: "bge-cycle",
@@ -566,10 +735,10 @@ const DEMO_STEPS: DemoStep[] = [
       "Metrics improved"
     ],
     duration: 120,
-    order: 23
+    order: 24
   },
 
-  // ========== SECTION 8: NARRATIVE OUTBREAK FORECASTING ==========
+  // ========== CATEGORY 7: NARRATIVE OUTBREAK FORECASTING ==========
   {
     id: "forecasts-overview",
     section: "Narrative Outbreak Forecasting",
@@ -591,7 +760,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Details accessible"
     ],
     duration: 90,
-    order: 24
+    order: 25
   },
   {
     id: "forecast-generate",
@@ -614,7 +783,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Timeline visualization displayed"
     ],
     duration: 120,
-    order: 25
+    order: 26
   },
   {
     id: "forecast-intervention",
@@ -637,10 +806,10 @@ const DEMO_STEPS: DemoStep[] = [
       "ROI calculated"
     ],
     duration: 120,
-    order: 26
+    order: 27
   },
 
-  // ========== SECTION 9: AI ANSWER AUTHORITY LAYER (AAAL) ==========
+  // ========== CATEGORY 8: AI ANSWER AUTHORITY LAYER (AAAL) ==========
   {
     id: "studio-overview",
     section: "AI Answer Authority Layer (AAAL)",
@@ -662,7 +831,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Details accessible"
     ],
     duration: 90,
-    order: 27
+    order: 28
   },
   {
     id: "artifact-create",
@@ -687,7 +856,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Ready for policy check"
     ],
     duration: 180,
-    order: 28
+    order: 29
   },
   {
     id: "artifact-policy",
@@ -710,10 +879,10 @@ const DEMO_STEPS: DemoStep[] = [
       "All policies pass"
     ],
     duration: 120,
-    order: 29
+    order: 30
   },
 
-  // ========== SECTION 10: GOVERNANCE & APPROVALS ==========
+  // ========== CATEGORY 9: GOVERNANCE & APPROVALS ==========
   {
     id: "governance-overview",
     section: "Governance & Approvals",
@@ -735,7 +904,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Audit trails shown"
     ],
     duration: 90,
-    order: 30
+    order: 31
   },
   {
     id: "approval-workflow",
@@ -760,7 +929,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Next approver notified"
     ],
     duration: 120,
-    order: 31
+    order: 32
   },
   {
     id: "audit-bundle",
@@ -783,10 +952,10 @@ const DEMO_STEPS: DemoStep[] = [
       "Verifiable"
     ],
     duration: 90,
-    order: 32
+    order: 33
   },
 
-  // ========== SECTION 11: PUBLISHING & DISTRIBUTION (PADL) ==========
+  // ========== CATEGORY 10: PUBLISHING & DISTRIBUTION (PADL) ==========
   {
     id: "publish-artifact",
     section: "Publishing & Distribution (PADL)",
@@ -809,7 +978,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Publicly accessible"
     ],
     duration: 120,
-    order: 33
+    order: 34
   },
   {
     id: "padl-view",
@@ -832,10 +1001,10 @@ const DEMO_STEPS: DemoStep[] = [
       "AI-citable format"
     ],
     duration: 90,
-    order: 34
+    order: 35
   },
 
-  // ========== SECTION 12: POS COMPONENTS ==========
+  // ========== CATEGORY 11: POS COMPONENTS ==========
   {
     id: "pos-overview",
     section: "POS Components",
@@ -857,7 +1026,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Metrics accessible"
     ],
     duration: 90,
-    order: 35
+    order: 36
   },
   {
     id: "pos-cycle",
@@ -881,7 +1050,7 @@ const DEMO_STEPS: DemoStep[] = [
       "New recommendations generated"
     ],
     duration: 180,
-    order: 36
+    order: 37
   },
   {
     id: "pos-components",
@@ -906,10 +1075,10 @@ const DEMO_STEPS: DemoStep[] = [
       "Recommendations shown"
     ],
     duration: 180,
-    order: 37
+    order: 38
   },
 
-  // ========== SECTION 13: TRUST ASSETS ==========
+  // ========== CATEGORY 12: TRUST ASSETS & FUNNEL MAP ==========
   {
     id: "trust-overview",
     section: "Trust Assets",
@@ -931,7 +1100,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Gap mapping accessible"
     ],
     duration: 90,
-    order: 38
+    order: 39
   },
   {
     id: "trust-create",
@@ -955,7 +1124,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Trust score updated"
     ],
     duration: 150,
-    order: 39
+    order: 40
   },
   {
     id: "trust-gaps",
@@ -978,10 +1147,8 @@ const DEMO_STEPS: DemoStep[] = [
       "Trust substitution score updated"
     ],
     duration: 120,
-    order: 40
+    order: 41
   },
-
-  // ========== SECTION 14: FUNNEL MAP ==========
   {
     id: "funnel-overview",
     section: "Funnel Map",
@@ -1003,7 +1170,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Narrative framing accessible"
     ],
     duration: 90,
-    order: 41
+    order: 42
   },
   {
     id: "funnel-simulate",
@@ -1026,10 +1193,10 @@ const DEMO_STEPS: DemoStep[] = [
       "Actionable insights provided"
     ],
     duration: 120,
-    order: 42
+    order: 43
   },
 
-  // ========== SECTION 15: PLAYBOOKS ==========
+  // ========== CATEGORY 13: PLAYBOOKS ==========
   {
     id: "playbooks-overview",
     section: "Playbooks",
@@ -1051,7 +1218,7 @@ const DEMO_STEPS: DemoStep[] = [
       "History accessible"
     ],
     duration: 90,
-    order: 43
+    order: 44
   },
   {
     id: "playbook-create",
@@ -1075,7 +1242,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Approval gates set"
     ],
     duration: 180,
-    order: 44
+    order: 45
   },
   {
     id: "playbook-execute",
@@ -1098,10 +1265,10 @@ const DEMO_STEPS: DemoStep[] = [
       "Approval gates respected"
     ],
     duration: 120,
-    order: 45
+    order: 46
   },
 
-  // ========== SECTION 16: AI ANSWER MONITOR ==========
+  // ========== CATEGORY 14: AI ANSWER MONITOR ==========
   {
     id: "ai-monitor-overview",
     section: "AI Answer Monitor",
@@ -1123,7 +1290,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Query history accessible"
     ],
     duration: 90,
-    order: 46
+    order: 47
   },
   {
     id: "ai-monitor-query",
@@ -1146,7 +1313,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Citation rate tracked"
     ],
     duration: 120,
-    order: 47
+    order: 48
   },
   {
     id: "ai-monitor-metrics",
@@ -1170,10 +1337,10 @@ const DEMO_STEPS: DemoStep[] = [
       "ROI indicators displayed"
     ],
     duration: 90,
-    order: 48
+    order: 49
   },
 
-  // ========== SECTION 17: FINANCIAL SERVICES ==========
+  // ========== CATEGORY 15: FINANCIAL SERVICES ==========
   {
     id: "financial-services-overview",
     section: "Financial Services",
@@ -1195,7 +1362,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Playbooks accessible"
     ],
     duration: 90,
-    order: 49
+    order: 50
   },
   {
     id: "financial-services-brief",
@@ -1220,7 +1387,7 @@ const DEMO_STEPS: DemoStep[] = [
       "Brief exportable"
     ],
     duration: 120,
-    order: 50
+    order: 51
   },
   {
     id: "financial-services-preemption",
@@ -1244,168 +1411,66 @@ const DEMO_STEPS: DemoStep[] = [
       "Playbook active"
     ],
     duration: 150,
-    order: 51
-  },
-
-  // ========== SECTION 18: METERING ==========
-  {
-    id: "metering-overview",
-    section: "Metering",
-    title: "View Metering Dashboard",
-    description: "Monitor usage and billing metrics",
-    page: "Metering Page",
-    pageUrl: "/metering",
-    actions: [
-      "Navigate to Metering page",
-      "View usage metrics",
-      "Check API call counts",
-      "View storage usage",
-      "See billing information"
-    ],
-    expectedResults: [
-      "Metering dashboard displayed",
-      "Usage metrics visible",
-      "API counts shown",
-      "Storage usage accessible"
-    ],
-    duration: 90,
     order: 52
   }
 ];
 
-// Section metadata for better user guidance
-const SECTION_INFO: Record<string, SectionInfo> = {
-  "Authentication & Onboarding": {
-    name: "Authentication & Onboarding",
-    description: "Get started with account creation, SKU selection, and initial setup",
-    icon: "🚀",
-    estimatedTime: 570, // 5 steps * ~114 seconds avg
-    importance: "essential"
-  },
-  "Overview & Dashboard": {
-    name: "Overview & Dashboard",
-    description: "Understand your narrative health and key metrics at a glance",
-    icon: "📊",
-    estimatedTime: 210,
-    importance: "essential"
-  },
-  "Signal Ingestion & Processing": {
-    name: "Signal Ingestion & Processing",
-    description: "Learn how to ingest and process signals from various sources",
-    icon: "📡",
-    estimatedTime: 300,
-    importance: "essential"
-  },
-  "Integrations & Connectors": {
-    name: "Integrations & Connectors",
-    description: "Connect data sources and manage integrations",
-    icon: "🔌",
-    estimatedTime: 390,
-    importance: "important"
-  },
-  "Evidence Vault & Provenance": {
-    name: "Evidence Vault & Provenance",
-    description: "Manage evidence with full provenance and chain of custody",
-    icon: "🔒",
-    estimatedTime: 390,
-    importance: "essential"
-  },
-  "Claim Extraction & Clustering": {
-    name: "Claim Extraction & Clustering",
-    description: "Extract and cluster claims from signals for analysis",
-    icon: "🎯",
-    estimatedTime: 300,
-    importance: "essential"
-  },
-  "Belief Graph Engineering": {
-    name: "Belief Graph Engineering",
-    description: "Explore narrative connections and neutralize weak nodes",
-    icon: "🕸️",
-    estimatedTime: 330,
-    importance: "important"
-  },
-  "Narrative Outbreak Forecasting": {
-    name: "Narrative Outbreak Forecasting",
-    description: "Forecast narrative outbreaks using advanced models",
-    icon: "📈",
-    estimatedTime: 330,
-    importance: "important"
-  },
-  "AI Answer Authority Layer (AAAL)": {
-    name: "AI Answer Authority Layer (AAAL)",
-    description: "Create AI-citable artifacts and rebuttals",
-    icon: "🤖",
-    estimatedTime: 390,
-    importance: "essential"
-  },
-  "Governance & Approvals": {
-    name: "Governance & Approvals",
-    description: "Manage approvals, audits, and compliance workflows",
-    icon: "✅",
-    estimatedTime: 300,
-    importance: "important"
-  },
-  "Publishing & Distribution (PADL)": {
-    name: "Publishing & Distribution (PADL)",
-    description: "Publish artifacts to multiple channels with structured data",
-    icon: "📤",
-    estimatedTime: 210,
-    importance: "essential"
-  },
-  "POS Components": {
-    name: "POS Components",
-    description: "Explore all Perception Operating System components",
-    icon: "⚙️",
-    estimatedTime: 450,
-    importance: "important"
-  },
-  "Trust Assets": {
-    name: "Trust Assets",
-    description: "Manage trust assets and identify trust gaps",
-    icon: "🛡️",
-    estimatedTime: 360,
-    importance: "important"
-  },
-  "Funnel Map": {
-    name: "Funnel Map",
-    description: "Visualize and control customer decision funnels",
-    icon: "🗺️",
-    estimatedTime: 210,
-    importance: "optional"
-  },
-  "Playbooks": {
-    name: "Playbooks",
-    description: "Create and execute automated response playbooks",
-    icon: "📋",
-    estimatedTime: 390,
-    importance: "important"
-  },
-  "AI Answer Monitor": {
-    name: "AI Answer Monitor",
-    description: "Monitor how AI systems cite your content",
-    icon: "👁️",
-    estimatedTime: 300,
-    importance: "important"
-  },
-  "Financial Services": {
-    name: "Financial Services",
-    description: "Financial services-specific features and workflows",
-    icon: "💳",
-    estimatedTime: 360,
-    importance: "optional"
-  },
-  "Metering": {
-    name: "Metering",
-    description: "Monitor usage, billing, and resource consumption",
-    icon: "📊",
-    estimatedTime: 90,
-    importance: "optional"
-  }
+// Helper functions
+const getCategoryForStep = (step: DemoStep): string => {
+  return SECTION_TO_CATEGORY[step.section] || step.section;
+};
+
+const getStepsForCategory = (categoryName: string): DemoStep[] => {
+  return DEMO_STEPS.filter(step => getCategoryForStep(step) === categoryName);
+};
+
+const getCategoryInfo = (categoryName: string): CategoryInfo | undefined => {
+  return CATEGORIES.find(cat => cat.name === categoryName);
+};
+
+// Progress Ring Component
+const ProgressRing = ({ progress, size = 60, strokeWidth = 6, className }: { progress: number; size?: number; strokeWidth?: number; className?: string }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <div className={cn("relative", className)} style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          fill="none"
+          className="text-muted/20"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          className="text-primary transition-all duration-500"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-xs font-bold text-foreground">{Math.round(progress)}%</span>
+      </div>
+    </div>
+  );
 };
 
 export function DemoWalkthroughClient() {
   const router = useRouter();
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [completedCategories, setCompletedCategories] = useState<Set<string>>(new Set());
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isPlaying, setIsPlaying] = useState(false);
   const [showWelcome, setShowWelcome] = useState(() => {
@@ -1414,77 +1479,133 @@ export function DemoWalkthroughClient() {
     }
     return true;
   });
-  const [tourMode, setTourMode] = useState<"guided" | "explore" | null>(null);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [showCategoryComplete, setShowCategoryComplete] = useState(false);
+  const [justCompletedCategory, setJustCompletedCategory] = useState<string | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
 
-  const currentStep = DEMO_STEPS[currentStepIndex] || DEMO_STEPS[0];
-  const progress = ((currentStepIndex + 1) / DEMO_STEPS.length) * 100;
-  const sections = Array.from(new Set(DEMO_STEPS.map(s => s.section)));
+  const currentCategory = CATEGORIES[currentCategoryIndex] || CATEGORIES[0];
+  const categorySteps = getStepsForCategory(currentCategory.name);
+  const currentStep = categorySteps[currentStepIndex] || categorySteps[0];
+  
+  const categoryProgress = ((currentCategoryIndex + 1) / CATEGORIES.length) * 100;
+  const stepProgressInCategory = categorySteps.length > 0 
+    ? ((currentStepIndex + 1) / categorySteps.length) * 100 
+    : 0;
 
-  // Group steps by section
-  const stepsBySection = sections.reduce((acc, section) => {
-    acc[section] = DEMO_STEPS.filter(s => s.section === section);
-    return acc;
-  }, {} as Record<string, DemoStep[]>);
-
-  // Initialize all sections as expanded by default
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set(sections));
-
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => {
-      const next = new Set(prev);
-      if (next.has(section)) {
-        next.delete(section);
-      } else {
-        next.add(section);
-      }
-      return next;
-    });
+  const isCategoryComplete = (categoryName: string): boolean => {
+    const steps = getStepsForCategory(categoryName);
+    return steps.every(step => completedSteps.has(step.id));
   };
 
-  const handleNext = useCallback(() => {
-    setCurrentStepIndex(prev => {
-      if (prev < DEMO_STEPS.length - 1) {
-        return prev + 1;
-      } else {
-        setIsPlaying(false);
-        return prev;
-      }
-    });
-  }, []);
+  const getCategoryProgress = (categoryName: string): number => {
+    const steps = getStepsForCategory(categoryName);
+    if (steps.length === 0) return 0;
+    const completed = steps.filter(s => completedSteps.has(s.id)).length;
+    return (completed / steps.length) * 100;
+  };
 
-  const handlePrevious = useCallback(() => {
-    setCurrentStepIndex(prev => prev > 0 ? prev - 1 : prev);
-  }, []);
+  const completedCategoriesCount = CATEGORIES.filter(cat => isCategoryComplete(cat.name)).length;
+  const overallProgress = (completedCategoriesCount / CATEGORIES.length) * 100;
+
+  const handleNextCategory = useCallback(() => {
+    if (currentCategoryIndex < CATEGORIES.length - 1) {
+      setCurrentCategoryIndex(prev => prev + 1);
+      setCurrentStepIndex(0);
+      setIsPlaying(false);
+    }
+  }, [currentCategoryIndex]);
+
+  const handlePreviousCategory = useCallback(() => {
+    if (currentCategoryIndex > 0) {
+      setCurrentCategoryIndex(prev => prev - 1);
+      const prevCategory = CATEGORIES[currentCategoryIndex - 1];
+      const prevSteps = getStepsForCategory(prevCategory.name);
+      setCurrentStepIndex(prevSteps.length - 1);
+      setIsPlaying(false);
+    }
+  }, [currentCategoryIndex]);
+
+  const handleNextStep = useCallback(() => {
+    if (currentStepIndex < categorySteps.length - 1) {
+      setCurrentStepIndex(prev => prev + 1);
+    } else {
+      handleNextCategory();
+    }
+  }, [currentStepIndex, categorySteps.length, handleNextCategory]);
+
+  const handlePreviousStep = useCallback(() => {
+    if (currentStepIndex > 0) {
+      setCurrentStepIndex(prev => prev - 1);
+    } else {
+      handlePreviousCategory();
+    }
+  }, [currentStepIndex, handlePreviousCategory]);
 
   const handlePlayPause = useCallback(() => {
     setIsPlaying(prev => !prev);
   }, []);
 
   const handleReset = useCallback(() => {
+    setCurrentCategoryIndex(0);
     setCurrentStepIndex(0);
+    setCompletedCategories(new Set());
     setCompletedSteps(new Set());
     setIsPlaying(false);
   }, []);
 
-  const handleComplete = (stepId: string) => {
+  const handleCompleteStep = (stepId: string) => {
     setCompletedSteps(prev => new Set([...prev, stepId]));
-    handleNext();
+    
+    const categoryName = getCategoryForStep(DEMO_STEPS.find(s => s.id === stepId)!);
+    const wasComplete = isCategoryComplete(categoryName);
+    
+    if (!wasComplete && isCategoryComplete(categoryName)) {
+      setCompletedCategories(prev => new Set([...prev, categoryName]));
+      setJustCompletedCategory(categoryName);
+      setShowCategoryComplete(true);
+      setTimeout(() => {
+        setShowCategoryComplete(false);
+        setJustCompletedCategory(null);
+      }, 3000);
+    }
+    
+    handleNextStep();
+  };
+
+  const handleSkipCategory = () => {
+    const remainingSteps = categorySteps.filter(s => !completedSteps.has(s.id));
+    remainingSteps.forEach(step => {
+      setCompletedSteps(prev => new Set([...prev, step.id]));
+    });
+    if (remainingSteps.length > 0) {
+      const categoryName = currentCategory.name;
+      setCompletedCategories(prev => new Set([...prev, categoryName]));
+    }
+    handleNextCategory();
+  };
+
+  const handleMarkAllComplete = () => {
+    categorySteps.forEach(step => {
+      if (!completedSteps.has(step.id)) {
+        setCompletedSteps(prev => new Set([...prev, step.id]));
+      }
+    });
+    const categoryName = currentCategory.name;
+    setCompletedCategories(prev => new Set([...prev, categoryName]));
   };
 
   useEffect(() => {
     if (isPlaying && currentStep) {
       const timer = setTimeout(() => {
-        handleNext();
+        handleNextStep();
       }, currentStep.duration * 1000);
       return () => clearTimeout(timer);
     }
-  }, [isPlaying, currentStepIndex, currentStep]);
+  }, [isPlaying, currentStepIndex, currentCategoryIndex, currentStep, handleNextStep]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in inputs
       if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') {
         return;
       }
@@ -1492,15 +1613,11 @@ export function DemoWalkthroughClient() {
       switch (e.key) {
         case 'ArrowRight':
           e.preventDefault();
-          if (currentStepIndex < DEMO_STEPS.length - 1) {
-            handleNext();
-          }
+          handleNextStep();
           break;
         case 'ArrowLeft':
           e.preventDefault();
-          if (currentStepIndex > 0) {
-            handlePrevious();
-          }
+          handlePreviousStep();
           break;
         case ' ':
           e.preventDefault();
@@ -1518,7 +1635,7 @@ export function DemoWalkthroughClient() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentStepIndex, isPlaying, handleNext, handlePrevious, handlePlayPause, handleReset]);
+  }, [handleNextStep, handlePreviousStep, handlePlayPause, handleReset]);
 
   const handleNavigateToPage = () => {
     if (currentStep) {
@@ -1526,21 +1643,29 @@ export function DemoWalkthroughClient() {
     }
   };
 
-  const handleJumpToStep = (index: number) => {
-    setCurrentStepIndex(index);
+  const handleJumpToCategory = (categoryIndex: number) => {
+    setCurrentCategoryIndex(categoryIndex);
+    setCurrentStepIndex(0);
     setIsPlaying(false);
   };
 
-  const getSectionProgress = (section: string) => {
-    const sectionSteps = stepsBySection[section];
-    const completed = sectionSteps.filter(s => completedSteps.has(s.id)).length;
-    return (completed / sectionSteps.length) * 100;
+  const handleJumpToStep = (stepIndex: number) => {
+    setCurrentStepIndex(stepIndex);
+    setIsPlaying(false);
   };
 
-  // Calculate estimated time remaining
   const getEstimatedTimeRemaining = () => {
-    const remainingSteps = DEMO_STEPS.slice(currentStepIndex);
-    const totalSeconds = remainingSteps.reduce((sum, step) => sum + step.duration, 0);
+    let totalSeconds = 0;
+    for (let i = currentCategoryIndex; i < CATEGORIES.length; i++) {
+      const cat = CATEGORIES[i];
+      const steps = getStepsForCategory(cat.name);
+      if (i === currentCategoryIndex) {
+        const remainingSteps = steps.slice(currentStepIndex);
+        totalSeconds += remainingSteps.reduce((sum, step) => sum + step.duration, 0);
+      } else {
+        totalSeconds += steps.reduce((sum, step) => sum + step.duration, 0);
+      }
+    }
     const minutes = Math.floor(totalSeconds / 60);
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
@@ -1551,15 +1676,14 @@ export function DemoWalkthroughClient() {
     return `${minutes}m`;
   };
 
-  // Get next step preview
-  const nextStep = currentStepIndex < DEMO_STEPS.length - 1 ? DEMO_STEPS[currentStepIndex + 1] : null;
-  
-  // Get current section info
-  const currentSectionInfo = SECTION_INFO[currentStep.section];
+  useEffect(() => {
+    if (completedCategories.size === CATEGORIES.length && CATEGORIES.length > 0) {
+      setShowCompletion(true);
+      setIsPlaying(false);
+    }
+  }, [completedCategories.size]);
 
-  // Handle welcome dialog actions
   const handleStartGuidedTour = () => {
-    setTourMode("guided");
     setShowWelcome(false);
     setIsPlaying(true);
     if (typeof window !== "undefined") {
@@ -1568,7 +1692,6 @@ export function DemoWalkthroughClient() {
   };
 
   const handleStartExplore = () => {
-    setTourMode("explore");
     setShowWelcome(false);
     if (typeof window !== "undefined") {
       localStorage.setItem("demo-welcome-dismissed", "true");
@@ -1582,40 +1705,66 @@ export function DemoWalkthroughClient() {
     }
   };
 
-  // Check for completion
-  useEffect(() => {
-    if (completedSteps.size === DEMO_STEPS.length && DEMO_STEPS.length > 0) {
-      setShowCompletion(true);
-      setIsPlaying(false);
-    }
-  }, [completedSteps.size]);
-
-  if (!currentStep) {
+  if (!currentStep || !currentCategory) {
     return (
       <div className="space-y-6">
         <Alert>
-          <AlertDescription>No demo steps available. Please check configuration.</AlertDescription>
+          <AlertDescription>No demo content available. Please check configuration.</AlertDescription>
         </Alert>
       </div>
     );
   }
 
-  const totalEstimatedTime = Math.floor(DEMO_STEPS.reduce((sum, step) => sum + step.duration, 0) / 60);
+  const totalEstimatedTime = Math.floor(
+    CATEGORIES.reduce((sum, cat) => {
+      const steps = getStepsForCategory(cat.name);
+      return sum + steps.reduce((s, step) => s + step.duration, 0);
+    }, 0) / 60
+  );
+
+  const nextCategory = currentCategoryIndex < CATEGORIES.length - 1 
+    ? CATEGORIES[currentCategoryIndex + 1] 
+    : null;
+  const nextStep = currentStepIndex < categorySteps.length - 1 
+    ? categorySteps[currentStepIndex + 1] 
+    : null;
+
+  const categoryProgressValue = getCategoryProgress(currentCategory.name);
+  const completedInCategory = categorySteps.filter(s => completedSteps.has(s.id)).length;
 
   return (
     <>
-      {/* Completion Celebration */}
+      {/* Category Completion Celebration */}
+      <Dialog open={showCategoryComplete} onOpenChange={setShowCategoryComplete}>
+        <DialogContent className="max-w-md" showCloseButton={false}>
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="p-4 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-full animate-pulse">
+                <Trophy className="h-12 w-12 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl">Category Complete! 🎉</DialogTitle>
+            <DialogDescription className="text-center text-base pt-2">
+              You've completed <strong>{justCompletedCategory}</strong>!
+              <br />
+              Great progress! Moving to the next category...
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      {/* Final Completion Celebration */}
       <Dialog open={showCompletion} onOpenChange={setShowCompletion}>
         <DialogContent className="max-w-md" showCloseButton={false}>
           <DialogHeader>
             <div className="flex items-center justify-center mb-4">
-              <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded-full">
-                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              <div className="p-4 bg-gradient-to-br from-primary/20 to-purple-100 dark:from-primary/30 dark:to-purple-900/30 rounded-full">
+                <Star className="h-12 w-12 text-primary fill-primary" />
               </div>
             </div>
-            <DialogTitle className="text-center text-2xl">Congratulations! 🎉</DialogTitle>
+            <DialogTitle className="text-center text-2xl">Congratulations! 🎊</DialogTitle>
             <DialogDescription className="text-center text-base pt-2">
-              You've completed all <strong>52 steps</strong> across <strong>18 categories</strong>!
+              You've completed all <strong>15 categories</strong>!
               <br />
               You now have a complete understanding of the Holdwall POS platform.
             </DialogDescription>
@@ -1641,32 +1790,35 @@ export function DemoWalkthroughClient() {
           localStorage.setItem("demo-welcome-dismissed", "true");
         }
       }}>
-        <DialogContent className="max-w-2xl" showCloseButton={false}>
+        <DialogContent className="max-w-3xl" showCloseButton={false}>
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Sparkles className="h-6 w-6 text-primary" />
+              <div className="p-3 bg-gradient-to-br from-primary/20 to-purple-100 dark:from-primary/30 dark:to-purple-900/30 rounded-xl">
+                <Sparkles className="h-8 w-8 text-primary" />
               </div>
-              <DialogTitle className="text-2xl">Welcome to Holdwall POS Demo</DialogTitle>
+              <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                Welcome to Holdwall POS Demo
+              </DialogTitle>
             </div>
             <DialogDescription className="text-base pt-2">
-              Experience the complete platform with <strong>52 comprehensive steps</strong> organized into <strong>18 categories</strong>. 
-              Choose how you'd like to explore:
+              Experience the complete platform with <strong className="text-foreground">15 comprehensive categories</strong>. 
+              Navigate through categories and complete all steps in each category before moving to the next.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="grid gap-4 md:grid-cols-2">
-              {/* Guided Tour Option */}
-              <Card className="border-2 border-primary/20 hover:border-primary transition-all duration-300 cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              <Card className="border-2 border-primary/20 hover:border-primary transition-all duration-300 cursor-pointer hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br from-primary/5 to-transparent"
                     onClick={handleStartGuidedTour}>
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-2">
-                    <BookOpen className="h-5 w-5 text-primary" />
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Play className="h-5 w-5 text-primary" />
+                    </div>
                     <CardTitle className="text-lg">Guided Tour</CardTitle>
                   </div>
                   <CardDescription>
-                    Auto-play through all steps with automatic progression. Perfect for a complete overview.
+                    Auto-play through all categories with automatic progression. Perfect for a complete overview.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -1677,32 +1829,33 @@ export function DemoWalkthroughClient() {
                 </CardContent>
               </Card>
 
-              {/* Explore Option */}
-              <Card className="border-2 hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              <Card className="border-2 hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20 dark:to-transparent"
                     onClick={handleStartExplore}>
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-2">
-                    <Zap className="h-5 w-5 text-blue-500" />
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
                     <CardTitle className="text-lg">Explore on Your Own</CardTitle>
                   </div>
                   <CardDescription>
-                    Navigate at your own pace. Jump to any category or step. Perfect for focused learning.
+                    Navigate at your own pace. Jump to any category. Perfect for focused learning.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Target className="h-4 w-4" />
-                    <span>Jump to any section</span>
+                    <span>Jump to any category</span>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <Alert>
-              <Info className="h-4 w-4" />
+            <Alert className="border-primary/20 bg-gradient-to-r from-primary/5 to-purple-50/50 dark:from-primary/10 dark:to-purple-950/20">
+              <Info className="h-4 w-4 text-primary" />
               <AlertDescription>
-                <strong>Complete Coverage:</strong> All 52 steps ensure nothing is missed. You can always switch between modes, 
-                skip steps, or jump to specific sections using the sidebar.
+                <strong>Category-Based Navigation:</strong> Complete all steps in a category to unlock the next one. 
+                You can always jump to any category or step using the sidebar.
               </AlertDescription>
             </Alert>
           </div>
@@ -1711,7 +1864,7 @@ export function DemoWalkthroughClient() {
             <Button variant="outline" onClick={handleSkipWelcome} className="w-full sm:w-auto">
               Skip Introduction
             </Button>
-            <Button onClick={handleStartExplore} className="w-full sm:w-auto">
+            <Button onClick={handleStartExplore} className="w-full sm:w-auto bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90">
               Start Exploring
             </Button>
           </DialogFooter>
@@ -1719,616 +1872,639 @@ export function DemoWalkthroughClient() {
       </Dialog>
 
       <div className="space-y-6">
-      {/* Enhanced Header with Stats */}
-      <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
-        <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold">Interactive Platform Demo</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {DEMO_STEPS.length} comprehensive steps across {sections.length} categories
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 text-sm">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-md">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">~{getEstimatedTimeRemaining()} remaining</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-950/20 rounded-md">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <span className="font-medium">{completedSteps.size}/{DEMO_STEPS.length} completed</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/20 rounded-md">
-                  <Target className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium">{Math.round(progress)}% progress</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleReset}
-                      className="gap-2"
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                      Reset
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Reset progress and start from beginning</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <Button
-                variant={isPlaying ? "secondary" : "default"}
-                size="sm"
-                onClick={handlePlayPause}
-                className="gap-2"
-              >
-                {isPlaying ? (
-                  <>
-                    <Pause className="h-4 w-4" />
-                    Pause
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4" />
-                    Auto-Play
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Enhanced Progress Bar with Section Info */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">Step {currentStepIndex + 1}</span>
-                  <span className="text-muted-foreground">of {DEMO_STEPS.length}</span>
-                </div>
-                <Separator orientation="vertical" className="h-6" />
-                <div className="flex items-center gap-2">
-                  {currentSectionInfo && (
-                    <span className="text-2xl">{currentSectionInfo.icon}</span>
-                  )}
+        {/* Enhanced Header with Beautiful Stats */}
+        <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-purple-50/30 dark:to-purple-950/10 shadow-xl">
+          <CardContent className="pt-6">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-br from-primary/20 to-purple-100 dark:from-primary/30 dark:to-purple-900/30 rounded-xl">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
                   <div>
-                    <Badge variant="outline" className="text-xs font-semibold">
-                      {currentStep.section}
-                    </Badge>
-                    {currentSectionInfo && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {currentSectionInfo.description}
-                      </p>
-                    )}
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                      Interactive Platform Demo
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {DEMO_STEPS.length} comprehensive steps across {CATEGORIES.length} categories • Master the platform step by step
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-lg border border-primary/10 shadow-sm">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span className="font-semibold text-sm">~{getEstimatedTimeRemaining()} remaining</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <span className="font-semibold text-sm">{completedCategoriesCount}/{CATEGORIES.length} categories</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg border border-blue-200 dark:border-blue-800 shadow-sm">
+                    <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <span className="font-semibold text-sm">{Math.round(overallProgress)}% complete</span>
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold">{Math.round(progress)}%</div>
-                <div className="text-xs text-muted-foreground">Complete</div>
+              <div className="flex items-center gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleReset}
+                        className="gap-2 hover:bg-destructive/10 hover:border-destructive/20"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        Reset
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Reset all progress</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <Button
+                  variant={isPlaying ? "secondary" : "default"}
+                  size="sm"
+                  onClick={handlePlayPause}
+                  className="gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                >
+                  {isPlaying ? (
+                    <>
+                      <Pause className="h-4 w-4" />
+                      Pause
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4" />
+                      Auto-Play
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
-            <Progress value={progress} className="h-4" />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Category Grid View - New Enhanced Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            Browse by Category
-          </CardTitle>
-          <CardDescription>
-            Click any category to jump to its first step. {sections.length} categories with {DEMO_STEPS.length} total steps.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {sections.map((section) => {
-              const sectionSteps = stepsBySection[section];
-              const sectionProgress = getSectionProgress(section);
-              const isCurrent = currentStep.section === section;
-              const sectionInfo = SECTION_INFO[section];
-              const completedCount = sectionSteps.filter(s => completedSteps.has(s.id)).length;
-              const isComplete = completedCount === sectionSteps.length;
-              const firstStepIndex = DEMO_STEPS.findIndex(s => s.section === section);
-              
-              return (
-                <button
-                  key={section}
-                  onClick={() => handleJumpToStep(firstStepIndex)}
-                  className={`group relative p-4 rounded-lg border-2 transition-all duration-200 text-left ${
-                    isCurrent
-                      ? "border-primary bg-primary/10 shadow-lg scale-[1.02]"
-                      : isComplete
-                      ? "border-green-300 bg-green-50 dark:bg-green-950/20 hover:border-green-400 hover:shadow-md"
-                      : "border-border bg-card hover:border-primary/50 hover:shadow-md hover:bg-accent/50"
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      {sectionInfo && (
-                        <span className="text-2xl">{sectionInfo.icon}</span>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-                          {section}
-                        </h3>
-                      </div>
+        {/* Beautiful Category Progress Card */}
+        <Card className="border-2 border-primary/20 shadow-lg bg-gradient-to-br from-card via-card to-primary/5">
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <ProgressRing progress={categoryProgressValue} size={80} strokeWidth={8} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl">{currentCategory.icon}</span>
                     </div>
-                    {isComplete && (
-                      <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
-                    )}
                   </div>
-                  
-                  {sectionInfo && (
-                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                      {sectionInfo.description}
-                    </p>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium">
-                        {completedCount}/{sectionSteps.length} steps
-                      </span>
-                      {sectionInfo && (
-                        <span className="text-muted-foreground">
-                          ~{Math.floor(sectionInfo.estimatedTime / 60)}m
-                        </span>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-sm font-semibold px-3 py-1">
+                        Category {currentCategoryIndex + 1} of {CATEGORIES.length}
+                      </Badge>
+                      {isCategoryComplete(currentCategory.name) && (
+                        <Badge className="bg-green-600 text-white">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Complete
+                        </Badge>
                       )}
                     </div>
-                    <Progress 
-                      value={sectionProgress} 
-                      className={`h-2 ${
-                        isComplete 
-                          ? "bg-green-200 dark:bg-green-900" 
-                          : isCurrent
-                          ? "bg-primary/20"
-                          : ""
-                      }`}
-                    />
-                    {sectionInfo && (
-                      <div className="flex items-center gap-2">
+                    <h3 className="text-2xl font-bold">{currentCategory.name}</h3>
+                    <p className="text-sm text-muted-foreground">{currentCategory.description}</p>
+                  </div>
+                </div>
+                <div className="text-right space-y-1">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                    {Math.round(categoryProgressValue)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">Category Progress</div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Step {currentStepIndex + 1} of {categorySteps.length} in this category
+                  </span>
+                  <span className="font-semibold">
+                    {completedInCategory}/{categorySteps.length} steps completed
+                  </span>
+                </div>
+                <Progress 
+                  value={categoryProgressValue} 
+                  className="h-3 bg-muted/50"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Enhanced Category Grid */}
+        <Card className="border-2 border-primary/10 shadow-lg">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <BookOpen className="h-6 w-6 text-primary" />
+                  Browse Categories
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  Click any category to jump to it. {CATEGORIES.length} categories covering the entire platform.
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="text-sm">
+                {completedCategoriesCount} completed
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              {CATEGORIES.map((category, index) => {
+                const progress = getCategoryProgress(category.name);
+                const isCurrent = index === currentCategoryIndex;
+                const isComplete = isCategoryComplete(category.name);
+                const completedCount = getStepsForCategory(category.name).filter(s => completedSteps.has(s.id)).length;
+                const totalSteps = getStepsForCategory(category.name).length;
+                
+                return (
+                  <button
+                    key={category.name}
+                    onClick={() => handleJumpToCategory(index)}
+                    className={cn(
+                      "group relative p-5 rounded-xl border-2 transition-all duration-300 text-left",
+                      "hover:shadow-xl hover:scale-105 active:scale-95",
+                      isCurrent
+                        ? "border-primary bg-gradient-to-br from-primary/20 to-purple-100/50 dark:from-primary/30 dark:to-purple-900/30 shadow-lg scale-105"
+                        : isComplete
+                        ? "border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 hover:border-green-400"
+                        : "border-border bg-card hover:border-primary/50 hover:bg-gradient-to-br hover:from-primary/5 hover:to-purple-50/30 dark:hover:to-purple-950/10"
+                    )}
+                  >
+                    {isCurrent && (
+                      <div className="absolute -top-2 -right-2">
+                        <div className="h-4 w-4 bg-primary rounded-full animate-ping" />
+                        <div className="absolute inset-0 h-4 w-4 bg-primary rounded-full" />
+                      </div>
+                    )}
+                    
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <span className="text-3xl">{category.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                            {category.name}
+                          </h3>
+                        </div>
+                      </div>
+                      {isComplete && (
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                      )}
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground mb-4 line-clamp-2 min-h-[2.5rem]">
+                      {category.description}
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-foreground">
+                          {completedCount}/{totalSteps} steps
+                        </span>
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          ~{Math.floor(category.estimatedTime / 60)}m
+                        </span>
+                      </div>
+                      <Progress 
+                        value={progress} 
+                        className={cn(
+                          "h-2",
+                          isComplete 
+                            ? "bg-green-200 dark:bg-green-900" 
+                            : isCurrent
+                            ? "bg-primary/30"
+                            : "bg-muted"
+                        )}
+                      />
+                      <div className="flex items-center justify-between">
                         <Badge 
                           variant={
-                            sectionInfo.importance === "essential" 
+                            category.importance === "essential" 
                               ? "default" 
-                              : sectionInfo.importance === "important"
+                              : category.importance === "important"
                               ? "secondary"
                               : "outline"
                           }
                           className="text-xs"
                         >
-                          {sectionInfo.importance}
+                          {category.importance}
                         </Badge>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {isCurrent && (
-                    <div className="absolute top-2 right-2">
-                      <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Enhanced Main Content - Current Step */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Next Step Preview with Better Styling */}
-          {nextStep && (
-            <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 shadow-sm">
-              <ArrowRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <AlertDescription className="text-sm">
-                <strong className="text-blue-900 dark:text-blue-100">Next Step:</strong>{" "}
-                <span className="font-medium">{nextStep.title}</span>
-                <Badge variant="outline" className="ml-2 text-xs">
-                  {nextStep.section}
-                </Badge>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Enhanced Current Step Card */}
-          <Card className="border-2 border-primary/30 shadow-xl transition-all duration-300 hover:shadow-2xl bg-gradient-to-br from-card via-card to-primary/5">
-            <CardHeader className="pb-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    {currentSectionInfo && (
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <span className="text-2xl">{currentSectionInfo.icon}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="font-semibold">
-                        {currentStep.section}
-                      </Badge>
-                      <Badge variant="secondary" className="font-semibold">
-                        Step {currentStep.order} of {DEMO_STEPS.length}
-                      </Badge>
-                      {completedSteps.has(currentStep.id) && (
-                        <Badge variant="default" className="bg-green-600">
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          Completed
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <CardTitle className="text-3xl mb-3 font-bold tracking-tight">
-                      {currentStep.title}
-                    </CardTitle>
-                    <CardDescription className="text-base leading-relaxed">
-                      {currentStep.description}
-                    </CardDescription>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Enhanced Page Info */}
-              <div className="bg-gradient-to-r from-muted/80 to-muted/50 p-5 rounded-lg border border-border/50">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                      <p className="text-sm font-semibold text-foreground">Target Page</p>
-                    </div>
-                    <p className="text-base text-muted-foreground font-medium">{currentStep.page}</p>
-                    <p className="text-xs text-muted-foreground mt-1 font-mono">{currentStep.pageUrl}</p>
-                  </div>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={handleNavigateToPage}
-                    className="gap-2 shadow-sm"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Navigate
-                  </Button>
-                </div>
-              </div>
-
-              {/* Enhanced Actions Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded">
-                    <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h3 className="font-semibold text-lg">Actions to Perform</h3>
-                </div>
-                <div className="bg-blue-50/50 dark:bg-blue-950/10 rounded-lg p-4 border border-blue-200/50 dark:border-blue-800/30">
-                  <ul className="space-y-3">
-                    {currentStep.actions.map((action, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <div className="mt-0.5 flex-shrink-0">
-                          <div className="h-6 w-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                            <span className="text-xs font-bold text-blue-700 dark:text-blue-300">{idx + 1}</span>
-                          </div>
-                        </div>
-                        <span className="text-sm leading-relaxed flex-1 pt-0.5">{action}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              {/* Enhanced Expected Results Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded">
-                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  </div>
-                  <h3 className="font-semibold text-lg">Expected Results</h3>
-                </div>
-                <div className="bg-green-50/50 dark:bg-green-950/10 rounded-lg p-4 border border-green-200/50 dark:border-green-800/30">
-                  <ul className="space-y-3">
-                    {currentStep.expectedResults.map((result, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <CheckCircle2 className="h-5 w-5 mt-0.5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                        <span className="text-sm leading-relaxed flex-1">{result}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              {/* Enhanced Duration and Tips */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border border-border/50">
-                  <Clock className="h-5 w-5 text-muted-foreground" />
-                  <div className="flex-1">
-                    <span className="text-sm font-medium">Estimated duration: </span>
-                    <span className="text-sm font-semibold">{currentStep.duration} seconds</span>
-                    {isPlaying && (
-                      <>
-                        <span className="mx-2 text-muted-foreground">•</span>
-                        <span className="text-sm font-semibold text-primary animate-pulse">
-                          Auto-advancing in {currentStep.duration}s
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                {currentSectionInfo && currentSectionInfo.importance === "essential" && (
-                  <Alert className="border-amber-300 bg-gradient-to-r from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 shadow-sm">
-                    <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                    <AlertDescription className="text-sm">
-                      <strong className="text-amber-900 dark:text-amber-100">Essential Step:</strong>{" "}
-                      This is a core feature that's important to understand.
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-
-              <Separator className="my-4" />
-
-              {/* Enhanced Keyboard Shortcuts */}
-              <div className="bg-muted/30 p-3 rounded-lg border border-border/50">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="font-semibold">Keyboard shortcuts:</span>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <kbd className="px-2 py-1 bg-background border border-border rounded text-xs font-mono">←</kbd>
-                    <span>Previous</span>
-                    <kbd className="px-2 py-1 bg-background border border-border rounded text-xs font-mono">→</kbd>
-                    <span>Next</span>
-                    <kbd className="px-2 py-1 bg-background border border-border rounded text-xs font-mono">Space</kbd>
-                    <span>Play/Pause</span>
-                    <kbd className="px-2 py-1 bg-background border border-border rounded text-xs font-mono">Ctrl+R</kbd>
-                    <span>Reset</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Enhanced Navigation Buttons */}
-              <div className="flex items-center justify-between gap-3 pt-2">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={currentStepIndex === 0}
-                  className="gap-2"
-                  size="lg"
-                >
-                  <ArrowRight className="h-4 w-4 rotate-180" />
-                  Previous
-                </Button>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleComplete(currentStep.id)}
-                    className="gap-2"
-                    size="lg"
-                    disabled={completedSteps.has(currentStep.id)}
-                  >
-                    {completedSteps.has(currentStep.id) ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4" />
-                        Completed
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="h-4 w-4" />
-                        Mark Complete
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    onClick={handleNext}
-                    disabled={currentStepIndex === DEMO_STEPS.length - 1}
-                    className="gap-2"
-                    size="lg"
-                  >
-                    Next Step
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Enhanced Sidebar - Navigation & Progress */}
-        <div className="space-y-6">
-          {/* Compact Section Progress Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Quick Progress
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Overview of all {sections.length} categories
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {sections.map((section) => {
-                const sectionProgress = getSectionProgress(section);
-                const sectionSteps = stepsBySection[section];
-                const isCurrent = currentStep.section === section;
-                const sectionInfo = SECTION_INFO[section];
-                const completedCount = sectionSteps.filter(s => completedSteps.has(s.id)).length;
-                const isComplete = completedCount === sectionSteps.length;
-                const firstStepIndex = DEMO_STEPS.findIndex(s => s.section === section);
-                
-                return (
-                  <button
-                    key={section}
-                    onClick={() => handleJumpToStep(firstStepIndex)}
-                    className={`w-full p-3 rounded-lg border transition-all text-left ${
-                      isCurrent 
-                        ? "border-primary bg-primary/10 shadow-md" 
-                        : isComplete
-                        ? "border-green-300 bg-green-50 dark:bg-green-950/20 hover:border-green-400"
-                        : "border-border hover:bg-muted/50 hover:border-primary/30"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-2 gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {sectionInfo && <span className="text-lg">{sectionInfo.icon}</span>}
-                          <span className="text-sm font-medium truncate">{section}</span>
-                          {isComplete && (
-                            <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                          )}
-                          {isCurrent && !isComplete && (
-                            <div className="h-2 w-2 bg-primary rounded-full animate-pulse flex-shrink-0" />
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <span className="text-xs font-semibold">
-                          {completedCount}/{sectionSteps.length}
-                        </span>
-                        {sectionInfo && (
-                          <span className="text-xs text-muted-foreground">
-                            ~{Math.floor(sectionInfo.estimatedTime / 60)}m
+                        {progress > 0 && !isComplete && (
+                          <span className="text-xs font-semibold text-primary">
+                            {Math.round(progress)}%
                           </span>
                         )}
                       </div>
                     </div>
-                    <Progress 
-                      value={sectionProgress} 
-                      className={`h-2 ${isComplete ? "bg-green-200 dark:bg-green-900" : ""}`}
-                    />
                   </button>
                 );
               })}
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Enhanced Step Navigation with Better Visual Hierarchy */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Step Navigator
-              </CardTitle>
-              <CardDescription className="text-sm">
-                <span className="font-semibold">{DEMO_STEPS.length} steps</span> in <span className="font-semibold">{sections.length} categories</span>
-                <br />
-                <span className="text-xs">Click to expand • Click step to jump</span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
-                {sections.map((section) => {
-                  const sectionSteps = stepsBySection[section];
-                  const isExpanded = expandedSections.has(section);
-                  const isCurrentSection = currentStep.section === section;
-                  const completedCount = sectionSteps.filter(s => completedSteps.has(s.id)).length;
-                  const sectionInfo = SECTION_INFO[section];
-                  const sectionProgress = getSectionProgress(section);
-                  
-                  return (
-                    <div key={section} className="space-y-1">
-                      <button
-                        onClick={() => toggleSection(section)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
-                          isCurrentSection
-                            ? "bg-primary/15 text-primary border-2 border-primary/30 shadow-md"
-                            : "bg-muted/60 hover:bg-muted text-foreground hover:shadow-sm border border-transparent hover:border-border"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          {isExpanded ? (
-                            <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                          )}
-                          {sectionInfo && (
-                            <span className="text-base">{sectionInfo.icon}</span>
-                          )}
-                          <span className="truncate text-xs font-semibold uppercase tracking-wide">
-                            {section}
-                          </span>
-                          <div className="flex items-center gap-2 ml-auto">
-                            <Progress 
-                              value={sectionProgress} 
-                              className="w-16 h-1.5 hidden sm:block"
-                            />
-                            <Badge 
-                              variant={completedCount === sectionSteps.length ? "default" : "secondary"} 
-                              className="text-xs font-semibold"
-                            >
-                              {completedCount}/{sectionSteps.length}
-                            </Badge>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content - Enhanced Step Card */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Next Category/Step Preview */}
+            {nextCategory && !nextStep && (
+              <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 shadow-sm">
+                <ArrowRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-sm">
+                  <strong className="text-blue-900 dark:text-blue-100">Next Category:</strong>{" "}
+                  <span className="font-medium">{nextCategory.name}</span>
+                  <Badge variant="outline" className="ml-2 text-xs">
+                    {nextCategory.icon}
+                  </Badge>
+                </AlertDescription>
+              </Alert>
+            )}
+            {nextStep && (
+              <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 shadow-sm">
+                <ArrowRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-sm">
+                  <strong className="text-blue-900 dark:text-blue-100">Next Step:</strong>{" "}
+                  <span className="font-medium">{nextStep.title}</span>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Beautiful Current Step Card */}
+            <Card className="border-2 border-primary/30 shadow-2xl transition-all duration-300 hover:shadow-3xl bg-gradient-to-br from-card via-card to-primary/5">
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-4">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="p-3 bg-gradient-to-br from-primary/20 to-purple-100 dark:from-primary/30 dark:to-purple-900/30 rounded-xl">
+                        <span className="text-3xl">{currentCategory.icon}</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="font-semibold px-3 py-1">
+                          {currentCategory.name}
+                        </Badge>
+                        <Badge variant="secondary" className="font-semibold px-3 py-1">
+                          Step {currentStepIndex + 1} of {categorySteps.length}
+                        </Badge>
+                        {completedSteps.has(currentStep.id) && (
+                          <Badge className="bg-green-600 text-white px-3 py-1">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Completed
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <CardTitle className="text-3xl mb-3 font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                        {currentStep.title}
+                      </CardTitle>
+                      <CardDescription className="text-base leading-relaxed">
+                        {currentStep.description}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Enhanced Page Info */}
+                <div className="bg-gradient-to-r from-muted/80 via-muted/60 to-muted/80 p-6 rounded-xl border border-border/50 shadow-sm">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <ExternalLink className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-semibold text-foreground">Target Page</p>
+                      </div>
+                      <p className="text-base font-medium text-foreground">{currentStep.page}</p>
+                      <p className="text-xs text-muted-foreground mt-1 font-mono bg-background/50 px-2 py-1 rounded inline-block">
+                        {currentStep.pageUrl}
+                      </p>
+                    </div>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleNavigateToPage}
+                      className="gap-2 shadow-sm bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Navigate
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Enhanced Actions Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg">
+                      <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="font-bold text-lg">Actions to Perform</h3>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50/80 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/10 rounded-xl p-5 border border-blue-200/50 dark:border-blue-800/30 shadow-sm">
+                    <ul className="space-y-3">
+                      {currentStep.actions.map((action, idx) => (
+                        <li key={idx} className="flex items-start gap-3 group">
+                          <div className="mt-0.5 flex-shrink-0">
+                            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                              <span className="text-xs font-bold text-blue-700 dark:text-blue-300">{idx + 1}</span>
+                            </div>
                           </div>
-                        </div>
-                      </button>
-                      {isExpanded && (
-                        <div className="ml-6 space-y-1 border-l-2 border-muted/50 pl-3 py-1">
-                          {sectionSteps.map((step) => {
-                            const stepIndex = DEMO_STEPS.findIndex(s => s.id === step.id);
-                            const isCurrent = stepIndex === currentStepIndex;
-                            const isCompleted = completedSteps.has(step.id);
-                            return (
-                              <button
-                                key={step.id}
-                                onClick={() => handleJumpToStep(stepIndex)}
-                                className={`w-full text-left p-2.5 rounded-md text-sm transition-all duration-200 group ${
-                                  isCurrent
-                                    ? "bg-primary text-primary-foreground font-semibold shadow-md border-2 border-primary/50"
-                                    : isCompleted
-                                    ? "bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-950/30 border border-green-200 dark:border-green-800"
-                                    : "hover:bg-muted border border-transparent hover:border-border"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  {isCompleted ? (
-                                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                                  ) : (
-                                    <Circle className={`h-4 w-4 flex-shrink-0 ${
-                                      isCurrent 
-                                        ? "text-primary-foreground" 
-                                        : "text-muted-foreground group-hover:text-foreground"
-                                    }`} />
-                                  )}
-                                  <span className="flex-1 truncate">
-                                    <span className="font-medium text-xs text-muted-foreground mr-1.5">
-                                      {step.order}.
-                                    </span>
-                                    {step.title}
-                                  </span>
-                                  {isCurrent && (
-                                    <ArrowRight className="h-3.5 w-3.5 text-primary-foreground flex-shrink-0 animate-pulse" />
-                                  )}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
+                          <span className="text-sm leading-relaxed flex-1 pt-1 group-hover:text-foreground transition-colors">{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Enhanced Expected Results Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900/30 dark:to-emerald-800/30 rounded-lg">
+                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h3 className="font-bold text-lg">Expected Results</h3>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50/80 to-emerald-100/50 dark:from-green-950/20 dark:to-emerald-900/10 rounded-xl p-5 border border-green-200/50 dark:border-green-800/30 shadow-sm">
+                    <ul className="space-y-3">
+                      {currentStep.expectedResults.map((result, idx) => (
+                        <li key={idx} className="flex items-start gap-3 group">
+                          <CheckCircle2 className="h-5 w-5 mt-0.5 text-green-600 dark:text-green-400 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                          <span className="text-sm leading-relaxed flex-1 group-hover:text-foreground transition-colors">{result}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Enhanced Duration and Quick Actions */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-muted/60 to-muted/40 rounded-xl border border-border/50 shadow-sm">
+                    <Clock className="h-5 w-5 text-primary" />
+                    <div className="flex-1">
+                      <span className="text-sm font-medium">Estimated duration: </span>
+                      <span className="text-sm font-bold text-primary">{currentStep.duration} seconds</span>
+                      {isPlaying && (
+                        <>
+                          <span className="mx-2 text-muted-foreground">•</span>
+                          <span className="text-sm font-semibold text-primary animate-pulse">
+                            Auto-advancing in {currentStep.duration}s
+                          </span>
+                        </>
                       )}
                     </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleSkipCategory}
+                            className="flex-1"
+                          >
+                            <SkipForward className="h-4 w-4 mr-2" />
+                            Skip Category
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Mark all steps in this category as complete</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleMarkAllComplete}
+                            className="flex-1"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Mark All Complete
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Mark all remaining steps in this category as complete</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+
+                  {currentCategory.importance === "essential" && (
+                    <Alert className="border-amber-300 bg-gradient-to-r from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 shadow-sm">
+                      <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <AlertDescription className="text-sm">
+                        <strong className="text-amber-900 dark:text-amber-100">Essential Category:</strong>{" "}
+                        This category contains core features that are important to understand.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                <Separator className="my-4" />
+
+                {/* Enhanced Keyboard Shortcuts */}
+                <div className="bg-gradient-to-r from-muted/40 to-muted/20 p-4 rounded-xl border border-border/50">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                    <span className="font-semibold">Keyboard shortcuts:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <kbd className="px-2.5 py-1.5 bg-background border border-border rounded-md text-xs font-mono shadow-sm">←</kbd>
+                      <span>Previous</span>
+                      <kbd className="px-2.5 py-1.5 bg-background border border-border rounded-md text-xs font-mono shadow-sm">→</kbd>
+                      <span>Next</span>
+                      <kbd className="px-2.5 py-1.5 bg-background border border-border rounded-md text-xs font-mono shadow-sm">Space</kbd>
+                      <span>Play/Pause</span>
+                      <kbd className="px-2.5 py-1.5 bg-background border border-border rounded-md text-xs font-mono shadow-sm">Ctrl+R</kbd>
+                      <span>Reset</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Navigation Buttons */}
+                <div className="flex items-center justify-between gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={handlePreviousStep}
+                    disabled={currentCategoryIndex === 0 && currentStepIndex === 0}
+                    className="gap-2"
+                    size="lg"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleCompleteStep(currentStep.id)}
+                      className="gap-2"
+                      size="lg"
+                      disabled={completedSteps.has(currentStep.id)}
+                    >
+                      {completedSteps.has(currentStep.id) ? (
+                        <>
+                          <CheckCircle2 className="h-4 w-4" />
+                          Completed
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-4 w-4" />
+                          Mark Complete
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      onClick={handleNextStep}
+                      disabled={currentCategoryIndex === CATEGORIES.length - 1 && currentStepIndex === categorySteps.length - 1}
+                      className="gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                      size="lg"
+                    >
+                      {nextStep ? "Next Step" : nextCategory ? "Next Category" : "Complete"}
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Enhanced Sidebar */}
+          <div className="space-y-6">
+            {/* Category Steps List */}
+            <Card className="border-2 border-primary/10 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Target className="h-5 w-5 text-primary" />
+                  Steps in Category
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {categorySteps.length} steps • {completedInCategory} completed
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
+                  {categorySteps.map((step, index) => {
+                    const isCurrent = index === currentStepIndex;
+                    const isCompleted = completedSteps.has(step.id);
+                    return (
+                      <button
+                        key={step.id}
+                        onClick={() => handleJumpToStep(index)}
+                        className={cn(
+                          "w-full text-left p-3 rounded-lg border transition-all duration-200 group",
+                          isCurrent
+                            ? "bg-gradient-to-r from-primary to-purple-600 text-white border-primary shadow-lg scale-105"
+                            : isCompleted
+                            ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 hover:from-green-100 dark:hover:from-green-950/40 border-green-200 dark:border-green-800"
+                            : "hover:bg-muted border-border hover:border-primary/30"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          {isCompleted ? (
+                            <CheckCircle2 className={cn(
+                              "h-4 w-4 flex-shrink-0",
+                              isCurrent ? "text-white" : "text-green-600 dark:text-green-400"
+                            )} />
+                          ) : (
+                            <Circle className={cn(
+                              "h-4 w-4 flex-shrink-0",
+                              isCurrent ? "text-white" : "text-muted-foreground group-hover:text-foreground"
+                            )} />
+                          )}
+                          <span className={cn(
+                            "flex-1 text-sm font-medium truncate",
+                            isCurrent && "text-white"
+                          )}>
+                            {index + 1}. {step.title}
+                          </span>
+                          {isCurrent && (
+                            <ArrowRight className="h-3.5 w-3.5 text-white flex-shrink-0 animate-pulse" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Categories List */}
+            <Card className="border-2 border-primary/10 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  All Categories
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {CATEGORIES.length} categories • {completedCategoriesCount} completed
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
+                {CATEGORIES.map((category, index) => {
+                  const progress = getCategoryProgress(category.name);
+                  const isCurrent = index === currentCategoryIndex;
+                  const isComplete = isCategoryComplete(category.name);
+                  const steps = getStepsForCategory(category.name);
+                  const completedCount = steps.filter(s => completedSteps.has(s.id)).length;
+                  
+                  return (
+                    <button
+                      key={category.name}
+                      onClick={() => handleJumpToCategory(index)}
+                      className={cn(
+                        "w-full p-3 rounded-lg border transition-all text-left group",
+                        isCurrent 
+                          ? "border-primary bg-gradient-to-r from-primary/20 to-purple-100/50 dark:from-primary/30 dark:to-purple-900/30 shadow-md scale-105" 
+                          : isComplete
+                          ? "border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 hover:border-green-400"
+                          : "border-border hover:bg-muted/50 hover:border-primary/30"
+                      )}
+                    >
+                      <div className="flex items-start justify-between mb-2 gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-lg">{category.icon}</span>
+                            <span className={cn(
+                              "text-sm font-semibold truncate",
+                              isCurrent && "text-primary"
+                            )}>{category.name}</span>
+                            {isComplete && (
+                              <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                            )}
+                            {isCurrent && !isComplete && (
+                              <div className="h-2 w-2 bg-primary rounded-full animate-pulse flex-shrink-0" />
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-xs font-bold">
+                            {completedCount}/{steps.length}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            ~{Math.floor(category.estimatedTime / 60)}m
+                          </span>
+                        </div>
+                      </div>
+                      <Progress 
+                        value={progress} 
+                        className={cn(
+                          "h-2",
+                          isComplete ? "bg-green-200 dark:bg-green-900" : ""
+                        )}
+                      />
+                    </button>
                   );
                 })}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
       </div>
     </>
   );

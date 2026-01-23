@@ -136,13 +136,16 @@ export default function Home() {
               <Link href="/demo">Explore Interactive Demo</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
+              <Link href="/solutions/security-incidents">Security Incidents (SKU D)</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
               <Link href="/auth/signin">Schedule Strategic Consultation</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
               <Link href="/product">Discover Capabilities</Link>
             </Button>
           </div>
-          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-4" />
               <span>21 AI models & advanced RAG</span>
@@ -154,6 +157,10 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-4" />
               <span>AI-answer authority & citation</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4" />
+              <span>Security incident management (SKU D)</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-4" />

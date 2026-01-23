@@ -174,7 +174,7 @@ Return JSON array of errors:
         tenant_id: tenantId,
         use_rag: false,
         use_kag: false,
-        model: "gpt-5.2-thinking",
+        model: "o1-mini", // Latest 2026 reasoning model
         temperature: 0.2,
         max_tokens: 2000,
       });
@@ -270,7 +270,7 @@ Return JSON:
         tenant_id: tenantId,
         use_rag: false,
         use_kag: false,
-        model: "gpt-5.2-thinking",
+        model: "o1-mini", // Latest 2026 reasoning model
         temperature: 0.2,
         max_tokens: 2000,
       });

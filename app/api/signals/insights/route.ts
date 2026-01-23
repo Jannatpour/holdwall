@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
 import { DatabaseEvidenceVault } from "@/lib/evidence/vault-db";
+import { AdvancedAIIntegration } from "@/lib/ai/integration";
 import { logger } from "@/lib/logging/logger";
 
 const evidenceVault = new DatabaseEvidenceVault();
@@ -30,8 +31,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Signal not found" }, { status: 404 });
       }
 
-      // Generate insights
-      const insights = {
+      // Generate insights with AI-powered analysis (January 2026 enhancement)
+      const baseInsights = {
         riskLevel: (signal.metadata as any)?.high_risk ? "high" : 
                    (signal.metadata?.severity === "critical" || signal.metadata?.severity === "high") ? "medium" : "low",
         recommendedActions: [] as string[],
@@ -43,19 +44,83 @@ export async function GET(request: NextRequest) {
         } : null,
       };
 
-      // Add recommended actions based on signal characteristics
+      // Add rule-based recommended actions
       if ((signal.metadata as any)?.high_risk) {
-        insights.recommendedActions.push("Review immediately - high risk signal");
+        baseInsights.recommendedActions.push("Review immediately - high risk signal");
       }
       if (signal.metadata?.suggested_cluster_id) {
-        insights.recommendedActions.push("Link to suggested cluster for better organization");
+        baseInsights.recommendedActions.push("Link to suggested cluster for better organization");
       }
       if (!signal.metadata?.cluster_id && !signal.metadata?.suggested_cluster_id) {
-        insights.recommendedActions.push("Consider creating a new cluster for this signal");
+        baseInsights.recommendedActions.push("Consider creating a new cluster for this signal");
       }
       if (signal.metadata?.severity === "critical") {
-        insights.recommendedActions.push("Escalate to team lead for review");
+        baseInsights.recommendedActions.push("Escalate to team lead for review");
       }
+
+      // Enhance with AI-powered insights using Adaptive RAG
+      let aiInsights = null;
+      try {
+        const aiIntegration = new AdvancedAIIntegration({
+          tenantId: tenant_id,
+          enableAdvancedRAG: true,
+        });
+
+        const signalContent = (signal.content?.raw || signal.content?.normalized || "").substring(0, 2000);
+        const aiQuery = `Analyze this signal and provide strategic insights:
+
+Signal Content: ${signalContent}
+Metadata: ${JSON.stringify(signal.metadata || {})}
+
+Provide insights in JSON format:
+{
+  "riskLevel": "low" | "medium" | "high",
+  "strategicActions": ["action1", "action2", ...],
+  "amplificationTrend": "increasing" | "decreasing" | "stable",
+  "narrativeRisk": 0.0-1.0,
+  "recommendedPriority": "low" | "medium" | "high"
+}`;
+
+        const aiResult = await aiIntegration.queryAdaptiveRAG(
+          aiQuery,
+          {
+            model: "gpt-4o-mini", // Fast model for insights
+            temperature: 0.2, // Low for consistent analysis
+            maxTokens: 1000,
+          }
+        );
+
+        if (aiResult) {
+          try {
+            const parsed = JSON.parse(aiResult.response);
+            aiInsights = {
+              riskLevel: parsed.riskLevel || baseInsights.riskLevel,
+              strategicActions: parsed.strategicActions || [],
+              amplificationTrend: parsed.amplificationTrend || baseInsights.amplificationTrend,
+              narrativeRisk: parsed.narrativeRisk || 0.5,
+              recommendedPriority: parsed.recommendedPriority || "medium",
+            };
+            // Merge AI strategic actions with rule-based actions
+            baseInsights.recommendedActions = [
+              ...baseInsights.recommendedActions,
+              ...(aiInsights.strategicActions || []),
+            ];
+          } catch (parseError) {
+            logger.warn("Failed to parse AI insights, using rule-based only", {
+              error: parseError instanceof Error ? parseError.message : String(parseError),
+            });
+          }
+        }
+      } catch (aiError) {
+        logger.warn("AI insights generation failed, using rule-based only", {
+          error: aiError instanceof Error ? aiError.message : String(aiError),
+        });
+      }
+
+      const insights = {
+        ...baseInsights,
+        ...(aiInsights ? { aiEnhanced: aiInsights } : {}),
+      };
 
       return NextResponse.json({ insights });
     }

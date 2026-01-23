@@ -126,13 +126,15 @@ Ensure the response is valid JSON and matches the schema exactly.`;
         const costTracker = getCostTracker();
         const router = new ModelRouter(costTracker);
         
+        // Use JSON mode for guaranteed structured output (latest 2026 technique)
         const routingResult = await router.route(
           {
             model: "gpt-4o-mini", // Will be overridden by router
-            prompt,
+            prompt: `${prompt}\n\nIMPORTANT: Return ONLY valid JSON matching the schema. Do not include any markdown, code blocks, or explanatory text.`,
             temperature: 0.1,
             max_tokens: 2000,
-            system_prompt: "You are a claim extraction system. Return only valid JSON matching the provided schema.",
+            system_prompt: "You are a claim extraction system. Return only valid JSON matching the provided schema. Do not include markdown code blocks or any text outside the JSON.",
+            response_format: "json_object", // Enable JSON mode for guaranteed structured output
           },
           {
             tenantId: evidence.tenant_id,
@@ -145,6 +147,7 @@ Ensure the response is valid JSON and matches the schema exactly.`;
         const response = routingResult.response;
 
         // Parse and validate JSON response against schema
+        // With JSON mode, response should be valid JSON directly
         let claims: Array<{
           canonical_text: string;
           variants: string[];
@@ -153,17 +156,36 @@ Ensure the response is valid JSON and matches the schema exactly.`;
         }> = [];
 
         try {
-          // Try to extract JSON from markdown code blocks first
-          const jsonMatch = response.text.match(/```json\s*([\s\S]*?)\s*```/) || 
-                           response.text.match(/```\s*([\s\S]*?)\s*```/) ||
-                           response.text.match(/\[[\s\S]*\]/);
+          // With JSON mode enabled, response should be valid JSON
+          // Try parsing directly first (JSON mode returns valid JSON)
+          let parsed: any;
+          try {
+            parsed = JSON.parse(response.text);
+          } catch {
+            // Fallback: try to extract JSON from markdown code blocks
+            const jsonMatch = response.text.match(/```json\s*([\s\S]*?)\s*```/) || 
+                             response.text.match(/```\s*([\s\S]*?)\s*```/) ||
+                             response.text.match(/\[[\s\S]*\]/) ||
+                             response.text.match(/\{[\s\S]*\}/);
+            
+            if (jsonMatch) {
+              const jsonText = jsonMatch[1] || jsonMatch[0];
+              parsed = JSON.parse(jsonText);
+            } else {
+              throw new Error("No valid JSON found in response");
+            }
+          }
           
-          if (jsonMatch) {
-            const jsonText = jsonMatch[1] || jsonMatch[0];
-            claims = JSON.parse(jsonText);
+          // Handle both array and object responses
+          if (Array.isArray(parsed)) {
+            claims = parsed;
+          } else if (parsed.claims && Array.isArray(parsed.claims)) {
+            claims = parsed.claims;
+          } else if (parsed.data && Array.isArray(parsed.data)) {
+            claims = parsed.data;
           } else {
-            // Fallback: try parsing entire response
-            claims = JSON.parse(response.text);
+            // Single claim object
+            claims = [parsed];
           }
 
           // Validate against schema

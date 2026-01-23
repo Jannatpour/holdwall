@@ -99,6 +99,77 @@ export class ModelRouter {
    */
   private initializeModelCandidates(): void {
     this.modelCandidates = [
+      // Latest 2026 Models - Reasoning/Complex Tasks
+      {
+        model: "o1-preview",
+        provider: "openai",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 12000, // o1 models have longer latency due to reasoning
+        costPer1kTokens: 0.015,
+        qualityScore: 0.98,
+        citationFaithfulness: 0.95,
+        priority: 10,
+      },
+      {
+        model: "o1-mini",
+        provider: "openai",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 8000,
+        costPer1kTokens: 0.003,
+        qualityScore: 0.96,
+        citationFaithfulness: 0.93,
+        priority: 9,
+      },
+      {
+        model: "o3",
+        provider: "openai",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 15000,
+        costPer1kTokens: 0.02,
+        qualityScore: 0.99,
+        citationFaithfulness: 0.97,
+        priority: 10,
+      },
+      {
+        model: "gpt-5.2",
+        provider: "openai",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 3500,
+        costPer1kTokens: 0.008,
+        qualityScore: 0.97,
+        citationFaithfulness: 0.94,
+        priority: 10,
+      },
+      {
+        model: "claude-opus-4.5",
+        provider: "anthropic",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 4500,
+        costPer1kTokens: 0.05,
+        qualityScore: 0.98,
+        citationFaithfulness: 0.96,
+        priority: 10,
+      },
+      {
+        model: "gemini-3-pro",
+        provider: "generic",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 4000,
+        costPer1kTokens: 0.007,
+        qualityScore: 0.97,
+        citationFaithfulness: 0.95,
+        priority: 9,
+      },
+      {
+        model: "gemini-3-flash",
+        provider: "generic",
+        taskTypes: ["extract", "cluster", "summarize", "generate"],
+        latencyP95: 2000,
+        costPer1kTokens: 0.0002,
+        qualityScore: 0.90,
+        citationFaithfulness: 0.88,
+        priority: 8,
+      },
       // Extract/Cluster tasks - Fast, cost-effective
       {
         model: "gpt-4o-mini",
@@ -120,7 +191,7 @@ export class ModelRouter {
         citationFaithfulness: 0.82,
         priority: 8,
       },
-      // Judge/Eval tasks - High quality
+      // Judge/Eval tasks - High quality (legacy models)
       {
         model: "gpt-4o",
         provider: "openai",
@@ -129,7 +200,7 @@ export class ModelRouter {
         costPer1kTokens: 0.00625,
         qualityScore: 0.95,
         citationFaithfulness: 0.92,
-        priority: 10,
+        priority: 9,
       },
       {
         model: "claude-3-opus-20240229",
@@ -139,7 +210,7 @@ export class ModelRouter {
         costPer1kTokens: 0.045,
         qualityScore: 0.96,
         citationFaithfulness: 0.94,
-        priority: 9,
+        priority: 8,
       },
       {
         model: "claude-3-sonnet-20240229",
@@ -149,7 +220,7 @@ export class ModelRouter {
         costPer1kTokens: 0.009,
         qualityScore: 0.93,
         citationFaithfulness: 0.90,
-        priority: 8,
+        priority: 7,
       },
       // Generate tasks - Balanced
       {
@@ -160,7 +231,7 @@ export class ModelRouter {
         costPer1kTokens: 0.02,
         qualityScore: 0.94,
         citationFaithfulness: 0.91,
-        priority: 9,
+        priority: 8,
       },
       // Fallback models
       {

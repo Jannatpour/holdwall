@@ -268,7 +268,7 @@ Provide assessment in JSON:
         tenant_id: tenantId,
         use_rag: false,
         use_kag: false,
-        model: "gpt-5.2-thinking",
+        model: "o1-mini", // Latest 2026 reasoning model for VIGIL runtime
         temperature: 0.2,
         max_tokens: 2000,
       });
@@ -403,7 +403,7 @@ Provide assessment in JSON:
         tenant_id: tenantId,
         use_rag: false,
         use_kag: false,
-        model: "gpt-5.2-thinking",
+        model: "o1-mini", // Latest 2026 reasoning model for VIGIL runtime
         temperature: 0.1, // Lower temperature for safety checks
         max_tokens: 2000,
       });
@@ -536,7 +536,7 @@ Provide assessment in JSON:
         tenant_id: tenantId,
         use_rag: false,
         use_kag: false,
-        model: "gpt-5.2-thinking",
+        model: "o1-mini", // Latest 2026 reasoning model for VIGIL runtime
         temperature: 0.2,
         max_tokens: 2000,
       });

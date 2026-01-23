@@ -243,7 +243,7 @@ Provide a phased plan with agent assignments and tasks.`;
       tenant_id: input.tenantId,
       use_rag: true,
       use_kag: true,
-      model: "gpt-5.2-thinking",
+      model: "o1-mini", // Latest 2026 reasoning model for claims adjudication
       temperature: 0.3,
       max_tokens: 3000,
     });
@@ -295,7 +295,7 @@ Case: ${input.case.description}`;
       query: prompt,
       tenant_id: input.tenantId,
       use_rag: true,
-      model: "gpt-5.2-thinking",
+      model: "o1-mini", // Latest 2026 reasoning model for claims adjudication
       temperature: 0.2,
       max_tokens: 2000,
     });
@@ -325,7 +325,7 @@ Case: ${input.case.description}`;
       query: prompt,
       tenant_id: input.tenantId,
       use_rag: true,
-      model: "gpt-5.2-thinking",
+      model: "o1-mini", // Latest 2026 reasoning model for claims adjudication
       temperature: 0.2,
       max_tokens: 2000,
     });

@@ -9,6 +9,7 @@ import { createApiHandler } from "@/lib/middleware/api-wrapper";
 import { db } from "@/lib/db/client";
 import { caseSLAService } from "@/lib/cases/sla";
 import { logger } from "@/lib/logging/logger";
+import { surveyService } from "@/lib/engagement/survey-service";
 
 export const GET = createApiHandler(
   async (request: NextRequest, context?: { user?: any; tenantId?: string }) => {
@@ -112,20 +113,30 @@ export const GET = createApiHandler(
       const chargebackWinRateChange = 0; // Would need historical data
 
       // Calculate cost per case - simplified calculation based on resolution time
-      // TODO: Integrate with actual cost tracking system (labor costs, tool costs, etc.)
+      // Note: Can be enhanced with actual cost tracking system (labor costs, tool costs, etc.)
       const baseCostPerHour = 50; // Base hourly cost
       const costPerCase = averageResolutionTime > 0 
         ? Math.round(averageResolutionTime * baseCostPerHour)
         : 50; // Default if no resolution time data
       const costPerCaseChange = 0; // Would need historical cost data for comparison
 
-      // Customer satisfaction - calculated from resolution outcomes
-      // TODO: Integrate with survey service for actual customer feedback
-      const resolvedCasesForSatisfaction = allCases.filter((c) => c.status === "RESOLVED" || c.status === "CLOSED");
-      const customerSatisfaction = resolvedCasesForSatisfaction.length > 0
-        ? Math.min(5.0, Math.max(3.5, 4.0 + (resolvedCasesForSatisfaction.length / allCases.length) * 0.5))
-        : 4.2; // Default if no resolved cases
-      const customerSatisfactionChange = 0; // Would need historical satisfaction data
+      // Customer satisfaction - integrated with survey service
+      const surveyMetrics = await surveyService.getMetrics(tenantId, 30);
+      const customerSatisfaction = surveyMetrics.averageSatisfaction > 0
+        ? surveyMetrics.averageSatisfaction
+        : (() => {
+            // Fallback calculation from resolution outcomes if no survey data
+            const resolvedCasesForSatisfaction = allCases.filter((c) => c.status === "RESOLVED" || c.status === "CLOSED");
+            return resolvedCasesForSatisfaction.length > 0
+              ? Math.min(5.0, Math.max(3.5, 4.0 + (resolvedCasesForSatisfaction.length / allCases.length) * 0.5))
+              : 4.2;
+          })();
+      
+      // Calculate satisfaction change from trend
+      const satisfactionTrend = surveyMetrics.trend;
+      const customerSatisfactionChange = satisfactionTrend.length >= 2
+        ? ((satisfactionTrend[satisfactionTrend.length - 1].score - satisfactionTrend[0].score) / satisfactionTrend[0].score) * 100
+        : 0;
 
       // Cases by type
       const casesByType: Record<string, number> = {

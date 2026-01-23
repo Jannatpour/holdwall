@@ -22,6 +22,9 @@ import { CoRAG } from "@/lib/ai/corag";
 import { AgenticRAG } from "@/lib/ai/agentic-rag";
 import { MultimodalRAG } from "@/lib/ai/multimodal-rag";
 import { RAGPipeline } from "@/lib/ai/rag";
+import { AdaptiveRAG } from "@/lib/ai/adaptive-rag";
+import { SelfRAG } from "@/lib/ai/self-rag";
+import { RecursiveRAG } from "@/lib/ai/recursive-rag";
 import { DatabaseEvidenceVault } from "@/lib/evidence/vault-db";
 import { VectorEmbeddings } from "@/lib/search/embeddings";
 import { MultimodalEmbeddings } from "@/lib/search/multimodal-embeddings";
@@ -63,6 +66,9 @@ export class AdvancedAIIntegration {
   private corag: CoRAG;
   private agenticRAG: AgenticRAG;
   private multimodalRAG: MultimodalRAG;
+  private adaptiveRAG: AdaptiveRAG;
+  private selfRAG: SelfRAG;
+  private recursiveRAG: RecursiveRAG;
 
   // Semantic Search
   private vectorEmbeddings: VectorEmbeddings;
@@ -99,6 +105,9 @@ export class AdvancedAIIntegration {
     this.corag = new CoRAG(this.ragPipeline);
     this.agenticRAG = new AgenticRAG(this.ragPipeline);
     this.multimodalRAG = new MultimodalRAG(this.ragPipeline);
+    this.adaptiveRAG = new AdaptiveRAG(evidenceVault);
+    this.selfRAG = new SelfRAG(evidenceVault);
+    this.recursiveRAG = new RecursiveRAG(evidenceVault);
 
     // Initialize Semantic Search
     this.vectorEmbeddings = new VectorEmbeddings();
@@ -285,6 +294,48 @@ export class AdvancedAIIntegration {
       includeImages: Boolean(options?.images?.length),
       includeVideos: Boolean(options?.videos?.length),
     });
+  }
+
+  /**
+   * Advanced RAG: Adaptive RAG (dynamically decides retrieval strategy)
+   */
+  async queryAdaptiveRAG(
+    query: string,
+    options?: { model?: string; temperature?: number; maxTokens?: number }
+  ) {
+    if (!this.config.enableAdvancedRAG) {
+      return null;
+    }
+
+    return this.adaptiveRAG.execute(query, this.config.tenantId, options);
+  }
+
+  /**
+   * Advanced RAG: Self-RAG (self-reflective with critique)
+   */
+  async querySelfRAG(
+    query: string,
+    options?: { model?: string; temperature?: number; maxTokens?: number }
+  ) {
+    if (!this.config.enableAdvancedRAG) {
+      return null;
+    }
+
+    return this.selfRAG.execute(query, this.config.tenantId, options);
+  }
+
+  /**
+   * Advanced RAG: Recursive RAG (decomposes complex queries)
+   */
+  async queryRecursiveRAG(
+    query: string,
+    options?: { model?: string; temperature?: number; maxTokens?: number }
+  ) {
+    if (!this.config.enableAdvancedRAG) {
+      return null;
+    }
+
+    return this.recursiveRAG.execute(query, this.config.tenantId, options);
   }
 
   /**

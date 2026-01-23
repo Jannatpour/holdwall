@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
+import { AdvancedAIIntegration } from "@/lib/ai/integration";
 import { logger } from "@/lib/logging/logger";
 
 function clamp(n: number, min: number, max: number) {
