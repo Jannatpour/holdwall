@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Globe, Shield, TriangleAlert, TrendingUp, Filter, Search, BarChart3 } from "lucide-react";
+import { Globe, Shield, TriangleAlert, TrendingUp, Filter, Search, BarChart3, Sparkles, ArrowRight, Target } from "lucide-react";
 import { TrustGapMap } from "@/components/trust-gap-map";
 import { ExplainScoreDrawer } from "@/components/explain-score-drawer";
 
@@ -127,10 +127,17 @@ function TrustPageContent() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Trust Assets</h1>
-          <p className="text-muted-foreground">
-            Published trust artifacts, coverage gaps, and PADL links
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+              <Shield className="size-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+              Trust Assets Intelligence
+            </h1>
+          </div>
+          <p className="text-muted-foreground max-w-2xl">
+            Comprehensive trust asset management with published artifacts, coverage gap analysis, and PADL integration. Monitor trust scores, identify gaps, and optimize your trust portfolio.
           </p>
         </div>
 
@@ -142,20 +149,24 @@ function TrustPageContent() {
           <>
             {/* Trust Score Overview */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
+              <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
-                  <Shield className="size-4 text-muted-foreground" />
+                  <div className="p-1.5 rounded-md bg-amber-500/10">
+                    <Shield className="size-4 text-amber-600 dark:text-amber-400" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{trustArtifacts.length}</div>
                   <p className="text-xs text-muted-foreground">Published artifacts</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Average Trust Score</CardTitle>
-                  <BarChart3 className="size-4 text-muted-foreground" />
+                  <div className="p-1.5 rounded-md bg-blue-500/10">
+                    <BarChart3 className="size-4 text-blue-600 dark:text-blue-400" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -180,10 +191,12 @@ function TrustPageContent() {
                   />
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Coverage Ratio</CardTitle>
-                  <TrendingUp className="size-4 text-muted-foreground" />
+                  <div className="p-1.5 rounded-md bg-green-500/10">
+                    <TrendingUp className="size-4 text-green-600 dark:text-green-400" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -199,10 +212,12 @@ function TrustPageContent() {
                   </p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Gaps</CardTitle>
-                  <TriangleAlert className="size-4 text-destructive" />
+                  <div className="p-1.5 rounded-md bg-red-500/10">
+                    <TriangleAlert className="size-4 text-destructive" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-destructive">
@@ -214,20 +229,32 @@ function TrustPageContent() {
             </div>
 
             <Tabs defaultValue="assets" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="assets">Trust Assets</TabsTrigger>
-                <TabsTrigger value="gaps">Trust Gaps</TabsTrigger>
-                <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="assets" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Shield className="mr-2 size-4" />
+                  Trust Assets
+                </TabsTrigger>
+                <TabsTrigger value="gaps" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Target className="mr-2 size-4" />
+                  Trust Gaps
+                </TabsTrigger>
+                <TabsTrigger value="recommendations" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Sparkles className="mr-2 size-4" />
+                  Recommendations
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="assets" className="space-y-4">
-                <Card>
+                <Card className="transition-all duration-200 hover:shadow-md">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Trust Assets Library</CardTitle>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Shield className="size-5 text-primary" />
+                          <CardTitle className="font-semibold">Trust Assets Library</CardTitle>
+                        </div>
                         <CardDescription>
-                          Published artifacts available for citation and procurement
+                          Published artifacts available for citation and procurement with full trust scoring
                         </CardDescription>
                       </div>
                     </div>
@@ -339,11 +366,14 @@ function TrustPageContent() {
               </TabsContent>
 
               <TabsContent value="recommendations" className="space-y-4">
-                <Card>
+                <Card className="transition-all duration-200 hover:shadow-md">
                   <CardHeader>
-                    <CardTitle>Trust Recommendations</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="size-5 text-primary" />
+                      <CardTitle className="font-semibold">Trust Recommendations</CardTitle>
+                    </div>
                     <CardDescription>
-                      AI-suggested actions to improve trust coverage
+                      AI-suggested strategic actions to improve trust coverage and optimize your trust portfolio
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

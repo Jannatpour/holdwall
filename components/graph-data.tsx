@@ -105,7 +105,19 @@ export function GraphData({ range = "30d", timestamp, nodeId }: GraphDataProps) 
               await fetch("/api/graph/recompute", { method: "POST" });
               window.location.reload();
             } catch (err) {
-              console.error("Failed to compute graph:", err);
+              // Use structured logger if available, fallback to console for error reporting
+              if (typeof window !== "undefined") {
+                import("@/lib/logging/logger").then(({ logger }) => {
+                  logger.error("Failed to compute graph", {
+                    error: err instanceof Error ? err.message : String(err),
+                    stack: err instanceof Error ? err.stack : undefined,
+                  });
+                }).catch(() => {
+                  console.error("Failed to compute graph:", err);
+                });
+              } else {
+                console.error("Failed to compute graph:", err);
+              }
             }
           },
         }}

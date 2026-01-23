@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Funnel } from "lucide-react";
+import { Funnel, Sparkles, Target, ArrowRight } from "lucide-react";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { FunnelSimulatorClient } from "@/components/funnel-simulator-client";
 
@@ -21,20 +21,30 @@ export default async function FunnelPage({
   return (
     <AppShell>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Decision Funnel Domination</h1>
-          <p className="text-muted-foreground">
-            Map assets to decision checkpoints per persona and simulate what buyer sees
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-500/20">
+              <Funnel className="size-6 text-pink-600 dark:text-pink-400" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+              Decision Funnel Intelligence
+            </h1>
+          </div>
+          <p className="text-muted-foreground max-w-2xl">
+            Strategic decision checkpoint control and measurement system. Map trust assets to decision checkpoints per persona and simulate what buyers see at each stage: Awareness → Research → Comparison → Decision → Post-purchase.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
           {/* Funnel Stages */}
-          <Card>
+          <Card className="transition-all duration-200 hover:shadow-md">
             <CardHeader>
-              <CardTitle>Funnel Stages</CardTitle>
+              <div className="flex items-center gap-2">
+                <Target className="size-5 text-primary" />
+                <CardTitle className="font-semibold">Funnel Stages</CardTitle>
+              </div>
               <CardDescription>
-                Awareness → Research → Comparison → Decision → Post-purchase
+                Strategic decision checkpoints: Awareness → Research → Comparison → Decision → Post-purchase
               </CardDescription>
             </CardHeader>
             <CardContent>

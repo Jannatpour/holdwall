@@ -110,14 +110,21 @@ export default function SecurityIncidentsPage() {
     <AppShell>
       <AuthGuard requiredRole="VIEWER">
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight">Security Incidents</h1>
-              <p className="text-muted-foreground">
-                Manage security incidents and their narrative governance
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/20">
+                  <Shield className="size-6 text-red-600 dark:text-red-400" />
+                </div>
+                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+                  Security Incident Command Center
+                </h1>
+              </div>
+              <p className="text-muted-foreground max-w-2xl">
+                Comprehensive security incident management with narrative risk assessment, outbreak probability analysis, and AI-governed explanation generation. Full integration with SIEM and SOAR systems.
               </p>
             </div>
-            <Button asChild>
+            <Button asChild className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
               <Link href="/security-incidents/new">
                 <Plus className="mr-2 size-4" />
                 New Incident
@@ -126,10 +133,19 @@ export default function SecurityIncidentsPage() {
           </div>
 
           <Tabs defaultValue="incidents" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="incidents">Incidents</TabsTrigger>
-              <TabsTrigger value="explanations">Explanations</TabsTrigger>
-              <TabsTrigger value="webhooks">Webhook Integration</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="incidents" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <AlertTriangle className="mr-2 size-4" />
+                Incidents
+              </TabsTrigger>
+              <TabsTrigger value="explanations" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <FileText className="mr-2 size-4" />
+                Explanations
+              </TabsTrigger>
+              <TabsTrigger value="webhooks" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Network className="mr-2 size-4" />
+                Webhook Integration
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="incidents" className="space-y-4">
@@ -299,11 +315,14 @@ export default function SecurityIncidentsPage() {
             </TabsContent>
 
             <TabsContent value="explanations" className="space-y-4">
-              <Card>
+              <Card className="transition-all duration-200 hover:shadow-md">
                 <CardHeader>
-                  <CardTitle>Incident Explanations</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <FileText className="size-5 text-primary" />
+                    <CardTitle className="font-semibold">Incident Explanations</CardTitle>
+                  </div>
                   <CardDescription>
-                    AI-governed explanations for security incidents with approval workflows
+                    AI-governed explanations for security incidents with full governance: model selection, policy checks, and approval workflows
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -316,11 +335,14 @@ export default function SecurityIncidentsPage() {
             </TabsContent>
 
             <TabsContent value="webhooks" className="space-y-4">
-              <Card>
+              <Card className="transition-all duration-200 hover:shadow-md">
                 <CardHeader>
-                  <CardTitle>Webhook Integration</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Network className="size-5 text-primary" />
+                    <CardTitle className="font-semibold">Webhook Integration Center</CardTitle>
+                  </div>
                   <CardDescription>
-                    Connect security tools (SIEM, SOAR) to automatically ingest incidents
+                    Connect security tools (SIEM, SOAR) to automatically ingest incidents with real-time narrative risk assessment
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

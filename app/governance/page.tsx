@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Download, Settings } from "lucide-react";
+import { Download, Settings, Shield, Sparkles, ArrowRight, CheckCircle2, FileText, Users } from "lucide-react";
 import { AuditBundleExport } from "@/components/audit-bundle-export";
 import { AuthGuard } from "@/components/auth-guard";
 import { GovernanceApprovals } from "@/components/governance-approvals";
@@ -43,27 +43,52 @@ export default async function GovernancePage({
     <AppShell>
       <AuthGuard requiredRole="VIEWER">
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Governance</h1>
-            <p className="text-muted-foreground">
-              Approvals, audit bundles export, policies, and entitlements
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20">
+                <Shield className="size-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                Governance Command Center
+              </h1>
+            </div>
+            <p className="text-muted-foreground max-w-2xl">
+              Comprehensive governance framework for approvals, audit bundles, policies, and entitlements. Human-gated autopilot modes with complete audit trails and compliance tracking.
             </p>
           </div>
 
           <Tabs defaultValue="approvals" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="approvals">Approvals</TabsTrigger>
-              <TabsTrigger value="autopilot">Autopilot</TabsTrigger>
-              <TabsTrigger value="audit">Audit Bundles</TabsTrigger>
-              <TabsTrigger value="policies">Policies</TabsTrigger>
-              <TabsTrigger value="entitlements">Entitlements</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="approvals" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <CheckCircle2 className="mr-2 size-4" />
+                Approvals
+              </TabsTrigger>
+              <TabsTrigger value="autopilot" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Sparkles className="mr-2 size-4" />
+                Autopilot
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <FileText className="mr-2 size-4" />
+                Audit Bundles
+              </TabsTrigger>
+              <TabsTrigger value="policies" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Settings className="mr-2 size-4" />
+                Policies
+              </TabsTrigger>
+              <TabsTrigger value="entitlements" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Users className="mr-2 size-4" />
+                Entitlements
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="approvals" className="space-y-4">
-              <Card>
+              <Card className="transition-all duration-200 hover:shadow-md">
                 <CardHeader>
-                  <CardTitle>Pending approvals</CardTitle>
-                  <CardDescription>Items awaiting an approval decision</CardDescription>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="size-5 text-primary" />
+                    <CardTitle className="font-semibold">Pending Approvals</CardTitle>
+                  </div>
+                  <CardDescription>Items awaiting an approval decision with full audit context</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <GovernanceApprovals focusApprovalId={sp.approval_id ?? null} />
@@ -76,11 +101,14 @@ export default async function GovernancePage({
             </TabsContent>
 
             <TabsContent value="audit" className="space-y-4">
-              <Card>
+              <Card className="transition-all duration-200 hover:shadow-md">
                 <CardHeader>
-                  <CardTitle>Audit Bundle Export</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <FileText className="size-5 text-primary" />
+                    <CardTitle className="font-semibold">Audit Bundle Export Center</CardTitle>
+                  </div>
                   <CardDescription>
-                    One-click export: PDF executive summary, JSON evidence package, immutable version IDs
+                    One-click export: PDF executive summary, JSON evidence package, immutable version IDs for regulatory compliance
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

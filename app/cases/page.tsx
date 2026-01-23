@@ -6,7 +6,9 @@
  */
 
 import { Metadata } from "next";
+import { AppShell } from "@/components/app-shell";
 import { CasesList } from "@/components/cases-list";
+import { Briefcase, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Cases | Holdwall",
@@ -15,15 +17,24 @@ export const metadata: Metadata = {
 
 export default function CasesPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Case Management</h1>
-        <p className="text-muted-foreground">
-          View and manage all financial services cases
-        </p>
-      </div>
+    <AppShell>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-teal-500/10 to-cyan-500/10 border border-teal-500/20">
+              <Briefcase className="size-6 text-teal-600 dark:text-teal-400" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+              Case Management Intelligence
+            </h1>
+          </div>
+          <p className="text-muted-foreground max-w-2xl">
+            Comprehensive case management system for tracking and managing financial services cases with autonomous processing, evidence tracking, and workflow automation.
+          </p>
+        </div>
 
-      <CasesList />
-    </div>
+        <CasesList />
+      </div>
+    </AppShell>
   );
 }

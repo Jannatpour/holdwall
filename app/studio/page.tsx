@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { StudioEditorClient } from "@/components/studio-editor-client";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
+import { Sparkles } from "lucide-react";
 
 export const metadata: Metadata = genMeta(
   "AAAL Studio",
@@ -22,12 +23,23 @@ export default async function StudioPage({
     <AppShell>
       <GuideWalkthrough pageId="studio" />
       <div className="space-y-6">
-        <div className="flex items-start justify-between" data-guide="studio-header">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">AAAL Studio</h1>
-            <p className="text-muted-foreground">
-              Traceability-first authoring with evidence picker, policy checker, and AI-powered assistance
-            </p>
+        <div className="flex items-start justify-between border-b pb-6" data-guide="studio-header">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary/10 rounded-lg">
+                <Sparkles className="h-7 w-7 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Authoritative Response Studio
+                </h1>
+                <p className="text-base text-muted-foreground mt-2 leading-6">
+                  Create evidence-backed, traceability-first authoritative artifacts with intelligent evidence 
+                  picker, automated policy checking, and AI-powered assistance using GraphRAG, semantic search, 
+                  and advanced orchestration.
+                </p>
+              </div>
+            </div>
           </div>
           <GuideButton pageId="studio" />
         </div>

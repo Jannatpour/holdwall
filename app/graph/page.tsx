@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Network, Search, Sliders, RefreshCw } from "lucide-react";
+import { Network, Search, Sliders, RefreshCw, Sparkles, ArrowRight } from "lucide-react";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { GraphCanvas } from "@/components/graph-canvas";
 import { GraphDataClient } from "@/components/graph-data-client";
@@ -30,15 +30,22 @@ export default async function GraphPage({
     <AppShell>
       <GuideWalkthrough pageId="graph" />
       <div className="space-y-6">
-        <div className="flex items-center justify-between" data-guide="graph-header">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Belief Graph Explorer</h1>
-            <p className="text-muted-foreground">
-              Interactive graph to explore belief propagation, reinforcement/neutralization, and time weights
+        <div className="flex items-start justify-between" data-guide="graph-header">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20">
+                <Network className="size-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Belief Graph Intelligence
+              </h1>
+            </div>
+            <p className="text-muted-foreground max-w-2xl">
+              Advanced graph visualization for exploring belief propagation, reinforcement/neutralization pathways, and time-weighted narrative dynamics. Model complex narrative relationships with precision.
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" data-guide="recompute">
+            <Button variant="outline" data-guide="recompute" className="transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
               <RefreshCw className="mr-2 size-4" />
               Recompute
             </Button>
@@ -50,9 +57,12 @@ export default async function GraphPage({
           {/* Graph Canvas */}
           <div className="space-y-4">
             {/* Controls */}
-            <Card>
+            <Card className="transition-all duration-200 hover:shadow-md">
               <CardHeader>
-                <CardTitle className="text-sm">Controls</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Sliders className="size-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-semibold">Graph Controls</CardTitle>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -96,10 +106,13 @@ export default async function GraphPage({
           </div>
 
           {/* Inspector Panel */}
-          <Card data-guide="inspector-panel">
+          <Card data-guide="inspector-panel" className="transition-all duration-200 hover:shadow-md">
             <CardHeader>
-              <CardTitle>Inspector</CardTitle>
-              <CardDescription>Selected node/edge details</CardDescription>
+              <div className="flex items-center gap-2">
+                <Search className="size-4 text-muted-foreground" />
+                <CardTitle className="font-semibold">Graph Inspector</CardTitle>
+              </div>
+              <CardDescription>Select a node or edge to view detailed information and relationships</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-sm text-muted-foreground text-center py-8" data-guide="edge-details">
