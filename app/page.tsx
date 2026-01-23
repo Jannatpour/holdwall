@@ -110,60 +110,80 @@ export default function Home() {
       <div className="min-h-screen bg-background">
         <SiteHeader />
 
-      {/* Hero Section */}
-      <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
-        <div className="mx-auto max-w-3xl text-center">
-          <Badge className="mb-4" variant="outline">
+      {/* Hero Section - Enhanced with Animations */}
+      <section className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32 overflow-hidden">
+        {/* Animated Background Gradient */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-background to-primary/10 opacity-50 animate-pulse" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,255,0.1),transparent_50%)] animate-spin-slow" />
+        
+        <div className="mx-auto max-w-4xl text-center relative">
+          <Badge className="mb-6 animate-fade-in-up hover:scale-105 transition-transform duration-300" variant="outline">
+            <Sparkles className="mr-2 size-3 inline-block animate-pulse" />
             Perception Operating System
           </Badge>
-          <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-7xl bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent animate-fade-in-up animation-delay-100">
             When narratives shape reality, evidence shapes narratives
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-            In an era where perception drives decisions—from customer trust to AI-generated summaries—leading organizations 
-            partner with Holdwall to transform narrative risk into strategic advantage. Our Perception Operating System 
-            empowers you to become the authoritative voice about your own story, backed by immutable evidence and 
-            recognized by both human decision-makers and AI systems. When security incidents occur, we ensure AI assistants 
-            cite your transparent explanation—not speculation, not competitors, not misinformation.
+          <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-muted-foreground animate-fade-in-up animation-delay-200">
+            In an era where AI systems answer millions of questions daily, controlling which sources they cite about your organization 
+            isn't just competitive advantage—it's strategic necessity. Transform narrative risk into measurable authority. 
+            When security incidents occur, ensure AI assistants cite your transparent explanation—not speculation, not competitors.
           </p>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground/90">
-            <strong className="text-foreground">Trust is earned through transparency, not manipulation.</strong> We help you build 
-            the confidence to address challenges directly, the credibility to stand behind your evidence, and the strategic 
-            advantage that comes from being the most trusted source—for both humans and AI systems.
+          <p className="mx-auto mt-6 max-w-3xl text-base leading-7 text-muted-foreground/90 animate-fade-in-up animation-delay-300">
+            <strong className="text-foreground">The Strategic Shift:</strong> Don't hide criticism—become its most trusted interpreter. 
+            Evidence-first governance that earns trust through transparency, recognized by both human decision-makers and AI systems.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Button asChild size="lg">
-              <Link href="/demo">Explore Interactive Demo</Link>
+          
+          {/* Enhanced CTA Buttons with SKU D Highlight */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-4 animate-fade-in-up animation-delay-400">
+            <Button asChild size="lg" className="group relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Link href="/demo" className="flex items-center gap-2">
+                <Sparkles className="size-4 group-hover:rotate-180 transition-transform duration-500" />
+                Explore Interactive Demo
+                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/solutions/security-incidents">Security Incidents (SKU D)</Link>
+            <Button asChild variant="outline" size="lg" className="group relative border-2 border-primary/50 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 hover:border-primary transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg">
+              <Link href="/solutions/security-incidents" className="flex items-center gap-2">
+                <Shield className="size-4 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold">Security Incidents (SKU D)</span>
+                <Badge className="ml-1 bg-primary text-primary-foreground text-xs">New</Badge>
+              </Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/auth/signin">Schedule Strategic Consultation</Link>
+            <Button asChild variant="outline" size="lg" className="group hover:scale-105 transition-all duration-300">
+              <Link href="/auth/signin" className="flex items-center gap-2">
+                Schedule Strategic Consultation
+                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/product">Discover Capabilities</Link>
+            <Button asChild variant="outline" size="lg" className="group hover:scale-105 transition-all duration-300">
+              <Link href="/product" className="flex items-center gap-2">
+                Discover Capabilities
+                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
           </div>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-4" />
+          
+          {/* Enhanced Feature Highlights with Icons */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground animate-fade-in-up animation-delay-500">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:bg-card transition-all duration-300 hover:scale-105">
+              <Sparkles className="size-4 text-primary animate-pulse" />
               <span>21 AI models & advanced RAG</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-4" />
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:bg-card transition-all duration-300 hover:scale-105">
+              <TrendingUp className="size-4 text-primary" />
               <span>Real-time outbreak forecasting</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-4" />
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:bg-card transition-all duration-300 hover:scale-105">
+              <Radio className="size-4 text-primary" />
               <span>AI-answer authority & citation</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-4" />
-              <span>Security incident management (SKU D)</span>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border-2 border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all duration-300 hover:scale-105">
+              <Shield className="size-4 text-primary animate-pulse" />
+              <span className="font-semibold text-foreground">Security incident management (SKU D)</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-4" />
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:bg-card transition-all duration-300 hover:scale-105">
+              <CheckCircle2 className="size-4 text-primary" />
               <span>Enterprise-grade governance</span>
             </div>
           </div>
@@ -178,9 +198,9 @@ export default function Home() {
               A new approach to narrative governance
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Unlike reactive tools that fragment ownership and obscure impact, POS is a <strong>strategic partnership</strong> 
-              that transforms how your organization understands, responds to, and shapes the narratives that matter most. 
-              We work alongside your teams to build evidence-first processes that earn trust through transparency, not manipulation.
+              Not reactive crisis management. Not fragmented point solutions. A <strong>strategic partnership</strong> that transforms 
+              how your organization understands, responds to, and shapes narratives. Evidence-first processes that earn trust 
+              through transparency—with full provenance that satisfies both internal stakeholders and external validators.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -232,8 +252,8 @@ export default function Home() {
               Strategic capabilities that transform risk into advantage
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Every capability is designed to give your organization the confidence, control, and credibility needed to 
-              navigate an increasingly complex information landscape. We don't just provide tools—we enable strategic transformation.
+              Every capability is designed to give your organization the confidence, control, and credibility needed to navigate 
+              an increasingly complex information landscape. We don't just provide tools—we enable strategic transformation.
             </p>
           </div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -338,20 +358,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Latest Features - January 2026 */}
-      <section className="border-y bg-gradient-to-br from-primary/5 via-background to-primary/5 py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* Latest Features - January 2026 - Enhanced */}
+      <section className="relative border-y bg-gradient-to-br from-primary/5 via-background to-primary/5 py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(0,255,255,0.05),transparent_50%)]" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mx-auto max-w-2xl text-center">
-            <Badge className="mb-4" variant="outline">
+            <Badge className="mb-4 animate-pulse" variant="outline">
+              <Sparkles className="mr-2 size-3 inline-block" />
               January 2026 Updates
             </Badge>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
               Continuously evolving to meet your strategic needs
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              We're committed to delivering value that grows with your organization. Our latest enhancements bring you 
-              advanced analytics, autonomous processing, and deeper insights—all designed to give you the confidence and 
-              control you need to navigate complex narrative landscapes.
+              Value that grows with your organization. Advanced analytics, autonomous processing, and deeper insights 
+              for navigating complex narrative landscapes.
             </p>
           </div>
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -402,28 +423,36 @@ export default function Home() {
             ].map((feature) => (
               <Card 
                 key={feature.title} 
-                className={`border-primary/20 hover:border-primary transition-colors ${feature.highlight ? 'border-primary border-2 bg-gradient-to-br from-primary/5 to-background' : ''}`}
+                className={`group relative overflow-hidden border-primary/20 hover:border-primary transition-all duration-300 hover-lift ${
+                  feature.highlight 
+                    ? 'border-primary border-2 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg hover:shadow-xl' 
+                    : 'hover:shadow-md'
+                }`}
               >
-                <CardHeader>
+                {/* Animated background gradient on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-500" />
+                
+                <CardHeader className="relative z-10">
                   <div className="mb-2 flex items-center justify-between">
-                    <feature.icon className="size-6 text-primary" />
+                    <feature.icon className={`size-6 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 ${feature.highlight ? 'animate-pulse' : ''}`} />
                     <div className="flex items-center gap-2">
                       {feature.new && (
-                        <Badge variant="outline" className="text-xs">New</Badge>
+                        <Badge variant="outline" className="text-xs animate-pulse">New</Badge>
                       )}
                       {feature.highlight && (
-                        <Badge className="text-xs bg-primary">SKU D</Badge>
+                        <Badge className="text-xs bg-primary text-primary-foreground shadow-lg">SKU D</Badge>
                       )}
                     </div>
                   </div>
-                  <CardTitle className="text-base">{feature.title}</CardTitle>
+                  <CardTitle className="text-base group-hover:text-primary transition-colors">{feature.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3">{feature.description}</p>
+                <CardContent className="relative z-10">
+                  <p className="text-sm text-muted-foreground mb-3 group-hover:text-foreground/90 transition-colors">{feature.description}</p>
                   {feature.link && (
-                    <Button variant="ghost" size="sm" asChild className="w-full justify-start">
-                      <Link href={feature.link}>
-                        Learn More <ArrowRight className="ml-2 size-4" />
+                    <Button variant="ghost" size="sm" asChild className="w-full justify-start group/btn">
+                      <Link href={feature.link} className="flex items-center">
+                        Learn More 
+                        <ArrowRight className="ml-2 size-4 group-hover/btn:translate-x-1 transition-transform" />
                       </Link>
                     </Button>
                   )}
@@ -434,11 +463,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Launch SKUs */}
-      <section className="border-y bg-muted/50 py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* Launch SKUs - Enhanced with SKU D Highlight */}
+      <section className="relative border-y bg-muted/50 py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
               Four strategic entry points, one powerful platform
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
@@ -452,7 +482,7 @@ export default function Home() {
               humans and AI systems turn to first.
             </p>
           </div>
-          <div className="mt-16 grid gap-8 sm:grid-cols-1 lg:grid-cols-3">
+          <div className="mt-16 grid gap-8 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4">
             {[
               {
                 sku: "SKU A",
@@ -505,14 +535,31 @@ export default function Home() {
                 strategicValue: "Transform security incidents from narrative crises into trust-building opportunities. In the AI era, how ChatGPT, Claude, and Perplexity understand your security posture matters more than ever—we ensure they cite your voice, not speculation.",
               },
             ].map((sku) => (
-              <Card key={sku.sku} className="hover:border-primary transition-colors">
-                <CardHeader>
+              <Card 
+                key={sku.sku} 
+                className={`group relative overflow-hidden hover:border-primary transition-all duration-300 hover-lift ${
+                  sku.sku === 'SKU D' 
+                    ? 'border-primary border-2 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg hover:shadow-xl' 
+                    : 'hover:shadow-md'
+                }`}
+              >
+                {/* Animated background for SKU D */}
+                {sku.sku === 'SKU D' && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/0 animate-pulse opacity-50" />
+                )}
+                
+                <CardHeader className="relative z-10">
                   <div className="mb-2 flex items-center justify-between">
-                    <Badge variant="outline">{sku.sku}</Badge>
-                    <sku.icon className="size-6 text-primary" />
+                    <Badge 
+                      variant={sku.sku === 'SKU D' ? 'default' : 'outline'} 
+                      className={sku.sku === 'SKU D' ? 'bg-primary text-primary-foreground shadow-md' : ''}
+                    >
+                      {sku.sku}
+                    </Badge>
+                    <sku.icon className={`size-6 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 ${sku.sku === 'SKU D' ? 'animate-pulse' : ''}`} />
                   </div>
-                  <CardTitle>{sku.title}</CardTitle>
-                  <CardDescription className="font-medium text-primary">
+                  <CardTitle className="group-hover:text-primary transition-colors">{sku.title}</CardTitle>
+                  <CardDescription className="font-medium text-primary mt-2">
                     {sku.promise}
                   </CardDescription>
                 </CardHeader>
@@ -544,9 +591,10 @@ export default function Home() {
                       <p className="text-sm font-medium">{sku.strategicValue}</p>
                     </div>
                   )}
-                  <Button asChild variant="ghost" className="w-full justify-start mt-4">
-                    <Link href={sku.link}>
-                      Learn More <ArrowRight className="ml-2 size-4" />
+                  <Button asChild variant="ghost" className="w-full justify-start mt-4 group/btn">
+                    <Link href={sku.link} className="flex items-center">
+                      Learn More 
+                      <ArrowRight className="ml-2 size-4 group-hover/btn:translate-x-1 transition-transform" />
                     </Link>
                   </Button>
                 </CardContent>
@@ -556,11 +604,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Customer Stories */}
-      <section className="py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* Customer Stories - Enhanced */}
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
               How forward-thinking organizations partner with Holdwall
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
@@ -623,10 +672,11 @@ export default function Home() {
                 icon: Lock,
               },
             ].map((story) => (
-              <Card key={story.industry} className="hover:border-primary transition-colors">
-                <CardHeader>
-                  <story.icon className="mb-2 size-8 text-primary" />
-                  <CardTitle>{story.industry}</CardTitle>
+              <Card key={story.industry} className="group relative overflow-hidden hover:border-primary transition-all duration-300 hover-lift hover:shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/0 transition-all duration-500" />
+                <CardHeader className="relative z-10">
+                  <story.icon className="mb-2 size-8 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300" />
+                  <CardTitle className="group-hover:text-primary transition-colors">{story.industry}</CardTitle>
                   <CardDescription className="font-medium">{story.challenge}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1055,11 +1105,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Interactive Demo Section */}
-      <section className="py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* Interactive Demo Section - Enhanced */}
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/5" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(0,255,255,0.05),transparent_50%)]" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
               Experience the platform that transforms narrative risk into strategic advantage
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
@@ -1069,16 +1121,19 @@ export default function Home() {
             </p>
           </div>
           <div className="mt-12">
-            <Card className="border-2 border-primary bg-gradient-to-br from-primary/5 to-background">
-              <CardHeader className="text-center">
-                <Sparkles className="mx-auto mb-4 size-12 text-primary" />
-                <CardTitle className="text-2xl">Complete Platform Demo</CardTitle>
-                <CardDescription className="text-base">
+            <Card className="group relative overflow-hidden border-2 border-primary bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02]">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <CardHeader className="text-center relative z-10">
+                <Sparkles className="mx-auto mb-4 size-12 text-primary animate-pulse group-hover:rotate-180 transition-transform duration-500" />
+                <CardTitle className="text-2xl bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                  Complete Platform Demo
+                </CardTitle>
+                <CardDescription className="text-base mt-2">
                   15 categorized steps covering authentication, onboarding, dashboards, signals, integrations, and evidence—from account creation to evidence exploration. 
                   Experience how leading organizations build their narrative governance capabilities.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 relative z-10">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {[
                     "Step-by-step guidance",
@@ -1087,19 +1142,26 @@ export default function Home() {
                     "Real platform integration",
                     "Keyboard shortcuts",
                     "Complete coverage",
-                  ].map((feature) => (
-                    <div key={feature} className="flex items-center gap-2">
-                      <CheckCircle2 className="size-5 text-primary" />
-                      <span className="text-sm">{feature}</span>
+                  ].map((feature, idx) => (
+                    <div key={feature} className="flex items-center gap-2 group/feature hover:scale-105 transition-transform duration-300">
+                      <CheckCircle2 className="size-5 text-primary group-hover/feature:scale-110 transition-transform" />
+                      <span className="text-sm group-hover/feature:text-foreground transition-colors">{feature}</span>
                     </div>
                   ))}
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-                  <Button asChild size="lg">
-                    <Link href="/demo">Start Interactive Demo</Link>
+                  <Button asChild size="lg" className="group relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Link href="/demo" className="flex items-center gap-2">
+                      <Sparkles className="size-4 group-hover:rotate-180 transition-transform duration-500" />
+                      Start Interactive Demo
+                      <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg">
-                    <Link href="/product">Explore Strategic Capabilities</Link>
+                  <Button asChild variant="outline" size="lg" className="group hover:scale-105 transition-all duration-300">
+                    <Link href="/product" className="flex items-center gap-2">
+                      Explore Strategic Capabilities
+                      <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
                   </Button>
                 </div>
               </CardContent>

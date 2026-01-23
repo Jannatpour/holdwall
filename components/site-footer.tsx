@@ -24,6 +24,7 @@ const footerLinks: Array<{
       { label: "Comms & PR (SKU A)", href: "/solutions/comms" },
       { label: "Security & Trust (SKU B)", href: "/solutions/security" },
       { label: "Procurement (SKU C)", href: "/solutions/procurement" },
+      { label: "Security Incidents (SKU D)", href: "/solutions/security-incidents" },
       { label: "Support & Ops", href: "/solutions/support" },
       { label: "Financial Services", href: "/solutions/financial-services" },
     ],

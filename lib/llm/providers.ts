@@ -430,7 +430,10 @@ export class LLMProvider {
         model: data.model?.id || request.model,
       };
     } catch (error) {
-      console.error("Anthropic API call failed:", error);
+      logger.error("Anthropic API call failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       throw error;
     }
   }

@@ -182,6 +182,86 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // AI-Enhanced Recommendations using Adaptive RAG (January 2026)
+    try {
+      const aiIntegration = new AdvancedAIIntegration({
+        tenantId: tenant_id,
+        enableAdvancedRAG: true,
+      });
+
+      const contextQuery = `Generate strategic narrative risk management recommendations based on:
+
+Current State:
+- Outbreak Probability: ${outbreakProbability}% (confidence: ${(outbreakConfidence * 100).toFixed(0)}%)
+- Top Clusters: ${clusters.length} clusters, largest has ${clusters[0]?.size || 0} claims
+- Recent Signals: ${recentSignalCount} in last 24h
+- AI Citation Coverage: ${citationCoverage}%
+- Pending Approvals: ${pendingApprovals}
+
+Generate 3-5 additional strategic recommendations focusing on:
+1. Proactive narrative defense strategies
+2. Evidence-backed response planning
+3. Trust asset optimization
+4. Citation coverage improvement
+5. Risk mitigation tactics
+
+Return JSON array:
+[
+  {
+    "priority": "high" | "medium" | "low",
+    "action": "action description",
+    "rationale": "detailed rationale"
+  }
+]`;
+
+      const aiResult = await aiIntegration.queryAdaptiveRAG(
+        contextQuery,
+        {
+          model: "gpt-4o-mini", // Fast model for recommendations
+          temperature: 0.3, // Balanced for strategic recommendations
+          maxTokens: 1500,
+        }
+      );
+
+      if (aiResult) {
+        try {
+          const aiRecommendations = JSON.parse(aiResult.response);
+          if (Array.isArray(aiRecommendations)) {
+            // Add AI recommendations (limit to 5 to avoid overwhelming)
+            for (const rec of aiRecommendations.slice(0, 5)) {
+              if (rec.action && rec.rationale && rec.priority) {
+                recommendedActions.push({
+                  priority: rec.priority.toLowerCase() as "high" | "medium" | "low",
+                  action: rec.action,
+                  rationale: rec.rationale,
+                });
+              }
+            }
+          } else if (aiRecommendations.recommendations && Array.isArray(aiRecommendations.recommendations)) {
+            // Handle nested structure
+            for (const rec of aiRecommendations.recommendations.slice(0, 5)) {
+              if (rec.action && rec.rationale && rec.priority) {
+                recommendedActions.push({
+                  priority: rec.priority.toLowerCase() as "high" | "medium" | "low",
+                  action: rec.action,
+                  rationale: rec.rationale,
+                });
+              }
+            }
+          }
+        } catch (parseError) {
+          logger.warn("Failed to parse AI recommendations for narrative risk brief", {
+            error: parseError instanceof Error ? parseError.message : String(parseError),
+          });
+        }
+      }
+    } catch (aiError) {
+      logger.warn("AI-enhanced recommendations generation failed for narrative risk brief", {
+        error: aiError instanceof Error ? aiError.message : String(aiError),
+      });
+      // Continue with rule-based recommendations only
+    }
+
     return NextResponse.json({
       date: new Date().toISOString().split("T")[0],
       outbreakProbability,

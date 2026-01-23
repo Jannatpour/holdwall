@@ -68,7 +68,7 @@ export default function SecurityIncidentDetailPage() {
         setIncident(data.incident);
       }
     } catch (error) {
-      console.error("Error loading incident:", error);
+      // Error handled by loading state
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ export default function SecurityIncidentDetailPage() {
         loadIncident();
       }
     } catch (error) {
-      console.error("Error assessing risk:", error);
+      // Error handled by UI state
     }
   };
 
@@ -109,7 +109,7 @@ export default function SecurityIncidentDetailPage() {
         router.push(`/security-incidents/${incidentId}/explanation?draft=${encodeURIComponent(JSON.stringify(data.draft))}`);
       }
     } catch (error) {
-      console.error("Error generating explanation:", error);
+      // Error handled by generating state
     } finally {
       setGenerating(false);
     }
