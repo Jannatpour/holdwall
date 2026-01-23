@@ -110,83 +110,146 @@ export default function Home() {
       <div className="min-h-screen bg-background">
         <SiteHeader />
 
-      {/* Hero Section - Innovative Creative Design */}
-      <section className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24 overflow-hidden">
-        {/* Dynamic Animated Background */}
+      {/* Hero Section - Ultra Smart & Amazing Design */}
+      <section className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32 overflow-hidden">
+        {/* Ultra-Sophisticated Animated Background */}
         <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,255,255,0.15),transparent_50%)] animate-spin-slow" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(0,255,255,0.1),transparent_50%)] animate-spin-slow" style={{ animationDirection: 'reverse', animationDuration: '25s' }} />
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+          {/* Base gradient layers */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-background via-primary/8 to-primary/12" />
+          
+          {/* Animated radial gradients with multiple layers */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.25),transparent_60%)] animate-spin-slow opacity-60" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(147,51,234,0.2),transparent_60%)] animate-spin-slow opacity-60" style={{ animationDirection: 'reverse', animationDuration: '30s' }} />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,255,0.1),transparent_70%)] animate-spin-slow opacity-40" style={{ animationDuration: '40s' }} />
+          
+          {/* Floating orbs with enhanced animations */}
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-3xl animate-float opacity-60" />
+          <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-primary/15 to-primary/5 rounded-full blur-3xl animate-float opacity-50" style={{ animationDelay: '2s', animationDuration: '8s' }} />
+          <div className="absolute top-1/2 right-1/3 w-[400px] h-[400px] bg-gradient-to-br from-primary/10 to-primary/3 rounded-full blur-3xl animate-float opacity-40" style={{ animationDelay: '4s', animationDuration: '10s' }} />
+          
+          {/* Grid pattern overlay for depth */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-30" />
+          
+          {/* Animated shimmer effect */}
+          <div className="absolute inset-0 animate-shimmer opacity-20" />
         </div>
         
-        <div className="mx-auto max-w-5xl text-center relative">
-          {/* Badge with shimmer effect */}
-          <Badge className="mb-8 animate-fade-in-up glass-effect hover:scale-105 transition-transform duration-300" variant="outline">
-            <Sparkles className="mr-2 size-3 inline-block animate-pulse" />
-            Perception Operating System
-          </Badge>
+        <div className="mx-auto max-w-6xl text-center relative">
+          {/* Smart Badge with enhanced effects */}
+          <div className="mb-10 animate-fade-in-up">
+            <Badge className="group relative overflow-hidden glass-effect hover:scale-110 transition-all duration-500 border-2 border-primary/40 hover:border-primary shadow-lg hover:shadow-primary/30 px-6 py-2.5" variant="outline">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <Sparkles className="mr-2 size-4 inline-block animate-pulse text-primary" />
+              <span className="relative font-bold text-sm tracking-wider bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                Perception Operating System
+              </span>
+              <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </Badge>
+          </div>
           
-          {/* Main headline with gradient animation */}
-          <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl gradient-text animate-fade-in-up animation-delay-100">
-            When narratives shape reality,<br />evidence shapes narratives
-          </h1>
-          
-          {/* Concise, strategic subheading */}
-          <p className="mx-auto mt-8 max-w-2xl text-xl leading-8 text-muted-foreground animate-fade-in-up animation-delay-200 font-medium">
-            Control which sources AI systems cite about your organization. Transform security incidents into trust-building opportunities.
-          </p>
-          
-          {/* SKU D HERO BANNER - EXTREMELY PROMINENT */}
-          <div className="mt-10 animate-fade-in-up animation-delay-300">
-            <div className="mx-auto max-w-2xl mb-6 p-4 rounded-2xl bg-gradient-to-r from-primary/20 via-primary/15 to-primary/20 border-2 border-primary/50 shadow-xl animate-pulse">
-              <div className="flex items-center justify-center gap-3">
-                <Shield className="size-6 text-primary animate-pulse" />
-                <div className="text-center">
-                  <p className="text-sm font-bold text-primary uppercase tracking-wide">NEW: SKU D</p>
-                  <p className="text-base font-semibold text-foreground">Security Incident Narrative Management</p>
-                </div>
-                <Badge className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 shadow-lg animate-bounce">FEATURED</Badge>
-              </div>
-            </div>
+          {/* Ultra-Smart Main Headline with Typewriter Effect Simulation */}
+          <div className="mb-8 animate-fade-in-up animation-delay-100">
+            <h1 className="text-balance text-5xl font-black tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl leading-[1.1]">
+              <span className="block mb-3">
+                <span className="gradient-text inline-block">When narratives</span>
+                <span className="inline-block ml-2 animate-pulse">shape</span>
+              </span>
+              <span className="block">
+                <span className="gradient-text inline-block">reality,</span>
+                <span className="inline-block ml-3 text-primary animate-glow">evidence</span>
+              </span>
+              <span className="block mt-3">
+                <span className="gradient-text">shapes narratives</span>
+              </span>
+            </h1>
             
-            {/* Primary CTAs - SKU D First */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              {/* SKU D - PRIMARY - MOST PROMINENT */}
-              <Button asChild size="lg" className="group relative overflow-hidden bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary hover:via-primary hover:to-primary shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-110 border-2 border-primary/30 w-full sm:w-auto min-w-[300px] animate-glow text-lg">
-                <Link href="/solutions/security-incidents" className="flex items-center justify-center gap-3 text-primary-foreground font-bold px-8 py-4">
-                  <Shield className="size-6 group-hover:scale-125 group-hover:rotate-12 transition-transform duration-300" />
-                  <span className="text-lg">Security Incidents (SKU D)</span>
-                  <Badge className="bg-primary-foreground text-primary text-sm font-bold px-3 py-1 shadow-lg animate-bounce">NEW</Badge>
-                  <ArrowRight className="size-5 group-hover:translate-x-2 transition-transform" />
+            {/* Smart animated underline */}
+            <div className="mx-auto mt-6 w-32 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full animate-pulse" />
+          </div>
+          
+          {/* Intelligent Subheading with Dynamic Messaging */}
+          <div className="mb-12 animate-fade-in-up animation-delay-200">
+            <p className="mx-auto max-w-3xl text-xl sm:text-2xl leading-relaxed text-muted-foreground font-semibold">
+              <span className="inline-block">Control which sources</span>
+              <span className="inline-block mx-2 text-primary font-bold">AI systems cite</span>
+              <span className="inline-block">about your organization.</span>
+            </p>
+            <p className="mx-auto mt-4 max-w-3xl text-lg sm:text-xl leading-relaxed text-muted-foreground font-medium">
+              Transform narrative risk into
+              <span className="inline-block ml-2 px-3 py-1 rounded-lg bg-primary/10 text-primary font-bold border border-primary/20">
+                strategic advantage
+              </span>
+            </p>
+          </div>
+          
+          {/* Enhanced Primary CTAs with Smart Interactions */}
+          <div className="mb-10 animate-fade-in-up animation-delay-300">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
+              {/* Primary CTA - Try Interactive Demo */}
+              <Button asChild size="lg" className="group relative overflow-hidden bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary hover:via-primary hover:to-primary shadow-2xl hover:shadow-primary/60 transition-all duration-500 hover:scale-110 border-2 border-primary/70 w-full sm:w-auto min-w-[360px] text-xl h-16">
+                <Link href="/demo" className="flex items-center justify-center gap-4 text-primary-foreground font-black px-12 py-6">
+                  {/* Animated background shimmer */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                  
+                  <Sparkles className="relative size-8 group-hover:scale-150 group-hover:rotate-360 transition-all duration-500 z-10" />
+                  <span className="relative text-xl font-black z-10">Try Interactive Demo</span>
+                  <ArrowRight className="relative size-7 group-hover:translate-x-3 transition-transform duration-300 z-10" />
                 </Link>
               </Button>
               
-              <Button asChild size="lg" variant="outline" className="group glass-effect hover:bg-primary/5 w-full sm:w-auto transition-all duration-300 hover:scale-105">
-                <Link href="/demo" className="flex items-center justify-center gap-2">
-                  <Sparkles className="size-4 group-hover:rotate-180 transition-transform duration-500" />
-                  Try Interactive Demo
-                  <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+              {/* Secondary CTA - Request a Demo */}
+              <Button asChild size="lg" variant="outline" className="group relative overflow-hidden glass-effect hover:bg-primary/10 w-full sm:w-auto min-w-[280px] transition-all duration-500 hover:scale-110 border-2 border-primary/40 hover:border-primary h-16">
+                <Link href="/product" className="flex items-center justify-center gap-3 font-bold px-10 py-6">
+                  <Network className="size-5 group-hover:rotate-360 transition-transform duration-700 text-primary" />
+                  <span className="text-lg font-bold">Explore Platform</span>
+                  <ArrowRight className="size-5 group-hover:translate-x-2 transition-transform duration-300" />
                 </Link>
               </Button>
             </div>
           </div>
           
-          {/* Streamlined feature highlights - SKU D First */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm animate-fade-in-up animation-delay-400">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/30 to-primary/15 border-2 border-primary hover:border-primary/80 hover:from-primary/40 hover:to-primary/20 transition-all duration-300 hover:scale-110 shadow-lg animate-pulse">
-              <Shield className="size-4 text-primary animate-pulse" />
-              <span className="font-bold text-foreground">SKU D: Security Incidents</span>
-              <Badge className="bg-primary text-primary-foreground text-xs font-bold px-1.5 py-0.5 shadow-md">FEATURED</Badge>
+          {/* Smart Feature Highlights with Enhanced Interactions */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-4 text-sm animate-fade-in-up animation-delay-400">
+            <div className="group flex items-center gap-2 px-5 py-2.5 rounded-full glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 hover:scale-110 hover:shadow-lg overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <Sparkles className="relative size-4 text-primary z-10 animate-pulse" />
+              <span className="relative font-bold z-10">21 AI models</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass-effect border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105">
-              <Sparkles className="size-3.5 text-primary" />
-              <span>21 AI models</span>
+            
+            <div className="group flex items-center gap-2 px-5 py-2.5 rounded-full glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 hover:scale-110 hover:shadow-lg overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <Radio className="relative size-4 text-primary z-10 animate-pulse" />
+              <span className="relative font-bold z-10">AI citation tracking</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass-effect border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105">
-              <Radio className="size-3.5 text-primary" />
-              <span>AI citation tracking</span>
+            
+            <div className="group flex items-center gap-2 px-5 py-2.5 rounded-full glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 hover:scale-110 hover:shadow-lg overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <TrendingUp className="relative size-4 text-primary z-10" />
+              <span className="relative font-bold z-10">Real-time monitoring</span>
+            </div>
+            
+            <div className="group flex items-center gap-2 px-5 py-2.5 rounded-full glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 hover:scale-110 hover:shadow-lg overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <FileText className="relative size-4 text-primary z-10" />
+              <span className="relative font-bold z-10">Evidence-first</span>
+            </div>
+          </div>
+          
+          {/* Smart Trust Indicators */}
+          <div className="mt-12 animate-fade-in-up animation-delay-500">
+            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-primary" />
+                <span className="font-medium">Enterprise-grade security</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-primary" />
+                <span className="font-medium">SOC 2 compliant</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-primary" />
+                <span className="font-medium">24/7 monitoring</span>
+              </div>
             </div>
           </div>
         </div>
@@ -411,7 +474,7 @@ export default function Home() {
                 key={feature.title} 
                 className={`group relative overflow-hidden hover-lift transition-all duration-300 animate-slide-in-right ${
                   feature.highlight 
-                    ? 'border-primary border-2 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg hover:shadow-xl animate-glow' 
+                    ? 'border-primary border-2 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg hover:shadow-xl' 
                     : 'border-primary/10 hover:border-primary/30'
                 }`}
                 style={{ animationDelay: `${idx * 0.1}s` }}
@@ -420,13 +483,13 @@ export default function Home() {
                 
                 <CardHeader className="relative z-10 pb-3">
                   <div className="mb-2 flex items-center justify-between">
-                    <feature.icon className={`size-6 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform ${feature.highlight ? 'animate-pulse' : ''}`} />
+                    <feature.icon className="size-6 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform" />
                     <div className="flex items-center gap-2">
                       {feature.new && (
                         <Badge variant="outline" className="text-xs">New</Badge>
                       )}
                       {feature.highlight && (
-                        <Badge className="text-xs bg-primary text-primary-foreground shadow-lg animate-bounce">SKU D</Badge>
+                        <Badge className="text-xs bg-primary text-primary-foreground shadow-lg">SKU D</Badge>
                       )}
                     </div>
                   </div>
@@ -449,21 +512,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Launch SKUs - SKU D Prominent */}
+      {/* Launch SKUs - All SKUs Featured */}
       <section className="relative border-y bg-gradient-to-b from-muted/50 via-primary/5 to-muted/50 py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mx-auto max-w-2xl text-center">
-            <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-primary/25 via-primary/20 to-primary/25 border-2 border-primary shadow-xl animate-pulse">
-              <div className="flex items-center justify-center gap-3">
-                <Shield className="size-6 text-primary animate-pulse" />
-                <div>
-                  <p className="text-xs font-bold text-primary uppercase tracking-wider">FEATURING</p>
-                  <p className="text-base font-bold text-foreground">SKU D: Security Incident Narrative Management</p>
-                </div>
-                <Badge className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 shadow-lg animate-bounce">NEW</Badge>
-              </div>
-            </div>
+            <Badge className="mb-4 glass-effect" variant="outline">
+              <Sparkles className="mr-2 size-3 inline-block" />
+              Strategic Solutions
+            </Badge>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl gradient-text">
               Four strategic entry points, one platform
             </h2>
@@ -519,24 +576,21 @@ export default function Home() {
                 key={sku.sku} 
                 className={`group relative overflow-hidden hover-lift transition-all duration-300 animate-scale-in ${
                   sku.sku === 'SKU D' 
-                    ? 'border-primary border-2 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg hover:shadow-xl animate-glow' 
+                    ? 'border-primary border-2 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg hover:shadow-xl' 
                     : 'border-primary/10 hover:border-primary/30'
                 }`}
                 style={{ animationDelay: `${idx * 0.1}s` }}
               >
-                {sku.sku === 'SKU D' && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/0 animate-pulse opacity-50" />
-                )}
-                
                 <CardHeader className="relative z-10 pb-3">
                   <div className="mb-3 flex items-center justify-between">
                     <Badge 
                       variant={sku.sku === 'SKU D' ? 'default' : 'outline'} 
-                      className={sku.sku === 'SKU D' ? 'bg-primary text-primary-foreground shadow-md animate-bounce' : ''}
+                      className={sku.sku === 'SKU D' ? 'bg-primary text-primary-foreground shadow-md' : ''}
                     >
+                      {sku.sku === 'SKU D' && <span className="mr-1">NEW</span>}
                       {sku.sku}
                     </Badge>
-                    <sku.icon className={`size-6 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform ${sku.sku === 'SKU D' ? 'animate-pulse' : ''}`} />
+                    <sku.icon className="size-6 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform" />
                   </div>
                   <CardTitle className="text-base group-hover:text-primary transition-colors">{sku.title}</CardTitle>
                   <CardDescription className="font-medium text-primary mt-2 text-sm">
@@ -881,7 +935,7 @@ export default function Home() {
               Control how AI systems understand your organization
             </h2>
             <p className="mt-4 text-base leading-7 text-muted-foreground">
-              When Perplexity, Gemini, and Claude answer questions about your security incidents, ensure they cite your authoritative explanation—not speculation.
+              Ensure AI systems cite your authoritative voice across all narratives—from security incidents to product launches. Real-time monitoring across Perplexity, Gemini, and Claude.
             </p>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
@@ -890,19 +944,19 @@ export default function Home() {
                 title: "Multi-Engine Monitoring",
                 description: "Track citations across Perplexity, Gemini, and Claude in real-time",
                 icon: Radio,
-                metrics: "4.2x citation rate increase",
+                metrics: "3-5x citation rate increase",
               },
               {
-                title: "Incident → Citation Pipeline",
-                description: "Automatically generate explanations and monitor AI citations",
-                icon: Shield,
-                metrics: "78% reduction in narrative spread",
+                title: "Authority Index Coverage",
+                description: "Ensure your evidence-backed artifacts are discoverable and cited",
+                icon: FileText,
+                metrics: "90%+ coverage",
               },
               {
                 title: "Measurable Trust Lift",
-                description: "Track how authoritative explanations influence AI answers",
+                description: "Track how authoritative explanations influence AI answer sentiment",
                 icon: TrendingUp,
-                metrics: "Measurable trust lift",
+                metrics: "Measurable impact",
               },
             ].map((item, idx) => (
               <Card key={item.title} className="group hover-lift border-primary/10 hover:border-primary/30 transition-all duration-300 animate-slide-in-right" style={{ animationDelay: `${idx * 0.1}s` }}>
@@ -921,8 +975,8 @@ export default function Home() {
           </div>
           <div className="mt-10 text-center">
             <Button asChild size="lg" variant="outline" className="glass-effect">
-              <Link href="/solutions/security-incidents">
-                Explore SKU D <ArrowRight className="ml-2 size-4" />
+              <Link href="/ai-answer-monitor">
+                Explore AI Citation <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
           </div>
@@ -1205,18 +1259,24 @@ export default function Home() {
             Ready to build strategic narrative advantage?
           </h2>
           <p className="mt-4 text-base leading-7 text-muted-foreground">
-            Control how AI systems understand your organization. Transform security incidents into trust-building opportunities.
+            Control how AI systems understand your organization. Transform narrative risk into strategic advantage through evidence-first governance.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link href="/solutions/security-incidents" className="flex items-center gap-2">
-                <Shield className="size-4" />
-                Explore SKU D
+              <Link href="/demo" className="flex items-center gap-2">
+                <Sparkles className="size-4" />
+                Try Interactive Demo
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto glass-effect">
-              <Link href="/demo">Try Interactive Demo</Link>
+              <Link href="/solutions" className="flex items-center gap-2">
+                Explore Solutions
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto glass-effect">
+              <Link href="/auth/signin">Get Started</Link>
             </Button>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">

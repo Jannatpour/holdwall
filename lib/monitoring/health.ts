@@ -68,7 +68,11 @@ export async function checkHealth(): Promise<HealthStatus> {
     const dbLatency = Date.now() - dbStart;
     checks.database = dbLatency < 1000 ? "ok" : "error";
   } catch (error) {
-    console.error("Database health check failed:", error);
+    const { logger } = await import("@/lib/logging/logger");
+    logger.error("Database health check failed", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     checks.database = "error";
   }
 

@@ -30,7 +30,19 @@ export default async function GovernancePage({
 
   // Protect this page server-side to avoid unauthenticated clients
   // spamming protected API routes (401s in console/network).
-  const session = await auth();
+  let session = null;
+  try {
+    session = await auth();
+  } catch (error) {
+    // If auth() throws an error, treat as unauthenticated and redirect to sign-in
+    // This prevents 500 errors from propagating to the client
+    const qp = new URLSearchParams();
+    if (sp.approval_id) qp.set("approval_id", sp.approval_id);
+    if (sp.correlation) qp.set("correlation", sp.correlation);
+    const callbackUrl = `/governance${qp.toString() ? `?${qp.toString()}` : ""}`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+
   if (!session?.user) {
     const qp = new URLSearchParams();
     if (sp.approval_id) qp.set("approval_id", sp.approval_id);

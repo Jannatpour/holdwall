@@ -61,12 +61,32 @@ export async function POST(request: NextRequest) {
     try {
       const db = await getDb();
       
-      // Check if user already exists
+      // Normalize email to lowercase for consistent storage and lookup
+      const normalizedEmail = email.trim().toLowerCase();
+      
+      // Check if user already exists (case-insensitive)
       const existingUser = await db.user.findUnique({
-        where: { email },
+        where: { email: normalizedEmail },
       }).catch(() => null);
 
-      if (existingUser) {
+      // Also check with case-insensitive search as fallback
+      if (!existingUser) {
+        const users = await db.user.findMany({
+          where: {
+            email: {
+              equals: normalizedEmail,
+              mode: 'insensitive',
+            },
+          },
+          take: 1,
+        });
+        if (users.length > 0) {
+          return NextResponse.json(
+            { error: "User with this email already exists" },
+            { status: 409 }
+          );
+        }
+      } else {
         return NextResponse.json(
           { error: "User with this email already exists" },
           { status: 409 }
@@ -100,11 +120,11 @@ export async function POST(request: NextRequest) {
       // Hash password
       const passwordHash = await bcrypt.hash(password, 10);
 
-      // Create user
+      // Create user with normalized email
       const user = await db.user.create({
         data: {
-          email,
-          name: name || email.split("@")[0],
+          email: normalizedEmail, // Store normalized (lowercase) email
+          name: name || normalizedEmail.split("@")[0],
           passwordHash,
           tenantId: tenant.id,
           role: "USER",

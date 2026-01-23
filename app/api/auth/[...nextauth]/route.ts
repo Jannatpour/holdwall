@@ -58,18 +58,68 @@ const providers: any[] = [
       }
 
       try {
-        const database = await getDb();
-        const user = await database.user.findUnique({
-          where: { email: credentials.email as string },
+        // Normalize email to lowercase for consistent lookup
+        // This ensures case-insensitive email matching
+        const normalizedEmail = (credentials.email as string).trim().toLowerCase();
+        
+        logger.info("Authorize: Attempting login", { 
+          email: normalizedEmail,
+          emailProvided: credentials.email as string 
         });
 
+        const database = await getDb();
+        
+        // Try exact match with normalized email first
+        let user = await database.user.findUnique({
+          where: { email: normalizedEmail },
+        });
+
+        // If not found with normalized email, try case-insensitive search using raw query
+        // This handles cases where emails were stored with mixed case before normalization
         if (!user) {
-          logger.warn("Authorize: User not found", { email: credentials.email });
+          logger.debug("Authorize: User not found with normalized email, trying case-insensitive search", { 
+            email: normalizedEmail 
+          });
+          
+          // Use raw SQL for case-insensitive email lookup
+          // This handles legacy users with mixed-case emails
+          try {
+            const users = await database.$queryRaw<Array<{ id: string; email: string; name: string | null; image: string | null; passwordHash: string | null; role: string; tenantId: string }>>`
+              SELECT id, email, name, image, "passwordHash", role, "tenantId"
+              FROM "User"
+              WHERE LOWER(email) = LOWER(${normalizedEmail})
+              LIMIT 1
+            `;
+            
+            if (users.length > 0) {
+              user = users[0];
+              logger.info("Authorize: Found user with case-insensitive search", {
+                foundEmail: user.email,
+                normalizedEmail,
+                note: "Consider running normalize-user-emails.ts to update this user's email"
+              });
+            }
+          } catch (rawQueryError) {
+            logger.debug("Authorize: Raw query fallback failed, user not found", {
+              error: rawQueryError instanceof Error ? rawQueryError.message : String(rawQueryError),
+              email: normalizedEmail
+            });
+          }
+        }
+
+        if (!user) {
+          logger.warn("Authorize: User not found", { 
+            email: normalizedEmail,
+            attemptedEmail: credentials.email as string 
+          });
           return null;
         }
 
         if (!user.passwordHash) {
-          logger.warn("Authorize: User has no password hash", { email: credentials.email });
+          logger.warn("Authorize: User has no password hash", { 
+            email: normalizedEmail,
+            userId: user.id 
+          });
           return null;
         }
 
@@ -79,11 +129,19 @@ const providers: any[] = [
         );
 
         if (!isValid) {
-          logger.warn("Authorize: Invalid password", { email: credentials.email });
+          logger.warn("Authorize: Invalid password", { 
+            email: normalizedEmail,
+            userId: user.id 
+          });
           return null;
         }
 
-        logger.info("Authorize: Successfully authenticated", { email: credentials.email, userId: user.id });
+        logger.info("Authorize: Successfully authenticated", { 
+          email: normalizedEmail,
+          userId: user.id,
+          role: user.role 
+        });
+        
         return {
           id: user.id,
           email: user.email,
@@ -96,6 +154,7 @@ const providers: any[] = [
         const authError = handleAuthError(error);
         logger.error("Authorize: Database error", {
           error: authError.message,
+          email: credentials.email as string,
           stack: authError instanceof Error ? authError.stack : undefined,
         });
         return null;
@@ -300,14 +359,14 @@ async function ensureAdapter() {
 
 // Initialize NextAuth - adapter will be added lazily if needed
 let handlers: any = null;
-let auth: any = null;
+let authRaw: any = null;
 let signIn: any = null;
 let signOut: any = null;
 
 try {
   const instance = NextAuth(nextAuthConfig);
   handlers = instance.handlers;
-  auth = instance.auth;
+  authRaw = instance.auth;
   signIn = instance.signIn;
   signOut = instance.signOut;
   
@@ -333,10 +392,27 @@ try {
       headers: { "Content-Type": "application/json" },
     }),
   };
-  auth = async () => null;
+  authRaw = async () => null;
   signIn = async () => ({ error: "Authentication service unavailable" });
   signOut = async () => ({ error: "Authentication service unavailable" });
 }
+
+// Wrap auth function to catch errors and return null instead of throwing
+// This prevents 500 errors when auth() is called in server components
+const auth = async () => {
+  try {
+    if (!authRaw) {
+      return null;
+    }
+    return await authRaw();
+  } catch (error) {
+    logger.warn("Auth function error, returning null session", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return null;
+  }
+};
 
 export { handlers, auth, signIn, signOut };
 
@@ -464,6 +540,145 @@ async function safeHandleRequest(
 }
 
 export async function GET(req: NextRequest) {
+  // Handle session endpoint with special error handling
+  if (req.nextUrl.pathname.includes("/session")) {
+    try {
+      // Ensure adapter is available for OAuth flows (non-blocking)
+      ensureAdapter().catch((error) => {
+        logger.warn("Failed to ensure adapter", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+      
+      // Check if handlers are available
+      if (!handlers || !handlers.GET) {
+        logger.warn("NextAuth handlers not available, returning null session");
+        return new Response(
+          JSON.stringify({ user: null, expires: null }),
+          {
+            status: 200,
+            headers: { 
+              "Content-Type": "application/json",
+              "Cache-Control": "no-store, must-revalidate",
+            },
+          }
+        );
+      }
+      
+      // Try to get session, but always return JSON
+      try {
+        const response = await handlers.GET(req);
+        
+        // If response is HTML error, convert to null session
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("text/html") && !response.ok) {
+          logger.warn("NextAuth session returned HTML error, returning null session");
+          return new Response(
+            JSON.stringify({ user: null, expires: null }),
+            {
+              status: 200,
+              headers: { 
+                "Content-Type": "application/json",
+                "Cache-Control": "no-store, must-revalidate",
+              },
+            }
+          );
+        }
+        
+        // Ensure response is JSON
+        if (!contentType.includes("application/json")) {
+          // Try to parse as JSON, if fails return null session
+          try {
+            const text = await response.text();
+            JSON.parse(text);
+            return new Response(text, {
+              status: response.status,
+              headers: {
+                "Content-Type": "application/json",
+                "Cache-Control": "no-store, must-revalidate",
+              },
+            });
+          } catch {
+            return new Response(
+              JSON.stringify({ user: null, expires: null }),
+              {
+                status: 200,
+                headers: { 
+                  "Content-Type": "application/json",
+                  "Cache-Control": "no-store, must-revalidate",
+                },
+              }
+            );
+          }
+        }
+        
+        return response;
+      } catch (error) {
+        logger.error("Error in NextAuth session handler", {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        return new Response(
+          JSON.stringify({ user: null, expires: null }),
+          {
+            status: 200,
+            headers: { 
+              "Content-Type": "application/json",
+              "Cache-Control": "no-store, must-revalidate",
+            },
+          }
+        );
+      }
+    } catch (error) {
+      logger.error("NextAuth GET session error", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      return new Response(
+        JSON.stringify({ user: null, expires: null }),
+        {
+          status: 200,
+          headers: { 
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store, must-revalidate",
+          },
+        }
+      );
+    }
+  }
+  
+  // Handle providers endpoint explicitly
+  if (req.nextUrl.pathname.includes("/providers")) {
+    try {
+      const providers: Record<string, boolean> = {};
+      if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+        providers.google = true;
+      }
+      if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+        providers.github = true;
+      }
+      return new Response(
+        JSON.stringify(providers),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    } catch (error) {
+      logger.error("Error getting providers", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return new Response(
+        JSON.stringify({ google: false, github: false }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+  }
+  
+  // Handle all other NextAuth endpoints
   try {
     // Ensure adapter is available for OAuth flows (non-blocking)
     ensureAdapter().catch((error) => {
@@ -472,49 +687,9 @@ export async function GET(req: NextRequest) {
       });
     });
     
-    // Handle providers endpoint explicitly
-    if (req.nextUrl.pathname.includes("/providers")) {
-      try {
-        const providers: Record<string, boolean> = {};
-        if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-          providers.google = true;
-        }
-        if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-          providers.github = true;
-        }
-        return new Response(
-          JSON.stringify(providers),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      } catch (error) {
-        logger.error("Error getting providers", {
-          error: error instanceof Error ? error.message : String(error),
-        });
-        return new Response(
-          JSON.stringify({ google: false, github: false }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
-    }
-    
     // Check if handlers are available
     if (!handlers || !handlers.GET) {
       logger.error("NextAuth handlers not available");
-      if (req.nextUrl.pathname.includes("/session")) {
-        return new Response(
-          JSON.stringify({ user: null, expires: null }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
       return new Response(
         JSON.stringify({ error: "Authentication service unavailable" }),
         { status: 503, headers: { "Content-Type": "application/json" } }
@@ -527,24 +702,6 @@ export async function GET(req: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined,
       pathname: req.nextUrl.pathname,
     });
-    if (req.nextUrl.pathname.includes("/session")) {
-      return new Response(
-        JSON.stringify({ user: null, expires: null }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-    if (req.nextUrl.pathname.includes("/providers")) {
-      return new Response(
-        JSON.stringify({ google: false, github: false }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
     return new Response(
       JSON.stringify({ error: "Authentication service unavailable" }),
       { status: 503, headers: { "Content-Type": "application/json" } }

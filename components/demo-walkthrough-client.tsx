@@ -6,7 +6,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, ArrowRight, Play, Pause, RotateCcw, ExternalLink, ChevronRight, ChevronDown, HelpCircle, Clock, Sparkles, BookOpen, Zap, Target, Info, Trophy, Star, TrendingUp, ChevronLeft, SkipForward, CheckCircle } from "lucide-react";
+import { 
+  CheckCircle2, Circle, ArrowRight, Play, Pause, RotateCcw, ExternalLink, ChevronRight, ChevronDown, HelpCircle, Clock, Sparkles, BookOpen, Zap, Target, Info, Trophy, Star, TrendingUp, ChevronLeft, SkipForward, CheckCircle
+} from "lucide-react";
+import {
+  AuthOnboardingIcon,
+  OverviewAnalyticsIcon,
+  DataIngestionIcon,
+  EvidenceVaultIcon,
+  ClaimExtractionIcon,
+  BeliefGraphIcon,
+  NarrativeForecastingIcon,
+  AAALIcon,
+  GovernanceIcon,
+  PublishingIcon,
+  POSComponentsIcon,
+  TrustAssetsIcon,
+  PlaybooksIcon,
+  AIAnswerMonitorIcon,
+  FinancialServicesIcon
+} from "@/components/demo-icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -29,7 +48,7 @@ interface DemoStep {
 interface CategoryInfo {
   name: string;
   description: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
   estimatedTime: number;
   importance: "essential" | "important" | "optional";
   order: number;
@@ -40,7 +59,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Authentication & Onboarding",
     description: "Get started with account creation, SKU selection, and initial setup",
-    icon: "🚀",
+    icon: AuthOnboardingIcon,
     estimatedTime: 570,
     importance: "essential",
     order: 1
@@ -48,7 +67,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Overview & Analytics",
     description: "Understand your narrative health, key metrics, and usage analytics",
-    icon: "📊",
+    icon: OverviewAnalyticsIcon,
     estimatedTime: 300,
     importance: "essential",
     order: 2
@@ -56,7 +75,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Data Ingestion & Integrations",
     description: "Ingest signals, connect data sources, and manage integrations",
-    icon: "📡",
+    icon: DataIngestionIcon,
     estimatedTime: 690,
     importance: "essential",
     order: 3
@@ -64,7 +83,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Evidence Vault & Provenance",
     description: "Manage evidence with full provenance and chain of custody",
-    icon: "🔒",
+    icon: EvidenceVaultIcon,
     estimatedTime: 390,
     importance: "essential",
     order: 4
@@ -72,7 +91,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Claim Extraction & Clustering",
     description: "Extract and cluster claims from signals for analysis",
-    icon: "🎯",
+    icon: ClaimExtractionIcon,
     estimatedTime: 300,
     importance: "essential",
     order: 5
@@ -80,7 +99,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Belief Graph Engineering",
     description: "Explore narrative connections and neutralize weak nodes",
-    icon: "🕸️",
+    icon: BeliefGraphIcon,
     estimatedTime: 330,
     importance: "important",
     order: 6
@@ -88,7 +107,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Narrative Outbreak Forecasting",
     description: "Forecast narrative outbreaks using advanced models",
-    icon: "📈",
+    icon: NarrativeForecastingIcon,
     estimatedTime: 330,
     importance: "important",
     order: 7
@@ -96,7 +115,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "AI Answer Authority Layer (AAAL)",
     description: "Create AI-citable artifacts and rebuttals",
-    icon: "🤖",
+    icon: AAALIcon,
     estimatedTime: 390,
     importance: "essential",
     order: 8
@@ -104,7 +123,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Governance & Approvals",
     description: "Manage approvals, audits, and compliance workflows",
-    icon: "✅",
+    icon: GovernanceIcon,
     estimatedTime: 300,
     importance: "important",
     order: 9
@@ -112,7 +131,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Publishing & Distribution (PADL)",
     description: "Publish artifacts to multiple channels with structured data",
-    icon: "📤",
+    icon: PublishingIcon,
     estimatedTime: 210,
     importance: "essential",
     order: 10
@@ -120,7 +139,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "POS Components",
     description: "Explore all Perception Operating System components",
-    icon: "⚙️",
+    icon: POSComponentsIcon,
     estimatedTime: 450,
     importance: "important",
     order: 11
@@ -128,7 +147,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Trust Assets & Funnel Map",
     description: "Manage trust assets, identify gaps, and visualize decision funnels",
-    icon: "🛡️",
+    icon: TrustAssetsIcon,
     estimatedTime: 570,
     importance: "important",
     order: 12
@@ -136,7 +155,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Playbooks",
     description: "Create and execute automated response playbooks",
-    icon: "📋",
+    icon: PlaybooksIcon,
     estimatedTime: 390,
     importance: "important",
     order: 13
@@ -144,7 +163,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "AI Answer Monitor",
     description: "Monitor how AI systems cite your content",
-    icon: "👁️",
+    icon: AIAnswerMonitorIcon,
     estimatedTime: 300,
     importance: "important",
     order: 14
@@ -152,7 +171,7 @@ const CATEGORIES: CategoryInfo[] = [
   {
     name: "Financial Services",
     description: "Financial services-specific features and workflows",
-    icon: "💳",
+    icon: FinancialServicesIcon,
     estimatedTime: 360,
     importance: "optional",
     order: 15
@@ -1954,7 +1973,7 @@ export function DemoWalkthroughClient() {
                   <div className="relative">
                     <ProgressRing progress={categoryProgressValue} size={80} strokeWidth={8} />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-2xl">{currentCategory.icon}</span>
+                      {React.createElement(currentCategory.icon, { className: "w-8 h-8 text-primary" })}
                     </div>
                   </div>
                   <div className="space-y-1">
@@ -2049,7 +2068,7 @@ export function DemoWalkthroughClient() {
                     
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <span className="text-3xl">{category.icon}</span>
+                        {React.createElement(category.icon, { className: "w-8 h-8 text-primary flex-shrink-0" })}
                         <div className="flex-1 min-w-0">
                           <h3 className="font-bold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                             {category.name}
@@ -2123,8 +2142,8 @@ export function DemoWalkthroughClient() {
                 <AlertDescription className="text-sm">
                   <strong className="text-blue-900 dark:text-blue-100">Next Category:</strong>{" "}
                   <span className="font-medium">{nextCategory.name}</span>
-                  <Badge variant="outline" className="ml-2 text-xs">
-                    {nextCategory.icon}
+                  <Badge variant="outline" className="ml-2 text-xs flex items-center gap-1">
+                    {React.createElement(nextCategory.icon, { className: "w-3 h-3" })}
                   </Badge>
                 </AlertDescription>
               </Alert>
@@ -2146,7 +2165,7 @@ export function DemoWalkthroughClient() {
                   <div className="flex-1 space-y-4">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="p-3 bg-gradient-to-br from-primary/20 to-purple-100 dark:from-primary/30 dark:to-purple-900/30 rounded-xl">
-                        <span className="text-3xl">{currentCategory.icon}</span>
+                        {React.createElement(currentCategory.icon, { className: "w-8 h-8 text-primary" })}
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant="outline" className="font-semibold px-3 py-1">
@@ -2469,7 +2488,7 @@ export function DemoWalkthroughClient() {
                       <div className="flex items-start justify-between mb-2 gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-lg">{category.icon}</span>
+                            {React.createElement(category.icon, { className: "w-5 h-5 text-primary flex-shrink-0" })}
                             <span className={cn(
                               "text-sm font-semibold truncate",
                               isCurrent && "text-primary"
