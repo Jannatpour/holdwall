@@ -4,10 +4,28 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/client";
 import bcrypt from "bcryptjs";
 import { handleAuthError } from "@/lib/auth/error-handler";
 import { logger } from "@/lib/logging/logger";
+
+// Lazy load database client
+async function getDb() {
+  const { db } = await import("@/lib/db/client");
+  return db;
+}
+
+export async function OPTIONS(request: NextRequest) {
+  // Handle CORS preflight requests
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +59,8 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      const db = await getDb();
+      
       // Check if user already exists
       const existingUser = await db.user.findUnique({
         where: { email },

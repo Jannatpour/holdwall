@@ -14,10 +14,31 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import { NextRequest } from "next/server";
-import { db } from "@/lib/db/client";
 import bcrypt from "bcryptjs";
 import { logger } from "@/lib/logging/logger";
 import { handleAuthError, InvalidCredentialsError, DatabaseAuthError } from "@/lib/auth/error-handler";
+
+// Lazy load database client to prevent initialization errors
+let db: any = null;
+let dbInitialized = false;
+
+async function getDb() {
+  if (dbInitialized && db) {
+    return db;
+  }
+  
+  try {
+    const { db: dbClient } = await import("@/lib/db/client");
+    db = dbClient;
+    dbInitialized = true;
+    return db;
+  } catch (error) {
+    logger.error("Failed to initialize database client", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
 
 // OIDC provider support for enterprise SSO (optional)
 // Only enabled if OIDC environment variables are configured
@@ -37,7 +58,8 @@ const providers: any[] = [
       }
 
       try {
-        const user = await db.user.findUnique({
+        const database = await getDb();
+        const user = await database.user.findUnique({
           where: { email: credentials.email as string },
         });
 
@@ -142,13 +164,15 @@ const nextAuthConfig: any = {
       // For OAuth providers, create or link user account
       if (account?.provider && account.provider !== "credentials") {
         try {
+          const database = await getDb();
+          
           // Get or create default tenant
-          let tenant = await db.tenant.findFirst({
+          let tenant = await database.tenant.findFirst({
             where: { slug: "default" },
           });
 
           if (!tenant) {
-            tenant = await db.tenant.create({
+            tenant = await database.tenant.create({
               data: {
                 name: "Default Tenant",
                 slug: "default",
@@ -157,13 +181,13 @@ const nextAuthConfig: any = {
           }
 
           // Check if user exists by email
-          const existingUser = await db.user.findUnique({
+          const existingUser = await database.user.findUnique({
             where: { email: user.email || "" },
           });
 
           if (existingUser) {
             // Link OAuth account to existing user
-            await db.account.upsert({
+            await database.account.upsert({
               where: {
                 provider_providerAccountId: {
                   provider: account.provider,
@@ -200,7 +224,7 @@ const nextAuthConfig: any = {
             user.tenantId = existingUser.tenantId;
           } else {
             // Create new user from OAuth
-            const newUser = await db.user.create({
+            const newUser = await database.user.create({
               data: {
                 email: user.email || "",
                 name: user.name || user.email?.split("@")[0] || "User",
@@ -251,18 +275,70 @@ const nextAuthConfig: any = {
 
 // Try to add adapter only if database URL is valid
 // Adapter is optional for JWT strategy but needed for OAuth
-if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("placeholder")) {
-  try {
-    nextAuthConfig.adapter = PrismaAdapter(db) as any;
-  } catch (error) {
-    logger.warn("PrismaAdapter not available, using JWT-only mode", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    // Continue without adapter - JWT strategy works without it
+// We'll add it lazily to prevent initialization errors
+let adapterAdded = false;
+
+async function ensureAdapter() {
+  if (adapterAdded || nextAuthConfig.adapter) {
+    return;
+  }
+  
+  if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("placeholder")) {
+    try {
+      const database = await getDb();
+      nextAuthConfig.adapter = PrismaAdapter(database) as any;
+      adapterAdded = true;
+      logger.info("PrismaAdapter added successfully");
+    } catch (error) {
+      logger.warn("PrismaAdapter not available, using JWT-only mode", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // Continue without adapter - JWT strategy works without it
+    }
   }
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth(nextAuthConfig);
+// Initialize NextAuth - adapter will be added lazily if needed
+let handlers: any = null;
+let auth: any = null;
+let signIn: any = null;
+let signOut: any = null;
+
+try {
+  const instance = NextAuth(nextAuthConfig);
+  handlers = instance.handlers;
+  auth = instance.auth;
+  signIn = instance.signIn;
+  signOut = instance.signOut;
+  
+  // Try to add adapter in background (non-blocking)
+  ensureAdapter().catch((error) => {
+    logger.warn("Failed to add adapter in background", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  });
+} catch (error) {
+  logger.error("NextAuth initialization error", {
+    error: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack : undefined,
+  });
+  // Create fallback handlers that return errors
+  handlers = {
+    GET: async () => new Response(JSON.stringify({ error: "Authentication service unavailable" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    }),
+    POST: async () => new Response(JSON.stringify({ error: "Authentication service unavailable" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    }),
+  };
+  auth = async () => null;
+  signIn = async () => ({ error: "Authentication service unavailable" });
+  signOut = async () => ({ error: "Authentication service unavailable" });
+}
+
+export { handlers, auth, signIn, signOut };
 
 // Wrap handlers to ensure JSON error responses
 async function handleRequest(
@@ -389,6 +465,44 @@ async function safeHandleRequest(
 
 export async function GET(req: NextRequest) {
   try {
+    // Ensure adapter is available for OAuth flows (non-blocking)
+    ensureAdapter().catch((error) => {
+      logger.warn("Failed to ensure adapter", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
+    
+    // Handle providers endpoint explicitly
+    if (req.nextUrl.pathname.includes("/providers")) {
+      try {
+        const providers: Record<string, boolean> = {};
+        if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+          providers.google = true;
+        }
+        if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+          providers.github = true;
+        }
+        return new Response(
+          JSON.stringify(providers),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      } catch (error) {
+        logger.error("Error getting providers", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return new Response(
+          JSON.stringify({ google: false, github: false }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+    }
+    
     // Check if handlers are available
     if (!handlers || !handlers.GET) {
       logger.error("NextAuth handlers not available");
@@ -410,10 +524,21 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("NextAuth GET handler error", {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      pathname: req.nextUrl.pathname,
     });
     if (req.nextUrl.pathname.includes("/session")) {
       return new Response(
         JSON.stringify({ user: null, expires: null }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+    if (req.nextUrl.pathname.includes("/providers")) {
+      return new Response(
+        JSON.stringify({ google: false, github: false }),
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -429,6 +554,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    // Ensure adapter is available for OAuth flows (non-blocking)
+    ensureAdapter().catch((error) => {
+      logger.warn("Failed to ensure adapter", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
+    
     // Check if handlers are available
     if (!handlers || !handlers.POST) {
       logger.error("NextAuth handlers not available");
@@ -441,10 +573,25 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     logger.error("NextAuth POST handler error", {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      pathname: req.nextUrl.pathname,
     });
     return new Response(
       JSON.stringify({ error: "Authentication service unavailable" }),
       { status: 503, headers: { "Content-Type": "application/json" } }
     );
   }
+}
+
+export async function OPTIONS(req: NextRequest) {
+  // Handle CORS preflight requests
+  return new Response(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
 }

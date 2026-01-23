@@ -138,36 +138,51 @@ export default function Home() {
             Control which sources AI systems cite about your organization. Transform security incidents into trust-building opportunities.
           </p>
           
-          {/* Primary CTAs - SKU D First */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-300">
-            {/* SKU D - PRIMARY - MOST PROMINENT */}
-            <Button asChild size="lg" className="group relative overflow-hidden bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary hover:via-primary hover:to-primary shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 border-2 border-primary/30 w-full sm:w-auto min-w-[280px] animate-glow">
-              <Link href="/solutions/security-incidents" className="flex items-center justify-center gap-2.5 text-primary-foreground font-bold text-base px-6 py-3">
-                <Shield className="size-5 group-hover:scale-125 group-hover:rotate-12 transition-transform duration-300" />
-                <span>Security Incidents (SKU D)</span>
-                <Badge className="bg-primary-foreground text-primary text-xs font-bold px-2 py-0.5 shadow-lg animate-bounce">NEW</Badge>
-                <ArrowRight className="size-4 group-hover:translate-x-2 transition-transform" />
-              </Link>
-            </Button>
+          {/* SKU D HERO BANNER - EXTREMELY PROMINENT */}
+          <div className="mt-10 animate-fade-in-up animation-delay-300">
+            <div className="mx-auto max-w-2xl mb-6 p-4 rounded-2xl bg-gradient-to-r from-primary/20 via-primary/15 to-primary/20 border-2 border-primary/50 shadow-xl animate-pulse">
+              <div className="flex items-center justify-center gap-3">
+                <Shield className="size-6 text-primary animate-pulse" />
+                <div className="text-center">
+                  <p className="text-sm font-bold text-primary uppercase tracking-wide">NEW: SKU D</p>
+                  <p className="text-base font-semibold text-foreground">Security Incident Narrative Management</p>
+                </div>
+                <Badge className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 shadow-lg animate-bounce">FEATURED</Badge>
+              </div>
+            </div>
             
-            <Button asChild size="lg" variant="outline" className="group glass-effect hover:bg-primary/5 w-full sm:w-auto transition-all duration-300 hover:scale-105">
-              <Link href="/demo" className="flex items-center justify-center gap-2">
-                <Sparkles className="size-4 group-hover:rotate-180 transition-transform duration-500" />
-                Try Interactive Demo
-                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </Button>
+            {/* Primary CTAs - SKU D First */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              {/* SKU D - PRIMARY - MOST PROMINENT */}
+              <Button asChild size="lg" className="group relative overflow-hidden bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary hover:via-primary hover:to-primary shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-110 border-2 border-primary/30 w-full sm:w-auto min-w-[300px] animate-glow text-lg">
+                <Link href="/solutions/security-incidents" className="flex items-center justify-center gap-3 text-primary-foreground font-bold px-8 py-4">
+                  <Shield className="size-6 group-hover:scale-125 group-hover:rotate-12 transition-transform duration-300" />
+                  <span className="text-lg">Security Incidents (SKU D)</span>
+                  <Badge className="bg-primary-foreground text-primary text-sm font-bold px-3 py-1 shadow-lg animate-bounce">NEW</Badge>
+                  <ArrowRight className="size-5 group-hover:translate-x-2 transition-transform" />
+                </Link>
+              </Button>
+              
+              <Button asChild size="lg" variant="outline" className="group glass-effect hover:bg-primary/5 w-full sm:w-auto transition-all duration-300 hover:scale-105">
+                <Link href="/demo" className="flex items-center justify-center gap-2">
+                  <Sparkles className="size-4 group-hover:rotate-180 transition-transform duration-500" />
+                  Try Interactive Demo
+                  <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
+            </div>
           </div>
           
-          {/* Streamlined feature highlights */}
+          {/* Streamlined feature highlights - SKU D First */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm animate-fade-in-up animation-delay-400">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/30 to-primary/15 border-2 border-primary hover:border-primary/80 hover:from-primary/40 hover:to-primary/20 transition-all duration-300 hover:scale-110 shadow-lg animate-pulse">
+              <Shield className="size-4 text-primary animate-pulse" />
+              <span className="font-bold text-foreground">SKU D: Security Incidents</span>
+              <Badge className="bg-primary text-primary-foreground text-xs font-bold px-1.5 py-0.5 shadow-md">FEATURED</Badge>
+            </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass-effect border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105">
               <Sparkles className="size-3.5 text-primary" />
               <span>21 AI models</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass-effect border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105">
-              <Shield className="size-3.5 text-primary animate-pulse" />
-              <span className="font-semibold">SKU D: Security Incidents</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass-effect border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105">
               <Radio className="size-3.5 text-primary" />
@@ -439,9 +454,15 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mx-auto max-w-2xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-effect border border-primary/50 animate-pulse">
-              <Shield className="size-4 text-primary" />
-              <span className="text-xs font-bold text-primary">FEATURING SKU D: Security Incident Narrative Management</span>
+            <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-primary/25 via-primary/20 to-primary/25 border-2 border-primary shadow-xl animate-pulse">
+              <div className="flex items-center justify-center gap-3">
+                <Shield className="size-6 text-primary animate-pulse" />
+                <div>
+                  <p className="text-xs font-bold text-primary uppercase tracking-wider">FEATURING</p>
+                  <p className="text-base font-bold text-foreground">SKU D: Security Incident Narrative Management</p>
+                </div>
+                <Badge className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 shadow-lg animate-bounce">NEW</Badge>
+              </div>
             </div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl gradient-text">
               Four strategic entry points, one platform
