@@ -1719,231 +1719,430 @@ export function DemoWalkthroughClient() {
       </Dialog>
 
       <div className="space-y-6">
-      {/* Header with Controls and Info */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-lg font-semibold">Interactive Platform Demo</h2>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">
-                    Complete walkthrough of all 52 steps across 18 categories. 
-                    Use auto-play for guided tour or explore at your own pace.
+      {/* Enhanced Header with Stats */}
+      <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
+        <CardContent className="pt-6">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">Interactive Platform Demo</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {DEMO_STEPS.length} comprehensive steps across {sections.length} categories
                   </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              <span>~{getEstimatedTimeRemaining()} remaining</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-md">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">~{getEstimatedTimeRemaining()} remaining</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-950/20 rounded-md">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span className="font-medium">{completedSteps.size}/{DEMO_STEPS.length} completed</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/20 rounded-md">
+                  <Target className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium">{Math.round(progress)}% progress</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-              <span>{completedSteps.size} completed</span>
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleReset}
+                      className="gap-2"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      Reset
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Reset progress and start from beginning</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Button
+                variant={isPlaying ? "secondary" : "default"}
+                size="sm"
+                onClick={handlePlayPause}
+                className="gap-2"
+              >
+                {isPlaying ? (
+                  <>
+                    <Pause className="h-4 w-4" />
+                    Pause
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4" />
+                    Auto-Play
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReset}
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Reset
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Reset progress and start from beginning</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Button
-            variant={isPlaying ? "secondary" : "default"}
-            size="sm"
-            onClick={handlePlayPause}
-          >
-            {isPlaying ? (
-              <>
-                <Pause className="h-4 w-4 mr-2" />
-                Pause
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4 mr-2" />
-                Auto-Play
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Enhanced Progress Bar */}
+      {/* Enhanced Progress Bar with Section Info */}
       <Card>
         <CardContent className="pt-6">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="font-medium">
-                  Step {currentStepIndex + 1} of {DEMO_STEPS.length}
-                </span>
-                <Badge variant="outline" className="text-xs">
-                  {currentStep.section}
-                </Badge>
-                {currentSectionInfo && (
-                  <span className="text-lg">{currentSectionInfo.icon}</span>
-                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold">Step {currentStepIndex + 1}</span>
+                  <span className="text-muted-foreground">of {DEMO_STEPS.length}</span>
+                </div>
+                <Separator orientation="vertical" className="h-6" />
+                <div className="flex items-center gap-2">
+                  {currentSectionInfo && (
+                    <span className="text-2xl">{currentSectionInfo.icon}</span>
+                  )}
+                  <div>
+                    <Badge variant="outline" className="text-xs font-semibold">
+                      {currentStep.section}
+                    </Badge>
+                    {currentSectionInfo && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {currentSectionInfo.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">
-                  {Math.round(progress)}% Complete
-                </span>
+              <div className="text-right">
+                <div className="text-2xl font-bold">{Math.round(progress)}%</div>
+                <div className="text-xs text-muted-foreground">Complete</div>
               </div>
             </div>
-            <Progress value={progress} className="h-3" />
-            {currentSectionInfo && (
-              <p className="text-xs text-muted-foreground">
-                {currentSectionInfo.description}
-              </p>
-            )}
+            <Progress value={progress} className="h-4" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Category Grid View - New Enhanced Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            Browse by Category
+          </CardTitle>
+          <CardDescription>
+            Click any category to jump to its first step. {sections.length} categories with {DEMO_STEPS.length} total steps.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {sections.map((section) => {
+              const sectionSteps = stepsBySection[section];
+              const sectionProgress = getSectionProgress(section);
+              const isCurrent = currentStep.section === section;
+              const sectionInfo = SECTION_INFO[section];
+              const completedCount = sectionSteps.filter(s => completedSteps.has(s.id)).length;
+              const isComplete = completedCount === sectionSteps.length;
+              const firstStepIndex = DEMO_STEPS.findIndex(s => s.section === section);
+              
+              return (
+                <button
+                  key={section}
+                  onClick={() => handleJumpToStep(firstStepIndex)}
+                  className={`group relative p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                    isCurrent
+                      ? "border-primary bg-primary/10 shadow-lg scale-[1.02]"
+                      : isComplete
+                      ? "border-green-300 bg-green-50 dark:bg-green-950/20 hover:border-green-400 hover:shadow-md"
+                      : "border-border bg-card hover:border-primary/50 hover:shadow-md hover:bg-accent/50"
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      {sectionInfo && (
+                        <span className="text-2xl">{sectionInfo.icon}</span>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm leading-tight line-clamp-2">
+                          {section}
+                        </h3>
+                      </div>
+                    </div>
+                    {isComplete && (
+                      <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
+                    )}
+                  </div>
+                  
+                  {sectionInfo && (
+                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                      {sectionInfo.description}
+                    </p>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium">
+                        {completedCount}/{sectionSteps.length} steps
+                      </span>
+                      {sectionInfo && (
+                        <span className="text-muted-foreground">
+                          ~{Math.floor(sectionInfo.estimatedTime / 60)}m
+                        </span>
+                      )}
+                    </div>
+                    <Progress 
+                      value={sectionProgress} 
+                      className={`h-2 ${
+                        isComplete 
+                          ? "bg-green-200 dark:bg-green-900" 
+                          : isCurrent
+                          ? "bg-primary/20"
+                          : ""
+                      }`}
+                    />
+                    {sectionInfo && (
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={
+                            sectionInfo.importance === "essential" 
+                              ? "default" 
+                              : sectionInfo.importance === "important"
+                              ? "secondary"
+                              : "outline"
+                          }
+                          className="text-xs"
+                        >
+                          {sectionInfo.importance}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {isCurrent && (
+                    <div className="absolute top-2 right-2">
+                      <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content - Current Step - Matching platform card style */}
+        {/* Enhanced Main Content - Current Step */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Next Step Preview */}
+          {/* Next Step Preview with Better Styling */}
           {nextStep && (
-            <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
-              <ArrowRight className="h-4 w-4 text-blue-600" />
+            <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 shadow-sm">
+              <ArrowRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               <AlertDescription className="text-sm">
-                <strong>Next:</strong> {nextStep.title} ({nextStep.section})
+                <strong className="text-blue-900 dark:text-blue-100">Next Step:</strong>{" "}
+                <span className="font-medium">{nextStep.title}</span>
+                <Badge variant="outline" className="ml-2 text-xs">
+                  {nextStep.section}
+                </Badge>
               </AlertDescription>
             </Alert>
           )}
 
-          <Card className="border-2 border-primary shadow-lg transition-all duration-200 hover:shadow-xl">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="outline">{currentStep.section}</Badge>
-                    <Badge variant="secondary">Step {currentStep.order}</Badge>
+          {/* Enhanced Current Step Card */}
+          <Card className="border-2 border-primary/30 shadow-xl transition-all duration-300 hover:shadow-2xl bg-gradient-to-br from-card via-card to-primary/5">
+            <CardHeader className="pb-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {currentSectionInfo && (
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <span className="text-2xl">{currentSectionInfo.icon}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="font-semibold">
+                        {currentStep.section}
+                      </Badge>
+                      <Badge variant="secondary" className="font-semibold">
+                        Step {currentStep.order} of {DEMO_STEPS.length}
+                      </Badge>
+                      {completedSteps.has(currentStep.id) && (
+                        <Badge variant="default" className="bg-green-600">
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          Completed
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <CardTitle className="text-2xl mb-2">{currentStep.title}</CardTitle>
-                  <CardDescription className="text-base">
-                    {currentStep.description}
-                  </CardDescription>
+                  <div>
+                    <CardTitle className="text-3xl mb-3 font-bold tracking-tight">
+                      {currentStep.title}
+                    </CardTitle>
+                    <CardDescription className="text-base leading-relaxed">
+                      {currentStep.description}
+                    </CardDescription>
+                  </div>
                 </div>
-                {completedSteps.has(currentStep.id) && (
-                  <CheckCircle2 className="h-6 w-6 text-green-500" />
-                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Page Info */}
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium mb-1">Target Page:</p>
-                    <p className="text-sm text-muted-foreground">{currentStep.page}</p>
+              {/* Enhanced Page Info */}
+              <div className="bg-gradient-to-r from-muted/80 to-muted/50 p-5 rounded-lg border border-border/50">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-sm font-semibold text-foreground">Target Page</p>
+                    </div>
+                    <p className="text-base text-muted-foreground font-medium">{currentStep.page}</p>
+                    <p className="text-xs text-muted-foreground mt-1 font-mono">{currentStep.pageUrl}</p>
                   </div>
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="sm"
                     onClick={handleNavigateToPage}
+                    className="gap-2 shadow-sm"
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
+                    <ExternalLink className="h-4 w-4" />
                     Navigate
                   </Button>
                 </div>
               </div>
 
-              {/* Actions */}
-              <div>
-                <h3 className="font-semibold mb-3">Actions to Perform:</h3>
-                <ul className="space-y-2">
-                  {currentStep.actions.map((action, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <Circle className="h-4 w-4 mt-1 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm">{action}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Expected Results */}
-              <div>
-                <h3 className="font-semibold mb-3">Expected Results:</h3>
-                <ul className="space-y-2">
-                  {currentStep.expectedResults.map((result, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 mt-1 text-green-500 flex-shrink-0" />
-                      <span className="text-sm">{result}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Duration and Tips */}
+              {/* Enhanced Actions Section */}
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>Estimated duration: {currentStep.duration} seconds</span>
-                  {isPlaying && (
-                    <>
-                      <span>•</span>
-                      <span className="text-primary font-medium">Auto-advancing in {currentStep.duration}s</span>
-                    </>
-                  )}
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded">
+                    <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="font-semibold text-lg">Actions to Perform</h3>
+                </div>
+                <div className="bg-blue-50/50 dark:bg-blue-950/10 rounded-lg p-4 border border-blue-200/50 dark:border-blue-800/30">
+                  <ul className="space-y-3">
+                    {currentStep.actions.map((action, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <div className="mt-0.5 flex-shrink-0">
+                          <div className="h-6 w-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                            <span className="text-xs font-bold text-blue-700 dark:text-blue-300">{idx + 1}</span>
+                          </div>
+                        </div>
+                        <span className="text-sm leading-relaxed flex-1 pt-0.5">{action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Enhanced Expected Results Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded">
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="font-semibold text-lg">Expected Results</h3>
+                </div>
+                <div className="bg-green-50/50 dark:bg-green-950/10 rounded-lg p-4 border border-green-200/50 dark:border-green-800/30">
+                  <ul className="space-y-3">
+                    {currentStep.expectedResults.map((result, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 mt-0.5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                        <span className="text-sm leading-relaxed flex-1">{result}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Enhanced Duration and Tips */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border border-border/50">
+                  <Clock className="h-5 w-5 text-muted-foreground" />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium">Estimated duration: </span>
+                    <span className="text-sm font-semibold">{currentStep.duration} seconds</span>
+                    {isPlaying && (
+                      <>
+                        <span className="mx-2 text-muted-foreground">•</span>
+                        <span className="text-sm font-semibold text-primary animate-pulse">
+                          Auto-advancing in {currentStep.duration}s
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 {currentSectionInfo && currentSectionInfo.importance === "essential" && (
-                  <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-                    <Info className="h-4 w-4 text-amber-600" />
-                    <AlertDescription className="text-xs">
-                      <strong>Essential Step:</strong> This is a core feature that's important to understand.
+                  <Alert className="border-amber-300 bg-gradient-to-r from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 shadow-sm">
+                    <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <AlertDescription className="text-sm">
+                      <strong className="text-amber-900 dark:text-amber-100">Essential Step:</strong>{" "}
+                      This is a core feature that's important to understand.
                     </AlertDescription>
                   </Alert>
                 )}
               </div>
 
-              <Separator />
+              <Separator className="my-4" />
 
-              {/* Keyboard Shortcuts Hint */}
-              <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-                <strong>Keyboard shortcuts:</strong> ← Previous | → Next | Space Play/Pause | Ctrl+R Reset
+              {/* Enhanced Keyboard Shortcuts */}
+              <div className="bg-muted/30 p-3 rounded-lg border border-border/50">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-semibold">Keyboard shortcuts:</span>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <kbd className="px-2 py-1 bg-background border border-border rounded text-xs font-mono">←</kbd>
+                    <span>Previous</span>
+                    <kbd className="px-2 py-1 bg-background border border-border rounded text-xs font-mono">→</kbd>
+                    <span>Next</span>
+                    <kbd className="px-2 py-1 bg-background border border-border rounded text-xs font-mono">Space</kbd>
+                    <span>Play/Pause</span>
+                    <kbd className="px-2 py-1 bg-background border border-border rounded text-xs font-mono">Ctrl+R</kbd>
+                    <span>Reset</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Navigation */}
-              <div className="flex items-center justify-between">
+              {/* Enhanced Navigation Buttons */}
+              <div className="flex items-center justify-between gap-3 pt-2">
                 <Button
                   variant="outline"
                   onClick={handlePrevious}
                   disabled={currentStepIndex === 0}
+                  className="gap-2"
+                  size="lg"
                 >
+                  <ArrowRight className="h-4 w-4 rotate-180" />
                   Previous
                 </Button>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     onClick={() => handleComplete(currentStep.id)}
+                    className="gap-2"
+                    size="lg"
+                    disabled={completedSteps.has(currentStep.id)}
                   >
-                    Mark Complete
+                    {completedSteps.has(currentStep.id) ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        Completed
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        Mark Complete
+                      </>
+                    )}
                   </Button>
                   <Button
                     onClick={handleNext}
                     disabled={currentStepIndex === DEMO_STEPS.length - 1}
+                    className="gap-2"
+                    size="lg"
                   >
                     Next Step
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -1951,20 +2150,20 @@ export function DemoWalkthroughClient() {
           </Card>
         </div>
 
-        {/* Sidebar - Navigation & Progress */}
+        {/* Enhanced Sidebar - Navigation & Progress */}
         <div className="space-y-6">
-          {/* Section Progress */}
+          {/* Compact Section Progress Summary */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Target className="h-5 w-5" />
-                Sections Progress
+                Quick Progress
               </CardTitle>
               <CardDescription className="text-xs">
-                Track your progress across all categories
+                Overview of all {sections.length} categories
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {sections.map((section) => {
                 const sectionProgress = getSectionProgress(section);
                 const sectionSteps = stepsBySection[section];
@@ -1972,35 +2171,35 @@ export function DemoWalkthroughClient() {
                 const sectionInfo = SECTION_INFO[section];
                 const completedCount = sectionSteps.filter(s => completedSteps.has(s.id)).length;
                 const isComplete = completedCount === sectionSteps.length;
+                const firstStepIndex = DEMO_STEPS.findIndex(s => s.section === section);
                 
                 return (
-                  <div
+                  <button
                     key={section}
-                    className={`p-3 rounded-lg border transition-all ${
+                    onClick={() => handleJumpToStep(firstStepIndex)}
+                    className={`w-full p-3 rounded-lg border transition-all text-left ${
                       isCurrent 
-                        ? "border-primary bg-primary/5 shadow-sm" 
+                        ? "border-primary bg-primary/10 shadow-md" 
                         : isComplete
-                        ? "border-green-200 bg-green-50 dark:bg-green-950/20"
-                        : "border-border hover:bg-muted/50"
+                        ? "border-green-300 bg-green-50 dark:bg-green-950/20 hover:border-green-400"
+                        : "border-border hover:bg-muted/50 hover:border-primary/30"
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2 gap-2">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          {sectionInfo && <span className="text-base">{sectionInfo.icon}</span>}
+                          {sectionInfo && <span className="text-lg">{sectionInfo.icon}</span>}
                           <span className="text-sm font-medium truncate">{section}</span>
                           {isComplete && (
-                            <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          )}
+                          {isCurrent && !isComplete && (
+                            <div className="h-2 w-2 bg-primary rounded-full animate-pulse flex-shrink-0" />
                           )}
                         </div>
-                        {sectionInfo && (
-                          <p className="text-xs text-muted-foreground line-clamp-1">
-                            {sectionInfo.description}
-                          </p>
-                        )}
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <span className="text-xs font-medium">
+                        <span className="text-xs font-semibold">
                           {completedCount}/{sectionSteps.length}
                         </span>
                         {sectionInfo && (
@@ -2012,86 +2211,110 @@ export function DemoWalkthroughClient() {
                     </div>
                     <Progress 
                       value={sectionProgress} 
-                      className={`h-1.5 ${isComplete ? "bg-green-200" : ""}`}
+                      className={`h-2 ${isComplete ? "bg-green-200 dark:bg-green-900" : ""}`}
                     />
-                  </div>
+                  </button>
                 );
               })}
             </CardContent>
           </Card>
 
-          {/* Step Navigation - Click to jump to any step with collapsible categories */}
+          {/* Enhanced Step Navigation with Better Visual Hierarchy */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <BookOpen className="h-5 w-5" />
-                All Steps by Category
+                Step Navigator
               </CardTitle>
               <CardDescription className="text-sm">
-                <span className="font-medium">52 steps</span> organized into <span className="font-medium">18 categories</span>
+                <span className="font-semibold">{DEMO_STEPS.length} steps</span> in <span className="font-semibold">{sections.length} categories</span>
                 <br />
-                Click categories to expand/collapse • Click steps to jump
+                <span className="text-xs">Click to expand • Click step to jump</span>
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-1 max-h-[600px] overflow-y-auto">
+              <div className="space-y-1 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
                 {sections.map((section) => {
                   const sectionSteps = stepsBySection[section];
                   const isExpanded = expandedSections.has(section);
                   const isCurrentSection = currentStep.section === section;
                   const completedCount = sectionSteps.filter(s => completedSteps.has(s.id)).length;
+                  const sectionInfo = SECTION_INFO[section];
+                  const sectionProgress = getSectionProgress(section);
                   
                   return (
                     <div key={section} className="space-y-1">
                       <button
                         onClick={() => toggleSection(section)}
-                        className={`w-full flex items-center justify-between px-2 py-2 rounded text-sm font-semibold transition-all duration-200 ${
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
                           isCurrentSection
-                            ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
-                            : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground hover:shadow-sm"
+                            ? "bg-primary/15 text-primary border-2 border-primary/30 shadow-md"
+                            : "bg-muted/60 hover:bg-muted text-foreground hover:shadow-sm border border-transparent hover:border-border"
                         }`}
                       >
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           {isExpanded ? (
-                            <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                            <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                           ) : (
-                            <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                            <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                           )}
-                          <span className="truncate text-xs uppercase tracking-wide">
+                          {sectionInfo && (
+                            <span className="text-base">{sectionInfo.icon}</span>
+                          )}
+                          <span className="truncate text-xs font-semibold uppercase tracking-wide">
                             {section}
                           </span>
-                          <Badge variant="secondary" className="ml-auto text-xs">
-                            {completedCount}/{sectionSteps.length}
-                          </Badge>
+                          <div className="flex items-center gap-2 ml-auto">
+                            <Progress 
+                              value={sectionProgress} 
+                              className="w-16 h-1.5 hidden sm:block"
+                            />
+                            <Badge 
+                              variant={completedCount === sectionSteps.length ? "default" : "secondary"} 
+                              className="text-xs font-semibold"
+                            >
+                              {completedCount}/{sectionSteps.length}
+                            </Badge>
+                          </div>
                         </div>
                       </button>
                       {isExpanded && (
-                        <div className="ml-4 space-y-0.5 border-l-2 border-muted pl-2">
+                        <div className="ml-6 space-y-1 border-l-2 border-muted/50 pl-3 py-1">
                           {sectionSteps.map((step) => {
                             const stepIndex = DEMO_STEPS.findIndex(s => s.id === step.id);
                             const isCurrent = stepIndex === currentStepIndex;
                             const isCompleted = completedSteps.has(step.id);
                             return (
-                          <button
-                            key={step.id}
-                            onClick={() => handleJumpToStep(stepIndex)}
-                            className={`w-full text-left p-2 rounded text-sm transition-all duration-200 ${
-                              isCurrent
-                                ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                                : isCompleted
-                                ? "bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-950/30 hover:shadow-sm"
-                                : "hover:bg-muted hover:shadow-sm"
-                            }`}
-                          >
-                                <div className="flex items-center gap-2">
+                              <button
+                                key={step.id}
+                                onClick={() => handleJumpToStep(stepIndex)}
+                                className={`w-full text-left p-2.5 rounded-md text-sm transition-all duration-200 group ${
+                                  isCurrent
+                                    ? "bg-primary text-primary-foreground font-semibold shadow-md border-2 border-primary/50"
+                                    : isCompleted
+                                    ? "bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-950/30 border border-green-200 dark:border-green-800"
+                                    : "hover:bg-muted border border-transparent hover:border-border"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5">
                                   {isCompleted ? (
-                                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
                                   ) : (
-                                    <Circle className={`h-4 w-4 flex-shrink-0 ${isCurrent ? "text-primary-foreground" : "text-muted-foreground"}`} />
+                                    <Circle className={`h-4 w-4 flex-shrink-0 ${
+                                      isCurrent 
+                                        ? "text-primary-foreground" 
+                                        : "text-muted-foreground group-hover:text-foreground"
+                                    }`} />
                                   )}
-                                  <span className="truncate">
-                                    {step.order}. {step.title}
+                                  <span className="flex-1 truncate">
+                                    <span className="font-medium text-xs text-muted-foreground mr-1.5">
+                                      {step.order}.
+                                    </span>
+                                    {step.title}
                                   </span>
+                                  {isCurrent && (
+                                    <ArrowRight className="h-3.5 w-3.5 text-primary-foreground flex-shrink-0 animate-pulse" />
+                                  )}
                                 </div>
                               </button>
                             );
