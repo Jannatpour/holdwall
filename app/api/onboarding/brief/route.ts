@@ -7,6 +7,11 @@ import { DatabaseEvidenceVault } from "@/lib/evidence/vault-db";
 import { financialServicesMode } from "@/lib/financial-services/operating-mode";
 import { db } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
+
+const onboardingBriefSchema = z.object({
+  sku: z.string().min(1),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +19,7 @@ export async function POST(request: NextRequest) {
     const tenant_id = (user as any).tenantId || "";
 
     const body = await request.json();
-    const { sku } = body;
+    const { sku } = onboardingBriefSchema.parse(body);
 
     // Generate first perception brief
     const eventStore = new DatabaseEventStore();
@@ -80,6 +85,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(brief);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("Onboarding: Failed to generate brief", {
       error: error instanceof Error ? error.message : String(error),
     });

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { GraphCanvas } from "@/components/graph-canvas";
 import { GraphDataClient } from "@/components/graph-data-client";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
+import { GraphLoading } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = genMeta(
   "Belief Graph",
@@ -101,7 +103,9 @@ export default async function GraphPage({
 
             {/* Graph Data with Canvas */}
             <div data-guide="graph-canvas">
-              <GraphDataClient range={params.range} timestamp={params.timestamp} nodeId={params.node_id} />
+              <Suspense fallback={<GraphLoading />}>
+                <GraphDataClient range={params.range} timestamp={params.timestamp} nodeId={params.node_id} />
+              </Suspense>
             </div>
           </div>
 

@@ -7,6 +7,7 @@ import Redis from "ioredis";
 
 let redis: Redis | null = null;
 const memoryCache: Map<string, { value: string; expiresAt?: number }> = new Map();
+let loggedMisconfig = false;
 
 export function getRedisClient(): Redis | null {
   if (redis) {
@@ -19,6 +20,29 @@ export function getRedisClient(): Redis | null {
   }
 
   try {
+    // Guardrail: localhost Redis will never work on Vercel/serverless production.
+    // Treat it as "not configured" to avoid noisy connection errors during build/runtime.
+    try {
+      const parsed = new URL(redisUrl);
+      const host = parsed.hostname;
+      const isLocal =
+        host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
+      const isServerless = !!process.env.VERCEL;
+
+      if (process.env.NODE_ENV === "production" && isServerless && isLocal) {
+        if (!loggedMisconfig) {
+          loggedMisconfig = true;
+          const { logger } = require("@/lib/logging/logger");
+          logger.warn("REDIS_URL points to localhost in production; disabling Redis", {
+            host,
+          });
+        }
+        return null;
+      }
+    } catch {
+      // If parsing fails, proceed and let ioredis validate.
+    }
+
     redis = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
       retryStrategy: (times) => {

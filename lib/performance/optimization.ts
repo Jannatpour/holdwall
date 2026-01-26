@@ -186,6 +186,63 @@ export async function prefetchData<T>(
 }
 
 /**
+ * Prefetch API route for faster loading
+ * Uses fetch with cache to warm up the route
+ */
+export function prefetchApiRoute(
+  url: string,
+  options: {
+    priority?: "high" | "low";
+    cache?: RequestCache;
+  } = {}
+): void {
+  if (typeof window === "undefined") return;
+
+  const { priority = "low", cache = "force-cache" } = options;
+
+  // Use requestIdleCallback for low priority, immediate for high
+  const execute = () => {
+    fetch(url, {
+      method: "GET",
+      cache,
+      headers: {
+        "Cache-Control": "public, max-age=60",
+        "X-Prefetch": "true",
+      },
+    }).catch(() => {
+      // Silently fail - prefetch is best effort
+    });
+  };
+
+  if (priority === "high") {
+    execute();
+  } else if ("requestIdleCallback" in window) {
+    requestIdleCallback(execute, { timeout: 2000 });
+  } else {
+    setTimeout(execute, 100);
+  }
+}
+
+/**
+ * Prefetch multiple API routes in parallel
+ */
+export function prefetchApiRoutes(
+  urls: string[],
+  options: {
+    priority?: "high" | "low";
+    maxConcurrent?: number;
+  } = {}
+): void {
+  const { priority = "low", maxConcurrent = 3 } = options;
+
+  // Batch prefetch requests
+  for (let i = 0; i < urls.length; i += maxConcurrent) {
+    const batch = urls.slice(i, i + maxConcurrent);
+    batch.forEach((url) => prefetchApiRoute(url, { priority }));
+  }
+}
+
+/**
  * Image optimization helper
  */
 export function getOptimizedImageUrl(

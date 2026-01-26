@@ -18,36 +18,85 @@ export {};
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 // Helper function to authenticate and get session
-async function authenticate(page: any, email = "user@holdwall.com", password = "user123") {
-  await page.goto(`${baseUrl}/auth/signin`);
+async function authenticate(
+  page: any,
+  email = "user@holdwall.com",
+  password = "user123",
+  options: { verifyNavigation?: boolean } = {}
+) {
+  const { verifyNavigation = false } = options;
+  // Ensure clean auth state for each scenario.
+  await page.context().clearCookies();
+
+  // Force a deterministic post-login destination to avoid navigation races.
+  await page.goto(`${baseUrl}/auth/signin?callbackUrl=%2Foverview`, {
+    waitUntil: "domcontentloaded",
+    timeout: 60000,
+  });
+  await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('input[type="password"]')).toBeVisible({ timeout: 15000 });
+
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', password);
+
   const submitButton = page.locator('button[type="submit"]');
-  await expect(submitButton).toBeEnabled();
-  await Promise.all([
-    page.waitForURL(/\/(overview|dashboard)/, { timeout: 15000 }),
-    submitButton.click(),
-  ]);
+  await expect(submitButton).toBeEnabled({ timeout: 15000 });
+
+  const signInResponse = page
+    .waitForResponse(
+      (r: any) => r.url().includes("/api/auth/callback/credentials") && r.request().method() === "POST",
+      { timeout: 60000 }
+    )
+    .catch(() => null);
+
+  const postLoginNav = page
+    .waitForURL((u: any) => !u.pathname.includes("/auth/signin"), { timeout: 60000 })
+    .catch(() => null);
+
+  await submitButton.click();
+  await signInResponse;
+  await postLoginNav;
+  await page.waitForLoadState("domcontentloaded").catch(() => null);
+
+  const session = await page
+    .evaluate(async () => {
+      try {
+        const res = await fetch("/api/auth/session", { credentials: "include" });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch {
+        return null;
+      }
+    })
+    .catch(() => null);
+  expect(session?.user).toBeTruthy();
+
+  if (verifyNavigation) {
+    await page.goto(`${baseUrl}/overview`, { waitUntil: "domcontentloaded", timeout: 60000 });
+    await expect(page).not.toHaveURL(/auth\/signin/);
+  }
 }
 
 // Helper function to create API request with auth
 async function apiRequest(
-  request: any,
+  page: any,
   endpoint: string,
   options: { method?: string; body?: any; headers?: Record<string, string> } = {}
 ) {
   const { method = "GET", body, headers = {} } = options;
-  return request.fetch(`${baseUrl}${endpoint}`, {
+  // Playwright APIRequestContext uses `data` (not `body`) for request payloads.
+  return page.request.fetch(`${baseUrl}${endpoint}`, {
     method,
     headers: {
       "Content-Type": "application/json",
       ...headers,
     },
-    ...(body && { body: JSON.stringify(body) }),
+    ...(body !== undefined ? { data: JSON.stringify(body) } : {}),
   });
 }
 
 test.describe("Real-World Scenarios", () => {
+  test.setTimeout(120000);
   test.describe("Scenario 1: Reddit Post About Hidden Fees", () => {
     test("should ingest Reddit signal, extract claims, and create cluster", async ({ page, request }) => {
       await authenticate(page);
@@ -80,7 +129,7 @@ test.describe("Real-World Scenarios", () => {
         },
       };
 
-      const signalResponse = await apiRequest(request, "/api/signals", {
+      const signalResponse = await apiRequest(page, "/api/signals", {
         method: "POST",
         body: redditSignal,
       });
@@ -90,7 +139,7 @@ test.describe("Real-World Scenarios", () => {
       expect(signalData).toHaveProperty("evidence_id");
 
       // Step 2: Verify signal appears in signals list
-      const signalsResponse = await apiRequest(request, "/api/signals");
+      const signalsResponse = await apiRequest(page, "/api/signals");
       expect(signalsResponse.status()).toBe(200);
       const signals = await signalsResponse.json();
       expect(Array.isArray(signals)).toBe(true);
@@ -98,7 +147,7 @@ test.describe("Real-World Scenarios", () => {
 
       // Step 3: Navigate to signals page and verify UI
       await page.goto(`${baseUrl}/signals`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       // Signal should be visible in the list (exact text matching may vary)
       await expect(page.locator("text=hidden fee").or(page.locator("text=account maintenance")).first()).toBeVisible({
         timeout: 10000,
@@ -120,7 +169,7 @@ test.describe("Real-World Scenarios", () => {
         },
       };
 
-      const connectorResponse = await apiRequest(request, "/api/integrations/connectors", {
+      const connectorResponse = await apiRequest(page, "/api/integrations/connectors", {
         method: "POST",
         body: connectorData,
       });
@@ -156,7 +205,7 @@ test.describe("Real-World Scenarios", () => {
 
         // Ingest all tickets
         for (const ticket of ticketSignals) {
-          await apiRequest(request, "/api/signals", {
+          await apiRequest(page, "/api/signals", {
             method: "POST",
             body: ticket,
           });
@@ -164,7 +213,7 @@ test.describe("Real-World Scenarios", () => {
 
         // Step 3: Verify clustering
         await page.waitForTimeout(2000); // Wait for async processing
-        const clustersResponse = await apiRequest(request, "/api/claim-clusters/top?sort=decisiveness&range=7d");
+        const clustersResponse = await apiRequest(page, "/api/claim-clusters/top?sort=decisiveness&range=7d");
         if (clustersResponse.ok()) {
           const clusters = await clustersResponse.json();
           expect(clusters).toHaveProperty("clusters");
@@ -186,10 +235,10 @@ test.describe("Real-World Scenarios", () => {
 
       // Step 1: Navigate to POS dashboard
       await page.goto(`${baseUrl}/pos`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Step 2: Get initial metrics
-      const initialMetricsResponse = await apiRequest(request, "/api/pos/orchestrator?action=metrics");
+      const initialMetricsResponse = await apiRequest(page, "/api/pos/orchestrator?action=metrics");
       let initialScore = 0;
       if (initialMetricsResponse.ok()) {
         const initialMetrics = await initialMetricsResponse.json();
@@ -197,7 +246,7 @@ test.describe("Real-World Scenarios", () => {
       }
 
       // Step 3: Execute POS cycle
-      const executeResponse = await apiRequest(request, "/api/pos/orchestrator", {
+      const executeResponse = await apiRequest(page, "/api/pos/orchestrator", {
         method: "POST",
         body: { action: "execute-cycle" },
       });
@@ -210,7 +259,7 @@ test.describe("Real-World Scenarios", () => {
 
         // Step 4: Verify metrics updated
         await page.waitForTimeout(3000); // Wait for UI update
-        const updatedMetricsResponse = await apiRequest(request, "/api/pos/orchestrator?action=metrics");
+        const updatedMetricsResponse = await apiRequest(page, "/api/pos/orchestrator?action=metrics");
         if (updatedMetricsResponse.ok()) {
           const updatedMetrics = await updatedMetricsResponse.json();
           const updatedScore = updatedMetrics.metrics?.overall?.posScore || 0;
@@ -246,7 +295,7 @@ test.describe("Real-World Scenarios", () => {
       }));
 
       for (const signal of testSignals) {
-        await apiRequest(request, "/api/signals", {
+        await apiRequest(page, "/api/signals", {
           method: "POST",
           body: signal,
         });
@@ -254,7 +303,7 @@ test.describe("Real-World Scenarios", () => {
 
       // Step 2: Run forecast
       await page.waitForTimeout(2000); // Wait for signals to process
-      const forecastResponse = await apiRequest(request, "/api/forecasts/run", {
+      const forecastResponse = await apiRequest(page, "/api/forecasts/run", {
         method: "POST",
         body: {
           range: "7d",
@@ -267,7 +316,7 @@ test.describe("Real-World Scenarios", () => {
         expect(forecast).toHaveProperty("forecast_id");
 
         // Step 3: Get forecast details
-        const detailsResponse = await apiRequest(request, `/api/forecasts/${forecast.forecast_id}`);
+        const detailsResponse = await apiRequest(page, `/api/forecasts/${forecast.forecast_id}`);
         if (detailsResponse.ok()) {
           const details = await detailsResponse.json();
           expect(details).toHaveProperty("outbreak_probability");
@@ -293,7 +342,7 @@ test.describe("Real-World Scenarios", () => {
         },
       };
 
-      const createResponse = await apiRequest(request, "/api/pos/aaal", {
+      const createResponse = await apiRequest(page, "/api/pos/aaal", {
         method: "POST",
         body: artifactData,
       });
@@ -303,7 +352,7 @@ test.describe("Real-World Scenarios", () => {
         expect(artifact).toHaveProperty("artifact_id");
 
         // Step 2: Check policies
-        const policyResponse = await apiRequest(request, `/api/aaal/check-policies`, {
+        const policyResponse = await apiRequest(page, `/api/aaal/check-policies`, {
           method: "POST",
           body: { artifact_id: artifact.artifact_id },
         });
@@ -323,21 +372,22 @@ test.describe("Real-World Scenarios", () => {
       await authenticate(page);
 
       // Step 1: Get graph snapshot
-      const snapshotResponse = await apiRequest(request, "/api/graph/snapshot?range=30d");
+      const snapshotResponse = await apiRequest(page, "/api/graph/snapshot?range=30d");
       expect(snapshotResponse.status()).toBe(200);
       const snapshot = await snapshotResponse.json();
-      expect(snapshot).toHaveProperty("nodes");
-      expect(snapshot).toHaveProperty("edges");
-      expect(Array.isArray(snapshot.nodes)).toBe(true);
-      expect(Array.isArray(snapshot.edges)).toBe(true);
+      expect(snapshot).toHaveProperty("snapshot");
+      expect(snapshot.snapshot).toHaveProperty("nodes");
+      expect(snapshot.snapshot).toHaveProperty("edges");
+      expect(Array.isArray(snapshot.snapshot.nodes)).toBe(true);
+      expect(Array.isArray(snapshot.snapshot.edges)).toBe(true);
 
       // Step 2: If we have nodes, try to find paths
-      if (snapshot.nodes.length >= 2) {
-        const fromNode = snapshot.nodes[0].id;
-        const toNode = snapshot.nodes[1].id;
+      if (snapshot.snapshot.nodes.length >= 2) {
+        const fromNode = snapshot.snapshot.nodes[0].id;
+        const toNode = snapshot.snapshot.nodes[1].id;
 
         const pathsResponse = await apiRequest(
-          request,
+          page,
           `/api/graph/paths?from_node=${fromNode}&to_node=${toNode}&depth=3`
         );
         if (pathsResponse.ok()) {
@@ -349,7 +399,7 @@ test.describe("Real-World Scenarios", () => {
 
       // Step 3: Navigate to graph page and verify UI
       await page.goto(`${baseUrl}/graph`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       // Graph visualization should be visible
       await expect(page.locator("text=Graph").or(page.locator('[data-testid="graph"]')).first()).toBeVisible({
         timeout: 10000,
@@ -362,7 +412,7 @@ test.describe("Real-World Scenarios", () => {
       await authenticate(page);
 
       // Step 1: Get metrics summary
-      const metricsResponse = await apiRequest(request, "/api/metrics/summary?range=7d");
+      const metricsResponse = await apiRequest(page, "/api/metrics/summary?range=7d");
       expect(metricsResponse.status()).toBe(200);
       const metrics = await metricsResponse.json();
       expect(metrics).toHaveProperty("perception_health_score");
@@ -370,7 +420,7 @@ test.describe("Real-World Scenarios", () => {
 
       // Step 2: Navigate to overview page
       await page.goto(`${baseUrl}/overview`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Step 3: Verify key metrics are displayed
       // (Exact selectors depend on UI implementation)
@@ -398,7 +448,7 @@ test.describe("Real-World Scenarios", () => {
         },
       };
 
-      const createResponse = await apiRequest(request, "/api/pos/aaal", {
+      const createResponse = await apiRequest(page, "/api/pos/aaal", {
         method: "POST",
         body: artifactData,
       });
@@ -408,7 +458,7 @@ test.describe("Real-World Scenarios", () => {
         expect(artifact).toHaveProperty("artifact_id");
 
         // Step 2: Check if approvals endpoint exists and works
-        const approvalsResponse = await apiRequest(request, "/api/approvals");
+        const approvalsResponse = await apiRequest(page, "/api/approvals");
         if (approvalsResponse.ok()) {
           const approvals = await approvalsResponse.json();
           expect(Array.isArray(approvals) || typeof approvals === "object").toBe(true);

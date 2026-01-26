@@ -6,12 +6,22 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getProtocolBridge } from "@/lib/agents/protocol-bridge";
+import type { ProtocolType } from "@/lib/agents/protocol-bridge";
 import { requireAuth } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { metrics } from "@/lib/observability/metrics";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+const unifiedRequestSchema = z.object({
+  protocol: z.enum(["mcp", "acp", "a2a", "anp", "ag-ui", "ap2"]),
+  action: z.string().min(1),
+  payload: z.unknown().optional(),
+  sessionId: z.string().min(1).optional(),
+  agentId: z.string().min(1).optional(),
+});
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -23,35 +33,28 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { protocol, action, payload, sessionId, agentId } = body;
-
-    if (!protocol || !action) {
-      return NextResponse.json(
-        { error: "Missing required fields: protocol, action" },
-        { status: 400 }
-      );
-    }
+    const validated = unifiedRequestSchema.parse(body);
 
     const protocolBridge = getProtocolBridge();
     const response = await protocolBridge.route({
-      protocol,
-      action,
-      payload,
+      protocol: validated.protocol as ProtocolType,
+      action: validated.action,
+      payload: validated.payload,
       userId: (user as any).id,
       tenantId: (user as any).tenantId || "default",
-      sessionId,
-      agentId,
+      sessionId: validated.sessionId,
+      agentId: validated.agentId,
     });
 
     const latency = Date.now() - startTime;
     metrics.observe("unified_agent_protocol_latency_ms", latency, {
-      protocol,
-      action,
+      protocol: validated.protocol,
+      action: validated.action,
     });
 
     logger.info("Unified agent protocol request processed", {
-      protocol,
-      action,
+      protocol: validated.protocol,
+      action: validated.action,
       userId: (user as any).id,
       success: response.success,
       latency,
@@ -59,6 +62,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("Unified agent protocol request failed", {
       error: error instanceof Error ? error.message : String(error),
     });

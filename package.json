@@ -6,6 +6,7 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "build": "prisma generate && NODE_OPTIONS='--no-warnings' next build",
+    "build:workers": "tsc -p tsconfig.workers.json",
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
@@ -21,6 +22,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:real-world": "playwright test __tests__/e2e/real-world-scenarios.test.ts",
+    "test:e2e:prod": "BASE_URL=${BASE_URL:-https://www.holdwall.com} playwright test -c playwright.prod.config.ts",
     "test:load": "tsx __tests__/load/load-test.ts",
     "test:eval": "jest __tests__/evaluation --coverage",
     "eval:check-regression": "tsx scripts/check-eval-regression.ts",
@@ -33,6 +35,8 @@
     "demo:data": "tsx scripts/demo-data.ts",
     "verify": "node scripts/verify-everything.js",
     "verify:api-keys": "tsx scripts/validate-api-keys.ts",
+    "verify:canary": "tsx scripts/production-canary.ts",
+    "verify:kafka": "tsx scripts/verify-kafka-runtime.ts",
     "test:claim-models": "tsx scripts/test-claim-models.ts",
     "verify:health": "curl -s http://localhost:3000/api/health | jq || echo 'Server not running. Start with: npm run dev'",
     "verify:flows": "curl -s -X POST http://localhost:3000/api/verification/run -H 'Content-Type: application/json' -d '{\"flow\":\"all\"}' | jq || echo 'Server not running or authentication required'",
@@ -54,6 +58,7 @@
     "@aws-sdk/client-auto-scaling": "^3.972.0",
     "@aws-sdk/client-s3": "^3.972.0",
     "@aws-sdk/client-secrets-manager": "^3.972.0",
+    "@aws-sdk/client-sesv2": "^3.975.0",
     "@aws-sdk/client-sns": "^3.974.0",
     "@aws-sdk/s3-request-presigner": "^3.972.0",
     "@azure/storage-blob": "^12.30.0",
@@ -101,7 +106,7 @@
     "ioredis": "^5.9.2",
     "isomorphic-dompurify": "^2.35.0",
     "jsonwebtoken": "^9.0.3",
-    "jspdf": "^2.5.2",
+    "jspdf": "^4.0.0",
     "jszip": "^3.10.1",
     "kafkajs": "^2.2.4",
     "lucide-react": "^0.562.0",
@@ -152,6 +157,8 @@
     "test-exclude": "^7.0.1",
     "glob": "^10.4.1",
     "jsdom": "^27.4.0",
-    "html-encoding-sniffer": "^6.0.0"
+    "html-encoding-sniffer": "^6.0.0",
+    "lodash": "^4.17.21",
+    "dompurify": "^3.3.1"
   }
 }

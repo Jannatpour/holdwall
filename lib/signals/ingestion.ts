@@ -1,13 +1,18 @@
 /**
  * Signals Ingestion
  * 
- * Connectors, compliance/provenance, dedupe, language detect, PII redaction, evidence object store.
+ * Production-ready signal ingestion with connectors, compliance/provenance, dedupe, 
+ * language detection, PII redaction, evidence object store, idempotency, error recovery, 
+ * and transaction management.
  */
 
 import type { Evidence, EvidenceVault } from "@/lib/evidence/vault";
 import type { EventEnvelope, EventStore } from "@/lib/events/types";
 import { LanguageDetectionService } from "./language-detection";
 import { PIIDetectionService } from "./pii-detection";
+import { validateBusinessRules } from "@/lib/validation/business-rules";
+import { IdempotencyService, withIdempotency } from "@/lib/operations/idempotency";
+import { ErrorRecoveryService } from "@/lib/operations/error-recovery";
 import { logger } from "@/lib/logging/logger";
 import { createHash } from "crypto";
 import { db } from "@/lib/db/client";
@@ -52,23 +57,110 @@ export interface SignalConnector {
 export class SignalIngestionService {
   private languageDetector: LanguageDetectionService;
   private piiDetector: PIIDetectionService;
+  private idempotencyService: IdempotencyService;
+  private errorRecovery: ErrorRecoveryService;
 
   constructor(
     private evidenceVault: EvidenceVault,
-    private eventStore: EventStore
+    private eventStore: EventStore,
+    idempotencyService?: IdempotencyService,
+    errorRecovery?: ErrorRecoveryService
   ) {
     this.languageDetector = new LanguageDetectionService();
     this.piiDetector = new PIIDetectionService();
+    this.idempotencyService = idempotencyService || new IdempotencyService();
+    this.errorRecovery = errorRecovery || new ErrorRecoveryService();
   }
 
   async ingestSignal(
     signal: Omit<Signal, "signal_id" | "created_at">,
-    connector: SignalConnector
+    connector: SignalConnector,
+    options?: {
+      skipIdempotency?: boolean;
+      skipValidation?: boolean;
+      skipErrorRecovery?: boolean;
+    }
   ): Promise<string> {
-    // 1. Compliance check
+    // 1. Validate business rules (if not skipped)
+    if (!options?.skipValidation) {
+      const validation = await validateBusinessRules("signal", {
+        content: signal.content.raw,
+        source: signal.source,
+        metadata: signal.metadata,
+      }, signal.tenant_id);
+
+      if (!validation.valid) {
+        throw new Error(`Validation failed: ${validation.errors.join(", ")}`);
+      }
+    }
+
+    // 2. Compliance check
     if (!signal.compliance.source_allowed) {
       throw new Error("Source not allowed by compliance policy");
     }
+
+    // 3. Execute with idempotency (if not skipped)
+    if (options?.skipIdempotency) {
+      return this._ingestSignalInternal(signal, connector, options);
+    }
+
+    return await withIdempotency(
+      this.idempotencyService,
+      signal.tenant_id,
+      "ingest_signal",
+      {
+        content: signal.content.raw,
+        source: signal.source,
+        metadata: signal.metadata,
+      },
+      async () => {
+        // 4. Execute with error recovery (if not skipped)
+        if (options?.skipErrorRecovery) {
+          return this._ingestSignalInternal(signal, connector, options);
+        }
+
+        const recoveryResult = await this.errorRecovery.executeWithRecovery(
+          async () => {
+            return this._ingestSignalInternal(signal, connector, options);
+          },
+          {
+            retry: {
+              maxAttempts: 3,
+              backoffMs: 1000,
+              exponential: true,
+            },
+            timeout: 30_000, // 30 seconds
+            fallback: async () => {
+              logger.warn("Signal ingestion failed, storing in queue", {
+                tenantId: signal.tenant_id,
+                source: signal.source,
+              });
+              // In production, would store in a queue (e.g., Kafka, SQS)
+              throw new Error("Signal ingestion failed and fallback unavailable");
+            },
+            circuitBreaker: this.errorRecovery.getCircuitBreaker("signal_ingestion"),
+          },
+          "ingest_signal"
+        );
+
+        if (!recoveryResult.success) {
+          throw recoveryResult.error || new Error("Signal ingestion failed");
+        }
+
+        return recoveryResult.result as string;
+      },
+      24 * 60 * 60 // 24 hour TTL
+    );
+  }
+
+  /**
+   * Internal signal ingestion implementation (without idempotency/error recovery)
+   */
+  private async _ingestSignalInternal(
+    signal: Omit<Signal, "signal_id" | "created_at">,
+    connector: SignalConnector,
+    options?: { skipIdempotency?: boolean; skipValidation?: boolean; skipErrorRecovery?: boolean }
+  ): Promise<string> {
 
     // 2. Content normalization
     const normalizedContent = this.normalizeContent(signal.content.raw);
@@ -188,6 +280,54 @@ export class SignalIngestionService {
     }
 
     return evidence_id;
+  }
+
+  /**
+   * Batch ingest signals with transaction management
+   */
+  async batchIngestSignals(
+    signals: Array<Omit<Signal, "signal_id" | "created_at">>,
+    connector: SignalConnector
+  ): Promise<Array<{ signal: Omit<Signal, "signal_id" | "created_at">; evidenceId: string; error?: string }>> {
+    const results: Array<{ signal: Omit<Signal, "signal_id" | "created_at">; evidenceId: string; error?: string }> = [];
+
+    // Process in batches of 10 to avoid overwhelming the system
+    const batchSize = 10;
+    for (let i = 0; i < signals.length; i += batchSize) {
+      const batch = signals.slice(i, i + batchSize);
+
+      const batchResults = await Promise.allSettled(
+        batch.map(async (signal) => {
+          try {
+            const evidenceId = await this.ingestSignal(signal, connector);
+            return { signal, evidenceId };
+          } catch (error) {
+            return {
+              signal,
+              evidenceId: "",
+              error: error instanceof Error ? error.message : String(error),
+            };
+          }
+        })
+      );
+
+      for (const result of batchResults) {
+        if (result.status === "fulfilled") {
+          results.push(result.value);
+        } else {
+          logger.error("Unexpected error in batch processing", {
+            error: result.reason,
+          });
+        }
+      }
+
+      // Small delay between batches to avoid rate limiting
+      if (i + batchSize < signals.length) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    }
+
+    return results;
   }
 
   /**

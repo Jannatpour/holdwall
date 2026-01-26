@@ -8,8 +8,10 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: holdwall-app
-  minReplicas: 3
-  maxReplicas: 10
+  # This cluster currently runs workers/cronjobs; the web app runs on Vercel.
+  # Keep HPA configured but allow scaling to 0 to avoid consuming worker capacity.
+  minReplicas: 0
+  maxReplicas: 3
   metrics:
     - type: Resource
       resource:

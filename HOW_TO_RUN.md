@@ -38,8 +38,8 @@ docker-compose up
 ```
 
 This will:
-- Start PostgreSQL 16 on port 5432
-- Start Redis 7 on port 6379
+- Start PostgreSQL 16 on port 15432
+- Start Redis 7 on port 16379
 - Build and start the Next.js application on port 3000
 - Automatically wait for database health checks
 
@@ -78,14 +78,14 @@ cp .env.example .env.local  # If .env.example exists
 **Minimum required variables:**
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/holdwall"
+DATABASE_URL="postgresql://user:password@localhost:15432/holdwall"
 
 # NextAuth
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-secret-key-here"  # Generate with: openssl rand -base64 32
 
 # Optional but recommended
-REDIS_URL="redis://localhost:6379"
+REDIS_URL="redis://localhost:16379"
 ```
 
 **Optional variables for full functionality:**
@@ -117,6 +117,11 @@ KAFKA_BROKERS="localhost:9092"
 ### Step 3: Set Up Database
 
 #### Option A: Using Local PostgreSQL
+
+### Prisma ORM v7 note
+
+This repo uses **Prisma ORM v7**. The database connection URL is configured in `prisma.config.ts` (not in `prisma/schema.prisma`).
+If you update database connection settings, update your `.env.local` and ensure Prisma CLI sees `DATABASE_URL`.
 
 1. Create a PostgreSQL database:
 ```bash

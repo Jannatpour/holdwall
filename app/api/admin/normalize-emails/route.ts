@@ -13,22 +13,34 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeUserEmails } from "@/scripts/normalize-emails-production";
+import { requireAuth, requireRole } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
+
+const normalizeEmailsOptionsSchema = z.object({
+  dryRun: z.boolean().optional(),
+  batchSize: z.number().int().positive().max(1000).optional(),
+}).optional();
 
 export async function POST(request: NextRequest) {
   try {
-    // Security: Add authentication check in production
-    // For now, allow in development but require secret header in production
-    if (process.env.NODE_ENV === "production") {
-      const authHeader = request.headers.get("authorization");
-      const expectedSecret = process.env.ADMIN_SECRET || process.env.NEXTAUTH_SECRET;
-      
-      if (!authHeader || authHeader !== `Bearer ${expectedSecret}`) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
+    // Require admin authentication
+    const user = await requireAuth();
+    await requireRole("ADMIN");
 
-    logger.info("Email normalization API called");
+    logger.info("Email normalization API called", {
+      userId: (user as any).id,
+      tenantId: (user as any).tenantId,
+    });
+
+    // Parse optional body for configuration
+    let body: z.infer<typeof normalizeEmailsOptionsSchema> = undefined;
+    try {
+      const rawBody = await request.json();
+      body = normalizeEmailsOptionsSchema.parse(rawBody);
+    } catch {
+      // Body is optional, continue without it
+    }
 
     const result = await normalizeUserEmails();
 
@@ -48,6 +60,18 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    logger.error("Error in email normalization API", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
+    if ((error as Error).message === "Unauthorized" || (error as Error).message === "Forbidden") {
+      return NextResponse.json(
+        { error: "Unauthorized", message: "Admin access required" },
+        { status: 403 }
+      );
+    }
+
     logger.error("Error in email normalization API", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,

@@ -1,7 +1,9 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { POSDashboardClient } from "@/components/pos-dashboard-client";
 import { Brain, Sparkles } from "lucide-react";
+import { POSLoading } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = {
   title: "Perception Operating System | Holdwall POS",
@@ -28,7 +30,9 @@ export default async function POSPage() {
           </div>
         </div>
         
-        <POSDashboardClient />
+        <Suspense fallback={<POSLoading />}>
+          <POSDashboardClient />
+        </Suspense>
       </div>
     </AppShell>
   );

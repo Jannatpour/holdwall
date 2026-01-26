@@ -120,53 +120,39 @@ export class EmailService {
     options: EmailOptions
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
-      // Use AWS SES API v2 via HTTP (production-ready)
-      // Alternative: Use @aws-sdk/client-sesv2 for SDK-based approach
       const sesRegion = process.env.AWS_SES_REGION || "us-east-1";
-      const sesAccessKey = process.env.AWS_ACCESS_KEY_ID;
-      const sesSecretKey = process.env.AWS_SECRET_ACCESS_KEY;
+      const { SESv2Client, SendEmailCommand } = await import("@aws-sdk/client-sesv2");
 
-      if (!sesAccessKey || !sesSecretKey) {
-        throw new Error("AWS SES credentials not configured");
-      }
+      // Credential resolution:
+      // - Vercel: use AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+      // - AWS (EKS/EC2): use instance role (default provider chain)
+      const client = new SESv2Client({ region: sesRegion });
 
-      // Use AWS SES API v2
-      const response = await fetch(
-        `https://email.${sesRegion}.amazonaws.com/v2/email/outbound-emails`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `AWS4-HMAC-SHA256 Credential=${sesAccessKey}`,
+      const resp = await client.send(
+        new SendEmailCommand({
+          FromEmailAddress: from,
+          Destination: {
+            ToAddresses: recipients,
+            CcAddresses: options.cc,
+            BccAddresses: options.bcc,
           },
-          body: JSON.stringify({
-            FromEmailAddress: from,
-            Destination: {
-              ToAddresses: recipients,
-              CcAddresses: options.cc,
-              BccAddresses: options.bcc,
-            },
-            Content: {
-              Simple: {
-                Subject: { Data: template.subject, Charset: "UTF-8" },
-                Body: {
-                  Html: { Data: template.html, Charset: "UTF-8" },
-                  Text: { Data: template.text, Charset: "UTF-8" },
-                },
+          ReplyToAddresses: options.replyTo ? [options.replyTo] : undefined,
+          Content: {
+            Simple: {
+              Subject: { Data: template.subject, Charset: "UTF-8" },
+              Body: {
+                Html: { Data: template.html, Charset: "UTF-8" },
+                Text: { Data: template.text, Charset: "UTF-8" },
               },
             },
-            EmailTags: options.tags ? Object.entries(options.tags).map(([key, value]) => ({ Name: key, Value: value })) : undefined,
-          }),
-        }
+          },
+          EmailTags: options.tags
+            ? Object.entries(options.tags).map(([Name, Value]) => ({ Name, Value }))
+            : undefined,
+        }),
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        return { success: true, messageId: data.MessageId };
-      }
-
-      const error = await response.text();
-      return { success: false, error };
+      return { success: true, messageId: resp.MessageId };
     } catch (error) {
       return {
         success: false,

@@ -919,13 +919,78 @@ export class PlaybookExecutor {
 
   /**
    * Execute generic playbook
+   * Enhanced to support dynamic workflow execution via Universal Workflow Engine
    */
   private async executeGeneric(
     playbook: any,
     parameters: Record<string, unknown>,
     autopilotMode: string
   ): Promise<PlaybookExecutionResult> {
-    // Generic execution - just return success
+    const template = playbook.template as Record<string, unknown>;
+    const steps = template.steps as Array<{ step: string; action: string }> || [];
+    
+    // If playbook has workflow-style steps, use Universal Workflow Engine
+    if (steps.length > 0 && template.type === "default") {
+      try {
+        const { workflowEngine } = await import("@/lib/workflows/engine");
+        
+        // Convert playbook to workflow definition
+        const workflowSteps = steps.map((s, idx) => ({
+          id: `step-${idx}`,
+          name: s.step,
+          type: "action" as const,
+          description: s.action,
+          config: {
+            action: s.step,
+            parameters: { ...parameters, action: s.action },
+          },
+          onSuccess: idx < steps.length - 1 ? [`step-${idx + 1}`] : undefined,
+        }));
+
+        // Create temporary workflow for execution
+        const workflowDef = await workflowEngine.defineWorkflow(playbook.tenantId, {
+          name: `Playbook: ${playbook.name}`,
+          description: playbook.description || undefined,
+          status: "active",
+          trigger: {
+            type: "manual",
+            config: {},
+          },
+          steps: workflowSteps,
+          variables: parameters,
+        });
+
+        // Execute workflow
+        const execution = await workflowEngine.executeWorkflow(
+          workflowDef.id,
+          playbook.tenantId,
+          parameters
+        );
+
+        return {
+          execution_id: execution.id,
+          status: execution.status === "completed" ? "completed" : execution.status === "failed" ? "failed" : "pending_approval",
+          result: {
+            workflowExecutionId: execution.id,
+            stepResults: execution.stepResults,
+          },
+          error: execution.error,
+          steps: Object.values(execution.stepResults).map(sr => ({
+            step: sr.stepId,
+            status: sr.status,
+            result: sr.result,
+          })),
+        };
+      } catch (error) {
+        logger.error("Failed to execute playbook as workflow", {
+          playbookId: playbook.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        // Fall through to simple execution
+      }
+    }
+
+    // Simple generic execution for backward compatibility
     return {
       execution_id: `exec-${Date.now()}`,
       status: "completed",

@@ -24,6 +24,192 @@ export function LoadingState({ count = 3, className }: LoadingStateProps) {
   );
 }
 
+/**
+ * Smart loading skeleton for dashboard pages
+ * Matches common dashboard layout patterns
+ */
+interface DashboardLoadingProps {
+  showHeader?: boolean;
+  showMetrics?: boolean;
+  showCharts?: boolean;
+  showTable?: boolean;
+  metricCount?: number;
+  chartCount?: number;
+  className?: string;
+}
+
+export function DashboardLoading({
+  showHeader = true,
+  showMetrics = true,
+  showCharts = true,
+  showTable = false,
+  metricCount = 4,
+  chartCount = 2,
+  className,
+}: DashboardLoadingProps) {
+  return (
+    <div className={`space-y-6 ${className || ""}`}>
+      {showHeader && (
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+      )}
+      
+      {showMetrics && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: metricCount }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {showCharts && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {Array.from({ length: chartCount }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-32 mb-2" />
+                <Skeleton className="h-4 w-48" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-64 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {showTable && (
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Page-specific loading skeletons
+ */
+export function OverviewLoading() {
+  return (
+    <DashboardLoading
+      showHeader={true}
+      showMetrics={true}
+      showCharts={true}
+      showTable={false}
+      metricCount={4}
+      chartCount={2}
+    />
+  );
+}
+
+export function POSLoading() {
+  return (
+    <DashboardLoading
+      showHeader={true}
+      showMetrics={true}
+      showCharts={false}
+      showTable={false}
+      metricCount={6}
+    />
+  );
+}
+
+export function SignalsLoading() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function ClaimsLoading() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-20 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function GraphLoading() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <Card>
+        <CardContent className="p-6">
+          <Skeleton className="h-[600px] w-full" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function ForecastsLoading() {
+  return (
+    <DashboardLoading
+      showHeader={true}
+      showMetrics={true}
+      showCharts={true}
+      showTable={true}
+      metricCount={4}
+      chartCount={2}
+    />
+  );
+}
+
 interface ErrorStateProps {
   error: string | Error;
   onRetry?: () => void;

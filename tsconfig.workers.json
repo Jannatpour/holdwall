@@ -1,0 +1,41 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./dist-workers",
+    "rootDir": ".",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "jsx": "preserve",
+    "incremental": false,
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": [
+    "lib/workers/**/*.ts",
+    "lib/events/**/*.ts",
+    "lib/backup/**/*.ts",
+    "lib/db/**/*.ts",
+    "lib/logging/**/*.ts",
+    "lib/monitoring/**/*.ts",
+    "lib/observability/**/*.ts",
+    "lib/security/**/*.ts",
+    "lib/utils/**/*.ts",
+    "lib/cache/**/*.ts",
+    "lib/ai/**/*.ts",
+    "lib/vector/**/*.ts",
+    "scripts/verify-kafka-runtime.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "app",
+    "components",
+    "__tests__",
+    "playwright*",
+    "k8s"
+  ]
+}
+

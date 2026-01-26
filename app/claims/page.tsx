@@ -1,9 +1,11 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { ClaimsList } from "@/components/claims-list";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
 import { FileText } from "lucide-react";
+import { ClaimsLoading } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = genMeta(
   "Claims",
@@ -43,7 +45,9 @@ export default async function ClaimsPage({
           <GuideButton pageId="claims" />
         </div>
         <div data-guide="clusters-list">
-          <ClaimsList clusterId={clusterId} />
+          <Suspense fallback={<ClaimsLoading />}>
+            <ClaimsList clusterId={clusterId} />
+          </Suspense>
         </div>
       </div>
     </AppShell>

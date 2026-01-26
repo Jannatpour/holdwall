@@ -27,6 +27,25 @@ export interface PipelineWorkerConfig {
   brokers: string[];
 }
 
+/**
+ * Convenience entrypoint for container/K8s execution.
+ * Reads configuration from environment variables.
+ */
+export async function startPipelineWorker(): Promise<void> {
+  const brokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const topics = (process.env.KAFKA_EVENTS_TOPIC || "holdwall-events")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const groupId = (process.env.KAFKA_GROUP_ID || "holdwall-pipeline-worker").trim();
+
+  const worker = new PipelineWorker({ brokers, topics, groupId });
+  await worker.start();
+}
+
 export class PipelineWorker {
   private consumer: KafkaConsumer | null = null;
   private evidenceVault: DatabaseEvidenceVault;

@@ -4,25 +4,46 @@
  */
 
 import { NextResponse } from "next/server";
-import { checkHealth } from "@/lib/monitoring/health";
-import { getA2AProtocol } from "@/lib/a2a/protocol";
-import { getANPProtocol } from "@/lib/anp/protocol";
-import { getAP2Protocol } from "@/lib/payment/ap2";
-import { getProtocolSecurity } from "@/lib/security/protocol-security";
-import { getAGUIProtocol } from "@/lib/ag-ui/protocol";
 
 export async function GET() {
-  const health = await checkHealth();
-  
-  // Add protocol-specific health checks
+  // IMPORTANT: Keep this endpoint resilient.
+  // Avoid top-level imports of heavy subsystems so a single failed import (missing env, optional deps, etc.)
+  // doesn't turn health checks into Vercel/Next HTML 500 pages.
+  let health: any;
   try {
+    const { checkHealth } = await import("@/lib/monitoring/health");
+    health = await checkHealth();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json(
+      {
+        status: "error",
+        error: "Health check failed",
+        message,
+      },
+      { status: 503 }
+    );
+  }
+  
+  // Protocol checks are optional because importing protocols can trigger heavy initialization.
+  // Enable explicitly via HEALTH_INCLUDE_PROTOCOLS=true.
+  if (process.env.HEALTH_INCLUDE_PROTOCOLS !== "true") {
+    return NextResponse.json(health, { status: health.status === "healthy" ? 200 : 503 });
+  }
+
+  try {
+    const { getA2AProtocol } = await import("@/lib/a2a/protocol");
+    const { getANPProtocol } = await import("@/lib/anp/protocol");
+    const { getAP2Protocol } = await import("@/lib/payment/ap2");
+    const { getProtocolSecurity } = await import("@/lib/security/protocol-security");
+    const { getAGUIProtocol } = await import("@/lib/ag-ui/protocol");
+
     const a2aProtocol = getA2AProtocol();
     const anpProtocol = getANPProtocol();
     const ap2Protocol = getAP2Protocol();
     const protocolSecurity = getProtocolSecurity();
     const aguiProtocol = getAGUIProtocol();
 
-    // Check protocol health
     const protocolHealth = {
       a2a: {
         status: "healthy" as const,
@@ -57,7 +78,6 @@ export async function GET() {
       { status: health.status === "healthy" ? 200 : 503 }
     );
   } catch (error) {
-    // If protocol health checks fail, still return base health
     return NextResponse.json(
       {
         ...health,

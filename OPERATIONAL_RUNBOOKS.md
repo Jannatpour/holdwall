@@ -241,6 +241,15 @@ curl https://holdwall.com/api/health | jq
 - **System Metrics**: Prometheus endpoint (if configured)
 - **Custom Metrics**: Available via metrics service
 
+### Kafka Operational Checks (when enabled)
+
+Kafka is optional and should only be enabled when a broker is available (`KAFKA_ENABLED=true` + `KAFKA_BROKERS=...`).
+
+```bash
+# Runtime verification (brokers/topics/group lag/DLQ backlog)
+KAFKA_ENABLED=true KAFKA_BROKERS="broker:9092" KAFKA_GROUP_ID="holdwall-pipeline-worker" npm run verify:kafka
+```
+
 ### Log Monitoring
 
 **Vercel:**
@@ -457,6 +466,32 @@ npx trufflehog filesystem . --json
 4. Rotate credentials regularly
 5. Implement MFA where possible
 
+### Secret Leak Response (keys pasted to chat, logs, PRs, etc.)
+
+If any secret was exposed (example: `OPENAI_API_KEY`), treat it as compromised immediately.
+
+1. **Rotate the secret at the provider** (OpenAI/Anthropic/Supabase/etc).
+2. **Update production environment variables** (Vercel example):
+
+```bash
+# Add/override a sensitive env var (will prompt for the value if not piped)
+vercel env add OPENAI_API_KEY production --sensitive --force
+
+# Redeploy production so new env is active
+vercel --prod
+```
+
+3. **Verify provider health + endpoints**:
+
+```bash
+curl https://www.holdwall.com/api/health | jq '.checks.external_services'
+
+# Optional: run production smoke (creates a test user)
+npm run test:e2e:prod
+```
+
+4. **Invalidate any sessions/tokens if required** and review logs for suspicious usage.
+
 ### Vulnerability Management
 
 1. Monitor security advisories
@@ -485,9 +520,31 @@ ls -lh backups/
 # Verify backup integrity
 gunzip -t backups/holdwall-backup-*.sql.gz
 
-# Test restore in staging
+# Test restore in staging (never restore over production directly)
 ./scripts/restore-database.sh backups/holdwall-backup-*.sql.gz
+
+# After restore, verify critical canaries
+BASE_URL=https://staging.holdwall.com npm run verify:health
+BASE_URL=https://staging.holdwall.com npm run verify:canary
 ```
+
+### Backup API (Admin-only)
+
+The platform also exposes admin-only endpoints for managed backups (recommended with S3 storage in production):
+
+```bash
+# Create a backup (requires ADMIN session cookie)
+curl -X POST https://www.holdwall.com/api/backup/create \
+  -H "Content-Type: application/json" \
+  -d '{"storageProvider":"s3","compression":true,"encryption":true}'
+
+# List backups
+curl https://www.holdwall.com/api/backup/list | jq
+```
+
+Notes:
+- These endpoints require **ADMIN** auth and should be protected with strict access controls.
+- For serverless environments, avoid relying on local disk. Prefer object storage (S3/GCS/Azure) + platform IAM.
 
 ### RTO/RPO Targets
 

@@ -43,6 +43,14 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Next standalone output does not include non-app runtime modules (workers/cronjobs).
+# Copy sources + full node_modules so K8s can execute workers via `npx tsx`.
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/lib ./lib
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.typecheck.json ./tsconfig.typecheck.json
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.workers.json ./tsconfig.workers.json
 COPY --from=deps --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 

@@ -35,6 +35,31 @@ export class ErrorRecoveryService {
   private circuitBreakers: Map<string, CircuitBreaker> = new Map();
 
   /**
+   * Best-effort recovery hook
+   *
+   * Used by callers that just want centralized logging + optional follow-up actions
+   * after a failure (without wrapping the original operation).
+   */
+  async recover(input: {
+    error: Error;
+    context?: Record<string, unknown>;
+    operationName?: string;
+  }): Promise<void> {
+    const operationName = input.operationName || "unknown_operation";
+
+    logger.warn("Recovery invoked", {
+      operationName,
+      error: input.error.message,
+      stack: input.error.stack,
+      context: input.context,
+    });
+
+    // If we can identify recoverable errors, we keep a slot for future automated recovery
+    // actions (e.g., enqueue retry, invalidate caches, open circuit breaker, notify on-call).
+    // For now: this is intentionally side-effect minimal and does not throw.
+  }
+
+  /**
    * Execute operation with recovery strategy
    */
   async executeWithRecovery<T>(

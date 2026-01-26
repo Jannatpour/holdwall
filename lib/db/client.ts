@@ -22,9 +22,6 @@ function createPrismaClient() {
 
   const isPlaceholderUrl = !configuredUrl || configuredUrl.includes("placeholder");
 
-  // Prisma 7 client engine requires either a Driver Adapter or Accelerate URL.
-  // We standardize on the Postgres driver adapter everywhere.
-  //
   // During build (especially Docker/Next build-time route evaluation), we must not hard-fail
   // if `DATABASE_URL` is unset/placeholder. The build should succeed; runtime will provide the real URL.
   const databaseUrl = !isPlaceholderUrl
@@ -42,29 +39,53 @@ function createPrismaClient() {
     if (process.env.NODE_ENV === "production") {
       console.warn("DATABASE_URL not configured in production. Database operations will fail.");
     }
-    // Use a dummy URL that will fail on connection attempt, not on client creation
+    // Use a dummy URL that will fail on connection attempt, not on client creation.
     const dummyUrl = "postgresql://dummy:dummy@localhost:5432/dummy";
     const pool = new Pool({
       connectionString: dummyUrl,
-      max: 20,
+      max: 2,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
+      allowExitOnIdle: process.env.NODE_ENV === "test",
     });
     const adapter = new PrismaPg(pool);
-    
-    return new PrismaClient({
-      adapter,
-      log: ["error"],
-    });
+    return new PrismaClient({ adapter, log: ["error"] });
   }
 
   try {
+    // Many managed Postgres providers (e.g. Supabase) require TLS from serverless environments.
+    // `pg` does not enable SSL by default, so we do it automatically in production for non-local hosts.
+    let ssl: false | { rejectUnauthorized: boolean } = false;
+    try {
+      const parsed = new URL(databaseUrl);
+      const hostname = parsed.hostname;
+      const isLocalHost =
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname === "0.0.0.0";
+      const forceDisableSsl =
+        parsed.searchParams.get("sslmode") === "disable" ||
+        parsed.searchParams.get("ssl") === "0";
+
+      if (process.env.NODE_ENV === "production" && !isLocalHost && !forceDisableSsl) {
+        ssl = { rejectUnauthorized: false };
+      }
+    } catch {
+      // If parsing fails, fall back to safe defaults (no SSL unless explicitly enabled).
+      ssl = false;
+    }
+
+    const isServerless = !!process.env.VERCEL;
     const pool = new Pool({
       connectionString: databaseUrl,
-      max: 20,
+      ssl,
+      // Serverless + poolers can get noisy with too many connections.
+      max: process.env.NODE_ENV === "production" && isServerless ? 3 : 20,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-      // Connection retry is handled at application level
+      // Supabase poolers + serverless cold starts can exceed 2s occasionally.
+      connectionTimeoutMillis: process.env.NODE_ENV === "production" ? 8000 : 2000,
+      // Allow Jest/CLI processes to exit even if idle.
+      allowExitOnIdle: process.env.NODE_ENV === "test",
     });
     const adapter = new PrismaPg(pool);
 
@@ -78,16 +99,13 @@ function createPrismaClient() {
     const dummyUrl = "postgresql://dummy:dummy@localhost:5432/dummy";
     const pool = new Pool({
       connectionString: dummyUrl,
-      max: 20,
+      max: 2,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
+      allowExitOnIdle: process.env.NODE_ENV === "test",
     });
     const adapter = new PrismaPg(pool);
-    
-    return new PrismaClient({
-      adapter,
-      log: ["error"],
-    });
+    return new PrismaClient({ adapter, log: ["error"] });
   }
 }
 

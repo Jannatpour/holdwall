@@ -26,6 +26,30 @@ async function seedTestUsers() {
     console.log("✅ Using existing default tenant");
   }
 
+  // Seed baseline source policies so validation and verifiers can run end-to-end in E2E.
+  // Empty `allowedSources` means "allow all sources of this type".
+  const sourceTypes = ["api", "reddit", "twitter", "zendesk", "github", "rss", "webhook", "s3"];
+  for (const sourceType of sourceTypes) {
+    await db.sourcePolicy.upsert({
+      where: {
+        tenantId_sourceType: {
+          tenantId: tenant.id,
+          sourceType,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        sourceType,
+        allowedSources: [],
+        collectionMethod: "API",
+        retentionDays: 365,
+        autoDelete: false,
+        complianceFlags: [],
+      },
+    });
+  }
+
   // Test users to create
   const testUsers = [
     {

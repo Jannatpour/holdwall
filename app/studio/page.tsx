@@ -1,9 +1,11 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { StudioEditorClient } from "@/components/studio-editor-client";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
 import { Sparkles } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = genMeta(
   "AAAL Studio",
@@ -44,7 +46,9 @@ export default async function StudioPage({
           <GuideButton pageId="studio" />
         </div>
         <div data-guide="editor">
-          <StudioEditorClient artifactId={artifactId} />
+          <Suspense fallback={<LoadingState count={3} />}>
+            <StudioEditorClient artifactId={artifactId} />
+          </Suspense>
         </div>
       </div>
     </AppShell>

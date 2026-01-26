@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const turbopackRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   /* Production optimizations */
@@ -18,12 +22,18 @@ const nextConfig: NextConfig = {
   
   /* Experimental features */
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
     // optimizeCss: true, // Temporarily disabled - requires critters
+    optimizeServerReact: true,
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
 
   /* Turbopack configuration */
-  turbopack: {},
+  turbopack: {
+    root: turbopackRoot,
+  },
 
   /* Server external packages - mark optional dependencies as external */
   serverExternalPackages: ['puppeteer', 'tesseract.js', 'mqtt'],
@@ -108,6 +118,20 @@ const nextConfig: NextConfig = {
   /* Security headers */
   async headers() {
     return [
+      // Ensure the service worker updates promptly (avoid long-lived caching)
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-store, must-revalidate" },
+        ],
+      },
+      // Make Next.js static assets safely cacheable forever (content-hashed)
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
       {
         source: '/:path*',
         headers: [

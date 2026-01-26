@@ -17,44 +17,109 @@ import { Reranker } from "@/lib/search/reranking";
 import { DatabaseEvidenceVault } from "@/lib/evidence/vault-db";
 import { logger } from "@/lib/logging/logger";
 import { createHash } from "crypto";
+import { z } from "zod";
+
+const embeddingModelSchema = z.enum(["voyage", "gemini", "openai", "auto"]);
+
+const embedRequestSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("embed"),
+    text: z.string().min(1),
+    model: embeddingModelSchema.optional(),
+    dimensions: z.number().int().positive().optional(),
+  }),
+  z.object({
+    action: z.literal("embed-batch"),
+    texts: z.array(z.string().min(1)).min(1),
+    model: embeddingModelSchema.optional(),
+  }),
+  z.object({
+    action: z.literal("embed-multimodal"),
+    items: z.array(
+      z.object({
+        type: z.enum(["text", "image", "video"]),
+        content: z.string().min(1),
+        transcript: z.string().optional(),
+      })
+    ).min(1),
+  }),
+]);
+
+const queryRequestSchema = z.object({
+  provider: z.enum(["pinecone", "qdrant", "faiss", "chroma", "opensearch"]),
+  query: z.string().min(1),
+  topK: z.number().int().min(1).max(200).optional().default(10),
+  filter: z.record(z.string(), z.unknown()).optional(),
+  useReranking: z.boolean().optional(),
+  rerankingModel: z.enum(["qwen", "cross-encoder", "bge-reranker"]).optional(),
+});
+
+const similarityRequestSchema = z.object({
+  vec1: z.array(z.number()).min(1),
+  vec2: z.array(z.number()).min(1),
+  metric: z.enum(["cosine", "euclidean", "dot"]).optional().default("cosine"),
+});
 
 /**
  * POST /api/ai/semantic-search/embed
  * Generate embeddings for text
+ * 
+ * Note: This endpoint may be intentionally public for certain AI model access patterns
+ * Consider adding authentication if this should be restricted
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, text, model, dimensions } = body;
+    const validated = embedRequestSchema.parse(body);
 
-    if (action === "embed") {
+    if (validated.action === "embed") {
       const embeddings = new VectorEmbeddings();
-      const result = await embeddings.embed(text, { model, dimensions });
+      const result = await embeddings.embed(validated.text, {
+        model: validated.model,
+        dimensions: validated.dimensions,
+      });
       return NextResponse.json(result);
     }
 
-    if (action === "embed-batch") {
-      const { texts } = body;
+    if (validated.action === "embed-batch") {
       const embeddings = new VectorEmbeddings();
-      const results = await embeddings.embedBatch(texts, { model });
+      const results = await embeddings.embedBatch(validated.texts, { model: validated.model });
       return NextResponse.json(results);
     }
 
-    if (action === "embed-multimodal") {
-      const { items } = body;
+    if (validated.action === "embed-multimodal") {
       const multimodal = new MultimodalEmbeddings();
-      const results = await multimodal.embedMultimodal(items);
+      const results = await multimodal.embedMultimodal(validated.items);
       return NextResponse.json(results);
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
+    const msg = error instanceof Error ? error.message : String(error);
+    const lower = msg.toLowerCase();
+    const quota =
+      lower.includes("exceeded your current quota") ||
+      lower.includes("check your plan and billing") ||
+      lower.includes("insufficient_quota") ||
+      lower.includes("providers unavailable");
     logger.error("Semantic search error", {
-      error: error instanceof Error ? error.message : String(error),
+      error: msg,
       stack: error instanceof Error ? error.stack : undefined,
     });
+    if (quota) {
+      return NextResponse.json(
+        { error: "AI provider unavailable", message: msg },
+        { status: 503 }
+      );
+    }
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: msg || "Unknown error" },
       { status: 500 }
     );
   }
@@ -67,7 +132,8 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { provider, query, topK = 10, filter } = body;
+    const validated = queryRequestSchema.parse(body);
+    const { provider, query, topK, filter } = validated;
 
     const embeddings = new VectorEmbeddings();
     const queryEmbedding = await embeddings.embed(query);
@@ -108,7 +174,7 @@ export async function PUT(request: NextRequest) {
 
     // Apply reranking if requested
     let finalResults = results;
-    if (body.useReranking) {
+    if (validated.useReranking) {
       const evidenceVault = new DatabaseEvidenceVault();
       const reranker = new Reranker();
       
@@ -161,7 +227,7 @@ export async function PUT(request: NextRequest) {
         query,
         documents,
         {
-          model: (body.rerankingModel as any) || "cross-encoder",
+          model: (validated.rerankingModel as any) || "cross-encoder",
           topK: topK,
         }
       );
@@ -191,9 +257,15 @@ export async function PUT(request: NextRequest) {
       results: finalResults,
       model: queryEmbedding.model,
       dimensions: queryEmbedding.dimensions,
-      reranked: body.useReranking || false,
+      reranked: validated.useReranking || false,
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("Vector query error", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
@@ -212,7 +284,8 @@ export async function PUT(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { vec1, vec2, metric = "cosine" } = body;
+    const validated = similarityRequestSchema.parse(body);
+    const { vec1, vec2, metric } = validated;
 
     const ann = new ANNAlgorithms();
 
@@ -245,6 +318,12 @@ export async function PATCH(request: NextRequest) {
       metric,
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("Similarity calculation error", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,

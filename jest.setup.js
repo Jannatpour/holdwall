@@ -71,3 +71,15 @@ jest.mock('next-auth/react', () => ({
     status: 'unauthenticated',
   }),
 }))
+
+// Best-effort cleanup to prevent open handles from DB pools.
+afterAll(async () => {
+  try {
+    const { db } = require("@/lib/db/client");
+    if (db && typeof db.$disconnect === "function") {
+      await db.$disconnect();
+    }
+  } catch (e) {
+    // ignore
+  }
+});

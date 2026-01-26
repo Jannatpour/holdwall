@@ -49,11 +49,11 @@ function okEnvelope(input: {
 }
 
 export async function GET(request: NextRequest) {
+  const trace_id = randomUUID();
   try {
     const user = await requireAuth();
     const tenant_id = (user as any).tenantId || "";
     const sp = request.nextUrl.searchParams;
-    const trace_id = randomUUID();
     const parsed = orchestrateSchema.parse({
       query: sp.get("query") || "",
       use_rag: sp.get("use_rag") === "true" ? true : undefined,
@@ -137,7 +137,8 @@ export async function GET(request: NextRequest) {
       okEnvelope({
         trace_id,
         method: "orchestrator",
-        answer: (response as any).answer || "",
+        // AIOrchestrator returns `{ response: string, citations: string[], ... }`
+        answer: (response as any).answer || (response as any).response || "",
         sources: (response as any).sources || (response as any).citations || [],
         confidence: typeof (response as any).confidence === "number" ? (response as any).confidence : 0.6,
         raw: response,
@@ -150,19 +151,37 @@ export async function GET(request: NextRequest) {
     if ((error as Error).message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const lower = errorMsg.toLowerCase();
+    const quota =
+      lower.includes("exceeded your current quota") ||
+      lower.includes("check your plan and billing") ||
+      lower.includes("insufficient_quota") ||
+      lower.includes("all models failed for task type");
     logger.error("Error orchestrating AI", {
-      error: error instanceof Error ? error.message : String(error),
+      trace_id,
+      error: errorMsg,
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (quota) {
+      return NextResponse.json(
+        {
+          error: "AI provider unavailable",
+          message: "OpenAI quota exceeded (update billing or rotate API key)",
+          trace_id,
+        },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json({ error: "Internal server error", trace_id }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
+  const trace_id = randomUUID();
   try {
     const user = await requireAuth();
     const tenant_id = (user as any).tenantId || "";
-    const trace_id = randomUUID();
     const body = await request.json();
     const validated = orchestrateSchema.parse(body);
 
@@ -243,7 +262,7 @@ export async function POST(request: NextRequest) {
       okEnvelope({
         trace_id,
         method: "orchestrator",
-        answer: (response as any).answer || "",
+        answer: (response as any).answer || (response as any).response || "",
         sources: (response as any).sources || (response as any).citations || [],
         confidence: typeof (response as any).confidence === "number" ? (response as any).confidence : 0.6,
         raw: response,
@@ -259,12 +278,30 @@ export async function POST(request: NextRequest) {
     if ((error as Error).message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const lower = errorMsg.toLowerCase();
+    const quota =
+      lower.includes("exceeded your current quota") ||
+      lower.includes("check your plan and billing") ||
+      lower.includes("insufficient_quota") ||
+      lower.includes("all models failed for task type");
     logger.error("Error orchestrating AI", {
-      error: error instanceof Error ? error.message : String(error),
+      trace_id,
+      error: errorMsg,
       stack: error instanceof Error ? error.stack : undefined,
     });
+    if (quota) {
+      return NextResponse.json(
+        {
+          error: "AI provider unavailable",
+          message: "OpenAI quota exceeded (update billing or rotate API key)",
+          trace_id,
+        },
+        { status: 503 }
+      );
+    }
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", trace_id },
       { status: 500 }
     );
   }

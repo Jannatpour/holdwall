@@ -9,6 +9,7 @@
 import { db } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
 import { DatabaseAuditLog } from "@/lib/audit/log-db";
+import type { AuditEntry } from "@/lib/audit/lineage";
 import { randomUUID } from "crypto";
 
 export interface ApprovalRequest {
@@ -99,6 +100,76 @@ export class ApprovalGateway {
   registerPolicy(policy: ApprovalPolicy): void {
     const key = `${policy.resourceType}:${policy.action}`;
     this.policies.set(key, policy);
+  }
+
+  /**
+   * Create an approval record directly (explicit approvers)
+   *
+   * This is intended for internal systems (workflows, automation) that already
+   * computed approvers and want a durable, human-gated record regardless of policy defaults.
+   */
+  async createApproval(input: {
+    tenantId: string;
+    type: string;
+    approvers: string[];
+    data: Record<string, unknown>;
+    correlationId: string;
+    requesterId?: string;
+    workspaceId?: string;
+    priority?: "low" | "medium" | "high" | "critical";
+  }): Promise<Approval> {
+    const resourceType = "workflow";
+    const resourceId = input.correlationId;
+    const action = input.type;
+
+    const approval = await db.approval.create({
+      data: {
+        tenantId: input.tenantId,
+        workspaceId: input.workspaceId || undefined,
+        resourceType,
+        resourceId,
+        action,
+        requesterId: input.requesterId || "system",
+        approvers: input.approvers || [],
+        decision: null,
+        approverId: null,
+        reason: null,
+        currentStep: 0,
+        totalSteps: 1,
+      },
+    });
+
+    // Audit log (best-effort)
+    try {
+      const entry: AuditEntry = {
+        audit_id: randomUUID(),
+        timestamp: new Date().toISOString(),
+        type: "approval",
+        tenant_id: input.tenantId,
+        actor_id: input.requesterId || "system",
+        correlation_id: input.correlationId,
+        causation_id: undefined,
+        evidence_refs: [],
+        data: {
+          approval_id: approval.id,
+          resource_type: resourceType,
+          resource_id: resourceId,
+          action,
+          decision: "approved", // creation event (separate from approval decision workflow)
+          approver_id: "",
+          reason: undefined,
+        },
+      };
+      await this.auditLog.append(entry);
+    } catch (error) {
+      logger.warn("Failed to write approval audit log", {
+        tenantId: input.tenantId,
+        approvalId: approval.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    return this.mapToApproval(approval);
   }
 
   /**

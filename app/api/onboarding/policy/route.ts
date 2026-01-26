@@ -3,6 +3,13 @@ import { requireAuth } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
 import { financialServicesMode, EscalationRule } from "@/lib/financial-services/operating-mode";
+import { z } from "zod";
+
+const onboardingPolicySchema = z.object({
+  sku: z.string().min(1),
+  risk_policy: z.string().min(1),
+  decisive_negatives: z.string().min(1),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +17,7 @@ export async function POST(request: NextRequest) {
     const tenant_id = (user as any).tenantId || "";
 
     const body = await request.json();
-    const { sku, risk_policy, decisive_negatives } = body;
+    const { sku, risk_policy, decisive_negatives } = onboardingPolicySchema.parse(body);
 
     logger.info("Onboarding: Policy saved", { tenant_id, sku });
 
@@ -69,6 +76,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("Onboarding: Failed to save policy", {
       error: error instanceof Error ? error.message : String(error),
     });

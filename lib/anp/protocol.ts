@@ -110,8 +110,14 @@ export class ANPProtocol {
 
   constructor() {
     if (process.env.NODE_ENV !== "test") {
+      // IMPORTANT: Avoid side effects (DB writes, timers) during cold start on serverless.
+      // Protocol instances can be imported by unrelated endpoints (signup/health).
       this.initializeDefaultNetworks();
-      this.startHealthMonitoring();
+
+      const isServerless = !!process.env.VERCEL;
+      if (!isServerless && process.env.ANP_ENABLE_HEALTH_MONITORING === "true") {
+        this.startHealthMonitoring();
+      }
     }
   }
 
@@ -149,30 +155,37 @@ export class ANPProtocol {
     }
 
     // Store in database (Prisma model: AgentNetwork)
-    try {
-      await db.agentNetwork.upsert({
-        where: { networkId: network.networkId },
-        create: {
+    // Default OFF in serverless to prevent cold-start DB thrash; enable explicitly if needed.
+    const isServerless = !!process.env.VERCEL;
+    const persistEnabled =
+      process.env.ANP_PERSIST_NETWORKS === "true" && !(isServerless && process.env.ANP_PERSIST_NETWORKS_ON_SERVERLESS !== "true");
+
+    if (persistEnabled) {
+      try {
+        await db.agentNetwork.upsert({
+          where: { networkId: network.networkId },
+          create: {
+            networkId: network.networkId,
+            name: network.name,
+            description: network.description || null,
+            agents: network.agents as any,
+            topology: network.topology,
+            metadata: network.metadata || {},
+          },
+          update: {
+            name: network.name,
+            description: network.description || null,
+            agents: network.agents as any,
+            topology: network.topology,
+            metadata: network.metadata || {},
+          },
+        });
+      } catch (error) {
+        logger.warn("Failed to persist network to database", {
+          error: error instanceof Error ? error.message : String(error),
           networkId: network.networkId,
-          name: network.name,
-          description: network.description || null,
-          agents: network.agents as any,
-          topology: network.topology,
-          metadata: network.metadata || {},
-        },
-        update: {
-          name: network.name,
-          description: network.description || null,
-          agents: network.agents as any,
-          topology: network.topology,
-          metadata: network.metadata || {},
-        },
-      });
-    } catch (error) {
-      logger.warn("Failed to persist network to database", {
-        error: error instanceof Error ? error.message : String(error),
-        networkId: network.networkId,
-      });
+        });
+      }
     }
 
     metrics.increment("anp_networks_created_total", {
@@ -516,7 +529,9 @@ export class ANPProtocol {
    */
   private initializeDefaultNetworks(): void {
     // Example: Default collaboration network
-    this.createNetwork({
+    // IMPORTANT: Do not persist default networks to the database during init.
+    // This avoids DB writes on cold start (serverless).
+    this.networks.set("default-collaboration", {
       networkId: "default-collaboration",
       name: "Default Collaboration Network",
       description: "Default network for agent collaboration",

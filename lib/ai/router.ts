@@ -96,102 +96,95 @@ export class ModelRouter {
 
   /**
    * Initialize model candidates with performance characteristics
+   * Updated with latest 2026 models: o1, o3, GPT-5.2, Claude Opus 4.5, Gemini 3 Pro
    */
   private initializeModelCandidates(): void {
     this.modelCandidates = [
-      // Latest 2026 Models - Reasoning/Complex Tasks
+      // OpenAI Reasoning Models (2026) - Best for complex reasoning tasks
       {
         model: "o1-preview",
         provider: "openai",
         taskTypes: ["judge", "eval", "generate"],
-        latencyP95: 12000, // o1 models have longer latency due to reasoning
+        latencyP95: 8000,
         costPer1kTokens: 0.015,
-        qualityScore: 0.98,
-        citationFaithfulness: 0.95,
+        qualityScore: 0.99,
+        citationFaithfulness: 0.97,
         priority: 10,
       },
       {
         model: "o1-mini",
         provider: "openai",
         taskTypes: ["judge", "eval", "generate"],
-        latencyP95: 8000,
-        costPer1kTokens: 0.003,
-        qualityScore: 0.96,
-        citationFaithfulness: 0.93,
+        latencyP95: 5000,
+        costPer1kTokens: 0.006,
+        qualityScore: 0.98,
+        citationFaithfulness: 0.96,
         priority: 9,
       },
       {
         model: "o3",
         provider: "openai",
         taskTypes: ["judge", "eval", "generate"],
-        latencyP95: 15000,
-        costPer1kTokens: 0.02,
-        qualityScore: 0.99,
-        citationFaithfulness: 0.97,
+        latencyP95: 10000,
+        costPer1kTokens: 0.025,
+        qualityScore: 0.995,
+        citationFaithfulness: 0.98,
         priority: 10,
       },
+      {
+        model: "o3-mini",
+        provider: "openai",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 6000,
+        costPer1kTokens: 0.012,
+        qualityScore: 0.985,
+        citationFaithfulness: 0.965,
+        priority: 9,
+      },
+
+      // OpenAI GPT-5 Series (2026) - Latest generation models
       {
         model: "gpt-5.2",
         provider: "openai",
         taskTypes: ["judge", "eval", "generate"],
-        latencyP95: 3500,
-        costPer1kTokens: 0.008,
-        qualityScore: 0.97,
-        citationFaithfulness: 0.94,
-        priority: 10,
-      },
-      {
-        model: "claude-opus-4.5",
-        provider: "anthropic",
-        taskTypes: ["judge", "eval", "generate"],
-        latencyP95: 4500,
-        costPer1kTokens: 0.05,
+        latencyP95: 4000,
+        costPer1kTokens: 0.018,
         qualityScore: 0.98,
         citationFaithfulness: 0.96,
-        priority: 10,
-      },
-      {
-        model: "gemini-3-pro",
-        provider: "generic",
-        taskTypes: ["judge", "eval", "generate"],
-        latencyP95: 4000,
-        costPer1kTokens: 0.007,
-        qualityScore: 0.97,
-        citationFaithfulness: 0.95,
         priority: 9,
       },
       {
-        model: "gemini-3-flash",
-        provider: "generic",
+        model: "gpt-5.2-turbo",
+        provider: "openai",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 3000,
+        costPer1kTokens: 0.012,
+        qualityScore: 0.97,
+        citationFaithfulness: 0.95,
+        priority: 8,
+      },
+      {
+        model: "gpt-5-mini",
+        provider: "openai",
         taskTypes: ["extract", "cluster", "summarize", "generate"],
         latencyP95: 2000,
-        costPer1kTokens: 0.0002,
-        qualityScore: 0.90,
+        costPer1kTokens: 0.003,
+        qualityScore: 0.92,
         citationFaithfulness: 0.88,
         priority: 8,
       },
-      // Extract/Cluster tasks - Fast, cost-effective
       {
-        model: "gpt-4o-mini",
+        model: "gpt-5",
         provider: "openai",
-        taskTypes: ["extract", "cluster", "summarize"],
-        latencyP95: 1500,
-        costPer1kTokens: 0.00015,
-        qualityScore: 0.85,
-        citationFaithfulness: 0.80,
-        priority: 9,
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 4500,
+        costPer1kTokens: 0.02,
+        qualityScore: 0.98,
+        citationFaithfulness: 0.95,
+        priority: 7,
       },
-      {
-        model: "claude-3-haiku-20240307",
-        provider: "anthropic",
-        taskTypes: ["extract", "cluster", "summarize"],
-        latencyP95: 1800,
-        costPer1kTokens: 0.00025,
-        qualityScore: 0.88,
-        citationFaithfulness: 0.82,
-        priority: 8,
-      },
-      // Judge/Eval tasks - High quality (legacy models)
+
+      // OpenAI GPT-4o Series - Production workhorses
       {
         model: "gpt-4o",
         provider: "openai",
@@ -200,7 +193,69 @@ export class ModelRouter {
         costPer1kTokens: 0.00625,
         qualityScore: 0.95,
         citationFaithfulness: 0.92,
+        priority: 8,
+      },
+      {
+        model: "gpt-4o-mini",
+        provider: "openai",
+        taskTypes: ["extract", "cluster", "summarize", "generate"],
+        latencyP95: 1500,
+        costPer1kTokens: 0.00015,
+        qualityScore: 0.85,
+        citationFaithfulness: 0.80,
         priority: 9,
+      },
+      {
+        model: "gpt-4.1",
+        provider: "openai",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 3200,
+        costPer1kTokens: 0.008,
+        qualityScore: 0.96,
+        citationFaithfulness: 0.93,
+        priority: 7,
+      },
+      {
+        model: "gpt-4.1-mini",
+        provider: "openai",
+        taskTypes: ["extract", "cluster", "summarize", "generate"],
+        latencyP95: 1700,
+        costPer1kTokens: 0.0002,
+        qualityScore: 0.88,
+        citationFaithfulness: 0.84,
+        priority: 8,
+      },
+
+      // Anthropic Claude (2026) - Latest models
+      {
+        model: "claude-opus-4.5",
+        provider: "anthropic",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 4500,
+        costPer1kTokens: 0.05,
+        qualityScore: 0.98,
+        citationFaithfulness: 0.96,
+        priority: 9,
+      },
+      {
+        model: "claude-sonnet-4.5",
+        provider: "anthropic",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 2800,
+        costPer1kTokens: 0.012,
+        qualityScore: 0.95,
+        citationFaithfulness: 0.93,
+        priority: 8,
+      },
+      {
+        model: "claude-haiku-4.5",
+        provider: "anthropic",
+        taskTypes: ["extract", "cluster", "summarize"],
+        latencyP95: 1600,
+        costPer1kTokens: 0.0003,
+        qualityScore: 0.90,
+        citationFaithfulness: 0.85,
+        priority: 8,
       },
       {
         model: "claude-3-opus-20240229",
@@ -210,7 +265,7 @@ export class ModelRouter {
         costPer1kTokens: 0.045,
         qualityScore: 0.96,
         citationFaithfulness: 0.94,
-        priority: 8,
+        priority: 7,
       },
       {
         model: "claude-3-sonnet-20240229",
@@ -220,8 +275,51 @@ export class ModelRouter {
         costPer1kTokens: 0.009,
         qualityScore: 0.93,
         citationFaithfulness: 0.90,
+        priority: 6,
+      },
+      {
+        model: "claude-3-haiku-20240307",
+        provider: "anthropic",
+        taskTypes: ["extract", "cluster", "summarize"],
+        latencyP95: 1800,
+        costPer1kTokens: 0.00025,
+        qualityScore: 0.88,
+        citationFaithfulness: 0.82,
         priority: 7,
       },
+
+      // Google Gemini (2026) - Latest models
+      {
+        model: "gemini-3-pro",
+        provider: "generic",
+        taskTypes: ["judge", "eval", "generate"],
+        latencyP95: 3500,
+        costPer1kTokens: 0.015,
+        qualityScore: 0.97,
+        citationFaithfulness: 0.94,
+        priority: 8,
+      },
+      {
+        model: "gemini-3-flash",
+        provider: "generic",
+        taskTypes: ["extract", "cluster", "summarize", "generate"],
+        latencyP95: 1800,
+        costPer1kTokens: 0.0005,
+        qualityScore: 0.91,
+        citationFaithfulness: 0.87,
+        priority: 8,
+      },
+      {
+        model: "gemini-2.0-flash-exp",
+        provider: "generic",
+        taskTypes: ["extract", "cluster", "summarize", "generate"],
+        latencyP95: 2000,
+        costPer1kTokens: 0.0004,
+        qualityScore: 0.89,
+        citationFaithfulness: 0.85,
+        priority: 7,
+      },
+
       // Generate tasks - Balanced
       {
         model: "gpt-4-turbo",
@@ -231,7 +329,7 @@ export class ModelRouter {
         costPer1kTokens: 0.02,
         qualityScore: 0.94,
         citationFaithfulness: 0.91,
-        priority: 8,
+        priority: 6,
       },
       // Fallback models
       {
@@ -642,6 +740,9 @@ export class ModelRouter {
       c.taskTypes.includes(config.taskType)
     );
 
+    // Filter by provider availability (keys configured). Generic providers are not supported in this repo yet.
+    candidates = candidates.filter((c) => this.isProviderConfigured(c.provider));
+
     // Filter by latency constraint
     if (config.latencyConstraint) {
       candidates = candidates.filter(
@@ -690,6 +791,12 @@ export class ModelRouter {
     return candidates[0];
   }
 
+  private isProviderConfigured(provider: ModelCandidate["provider"]): boolean {
+    if (provider === "openai") return Boolean(process.env.OPENAI_API_KEY);
+    if (provider === "anthropic") return Boolean(process.env.ANTHROPIC_API_KEY);
+    return false;
+  }
+
   /**
    * Try fallback models
    */
@@ -700,17 +807,20 @@ export class ModelRouter {
     fallbackChain: string[]
   ): Promise<Omit<RoutingResult, "latency">> {
     // Get fallback candidates (exclude failed model)
-    const fallbackCandidates = this.modelCandidates.filter(
-      (c) =>
-        c.taskTypes.includes(config.taskType) &&
-        c.model !== failedModel.model &&
-        c.provider !== failedModel.provider // Prefer different provider
-    );
+    const fallbackCandidates = this.modelCandidates
+      .filter((c) => c.taskTypes.includes(config.taskType) && c.model !== failedModel.model)
+      .filter((c) => this.isProviderConfigured(c.provider));
 
-    // Sort by priority
-    fallbackCandidates.sort((a, b) => b.priority - a.priority);
+    // Prefer different provider first, then priority.
+    fallbackCandidates.sort((a, b) => {
+      const aDiff = a.provider === failedModel.provider ? 0 : 1;
+      const bDiff = b.provider === failedModel.provider ? 0 : 1;
+      if (aDiff !== bDiff) return bDiff - aDiff;
+      return b.priority - a.priority;
+    });
 
     // Try each fallback candidate
+    let lastError: string | undefined;
     for (const candidate of fallbackCandidates) {
       fallbackChain.push(candidate.model);
 
@@ -751,10 +861,11 @@ export class ModelRouter {
           },
         };
       } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error);
         logger.warn("Model router: fallback model failed", {
           taskType: config.taskType,
           model: candidate.model,
-          error: error instanceof Error ? error.message : String(error),
+          error: lastError,
         });
         // Continue to next fallback
       }
@@ -762,7 +873,9 @@ export class ModelRouter {
 
     // All fallbacks failed
     throw new Error(
-      `All models failed for task type ${config.taskType}. Tried: ${fallbackChain.join(", ")}`
+      `All models failed for task type ${config.taskType}. Tried: ${fallbackChain.join(", ")}${
+        lastError ? `. Last error: ${lastError}` : ""
+      }`
     );
   }
 
@@ -773,15 +886,18 @@ export class ModelRouter {
     fallbackChain: string[],
     opts: { onDelta: (delta: string) => void; signal?: AbortSignal }
   ): Promise<Omit<StreamingRoutingResult, "latency">> {
-    const fallbackCandidates = this.modelCandidates.filter(
-      (c) =>
-        c.taskTypes.includes(config.taskType) &&
-        c.model !== failedModel.model &&
-        c.provider !== failedModel.provider
-    );
+    const fallbackCandidates = this.modelCandidates
+      .filter((c) => c.taskTypes.includes(config.taskType) && c.model !== failedModel.model)
+      .filter((c) => this.isProviderConfigured(c.provider));
 
-    fallbackCandidates.sort((a, b) => b.priority - a.priority);
+    fallbackCandidates.sort((a, b) => {
+      const aDiff = a.provider === failedModel.provider ? 0 : 1;
+      const bDiff = b.provider === failedModel.provider ? 0 : 1;
+      if (aDiff !== bDiff) return bDiff - aDiff;
+      return b.priority - a.priority;
+    });
 
+    let lastError: string | undefined;
     for (const candidate of fallbackCandidates) {
       fallbackChain.push(candidate.model);
 
@@ -816,16 +932,19 @@ export class ModelRouter {
           },
         };
       } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error);
         logger.warn("Model router (stream): fallback model failed", {
           taskType: config.taskType,
           model: candidate.model,
-          error: error instanceof Error ? error.message : String(error),
+          error: lastError,
         });
       }
     }
 
     throw new Error(
-      `All models failed for task type ${config.taskType} (stream). Tried: ${fallbackChain.join(", ")}`
+      `All models failed for task type ${config.taskType} (stream). Tried: ${fallbackChain.join(", ")}${
+        lastError ? `. Last error: ${lastError}` : ""
+      }`
     );
   }
 

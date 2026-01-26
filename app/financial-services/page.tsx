@@ -1,7 +1,9 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { FinancialServicesDashboardClient } from "@/components/financial-services/dashboard-client";
 import { Building2 } from "lucide-react";
+import { DashboardLoading } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = {
   title: "Financial Services | Holdwall POS",
@@ -33,7 +35,9 @@ export default async function FinancialServicesPage() {
           </div>
         </div>
         
-        <FinancialServicesDashboardClient />
+        <Suspense fallback={<DashboardLoading />}>
+          <FinancialServicesDashboardClient />
+        </Suspense>
       </div>
     </AppShell>
   );

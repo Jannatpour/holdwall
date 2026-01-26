@@ -14,6 +14,11 @@ const eslintConfig = defineConfig([
     "build/**",
     ".vercel/**",
     "next-env.d.ts",
+    // Generated artifacts (never lint):
+    "test-results/**",
+    "playwright-report/**",
+    "playwright/.cache/**",
+    "coverage/**",
   ]),
   // Project-wide pragmatics: keep strictness, but avoid blocking CI on unavoidable framework edges.
   {

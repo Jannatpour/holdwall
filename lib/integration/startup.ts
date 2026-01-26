@@ -10,6 +10,7 @@ import { getRedisClient } from "@/lib/cache/redis";
 import { db } from "@/lib/db/client";
 import { initializeBroadcaster } from "@/lib/events/broadcast-helper";
 import { DynamicLoadBalancer, type LoadBalancingConfig } from "@/lib/load-balancing/distributor";
+import { enforceStagingParity } from "@/lib/environment/staging-parity";
 
 export interface StartupResult {
   success: boolean;
@@ -47,6 +48,22 @@ export async function initializeServices(): Promise<StartupResult> {
     },
     errors: [],
   };
+
+  // Enforce staging parity (environment contracts)
+  try {
+    await enforceStagingParity();
+    logger.info("Staging parity check passed");
+  } catch (error) {
+    result.success = false;
+    result.errors.push(`Staging parity check failed: ${error instanceof Error ? error.message : String(error)}`);
+    logger.error("Staging parity enforcement failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // In production/staging, fail startup if parity check fails
+    if (process.env.NODE_ENV === "production") {
+      throw error;
+    }
+  }
 
   // Check database
   try {

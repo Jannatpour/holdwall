@@ -1,7 +1,9 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { OverviewDataClient } from "@/components/overview-data-client";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
+import { OverviewLoading } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = {
   title: "Overview | Holdwall POS",
@@ -24,7 +26,9 @@ export default async function OverviewPage() {
         </div>
         
         {/* Main Overview Data (includes Narrative Risk Brief) */}
-        <OverviewDataClient />
+        <Suspense fallback={<OverviewLoading />}>
+          <OverviewDataClient />
+        </Suspense>
       </div>
     </AppShell>
   );

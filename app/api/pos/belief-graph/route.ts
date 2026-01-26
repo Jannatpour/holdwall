@@ -7,8 +7,14 @@ import { requireAuth } from "@/lib/auth/session";
 import { EnhancedBeliefGraphEngineering } from "@/lib/pos/belief-graph-engineering";
 import type { WeakNodeAnalysis } from "@/lib/pos/belief-graph-engineering";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
 
 const bge = new EnhancedBeliefGraphEngineering();
+
+const bgePostSchema = z.object({
+  nodeId: z.string().min(1),
+  strategy: z.enum(["neutralize", "isolate", "decay"]).optional().default("neutralize"),
+});
 
 /**
  * Generate beautiful HTML page for weak nodes
@@ -468,23 +474,22 @@ export async function POST(request: NextRequest) {
     const tenantId = (user as any).tenantId || "";
 
     const body = await request.json();
-    const { nodeId, strategy } = body;
-
-    if (!nodeId) {
-      return NextResponse.json(
-        { error: "nodeId is required" },
-        { status: 400 }
-      );
-    }
+    const validated = bgePostSchema.parse(body);
 
     const edgeIds = await bge.makeStructurallyIrrelevant(
       tenantId,
-      nodeId,
-      strategy || "neutralize"
+      validated.nodeId,
+      validated.strategy
     );
 
     return NextResponse.json({ success: true, edgeIds });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("BGE API error", {
       error: error instanceof Error ? error.message : String(error),
     });

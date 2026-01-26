@@ -36,7 +36,6 @@ import { TrustSubstitutionMechanism } from '@/lib/pos/trust-substitution';
 import { DecisionFunnelDomination } from '@/lib/pos/decision-funnel-domination';
 import { POSOrchestrator } from '@/lib/pos/orchestrator';
 import { SignalIngestionService } from '@/lib/signals/ingestion';
-import { EnhancedSignalIngestionService } from '@/lib/operations/enhanced-signal-ingestion';
 import { IdempotencyService } from '@/lib/operations/idempotency';
 import { TransactionManager } from '@/lib/operations/transaction-manager';
 import { ErrorRecoveryService } from '@/lib/operations/error-recovery';
@@ -169,14 +168,12 @@ describe('Business Flows - Complete Coverage (52 Steps + All End-to-End Flows)',
     });
 
     test('Step 7: Ingest New Signal', async () => {
-      const baseIngestion = new SignalIngestionService(evidenceVault, eventStore);
       const idempotency = new IdempotencyService();
-      const transactionManager = new TransactionManager();
       const errorRecovery = new ErrorRecoveryService();
-      const ingestionService = new EnhancedSignalIngestionService(
-        baseIngestion,
+      const ingestionService = new SignalIngestionService(
+        evidenceVault,
+        eventStore,
         idempotency,
-        transactionManager,
         errorRecovery
       );
       
@@ -209,14 +206,12 @@ describe('Business Flows - Complete Coverage (52 Steps + All End-to-End Flows)',
 
     test('Step 8: Real-Time Signal Stream', async () => {
       // Test real-time signal ingestion (simulating stream)
-      const baseIngestion = new SignalIngestionService(evidenceVault, eventStore);
       const idempotency = new IdempotencyService();
-      const transactionManager = new TransactionManager();
       const errorRecovery = new ErrorRecoveryService();
-      const ingestionService = new EnhancedSignalIngestionService(
-        baseIngestion,
+      const ingestionService = new SignalIngestionService(
+        evidenceVault,
+        eventStore,
         idempotency,
-        transactionManager,
         errorRecovery
       );
       
@@ -961,14 +956,12 @@ describe('Business Flows - Complete Coverage (52 Steps + All End-to-End Flows)',
 
   describe('Complete End-to-End Business Flows', () => {
     test('Flow 1: Complete Signal-to-Artifact-to-Publishing Pipeline', async () => {
-      const baseIngestion = new SignalIngestionService(evidenceVault, eventStore);
       const idempotency = new IdempotencyService();
-      const transactionManager = new TransactionManager();
       const errorRecovery = new ErrorRecoveryService();
-      const ingestionService = new EnhancedSignalIngestionService(
-        baseIngestion,
+      const ingestionService = new SignalIngestionService(
+        evidenceVault,
+        eventStore,
         idempotency,
-        transactionManager,
         errorRecovery
       );
       const claimService = new ClaimExtractionService(evidenceVault, eventStore);
@@ -2014,14 +2007,12 @@ describe('Business Flows - Complete Coverage (52 Steps + All End-to-End Flows)',
     test('Flow 29: Complete Real-Time Event Streaming Flow', async () => {
       const eventStore = new DatabaseEventStore();
       const evidenceVault = new DatabaseEvidenceVault();
-      const baseIngestion = new SignalIngestionService(evidenceVault, eventStore);
       const idempotency = new IdempotencyService();
-      const transactionManager = new TransactionManager();
       const errorRecovery = new ErrorRecoveryService();
-      const ingestionService = new EnhancedSignalIngestionService(
-        baseIngestion,
+      const ingestionService = new SignalIngestionService(
+        evidenceVault,
+        eventStore,
         idempotency,
-        transactionManager,
         errorRecovery
       );
       
@@ -2518,14 +2509,12 @@ describe('Business Flows - Complete Coverage (52 Steps + All End-to-End Flows)',
     test('Flow 40: Complete Real-World Crisis Response Flow', async () => {
       const evidenceVault = new DatabaseEvidenceVault();
       const eventStore = new DatabaseEventStore();
-      const baseIngestion = new SignalIngestionService(evidenceVault, eventStore);
       const idempotency = new IdempotencyService();
-      const transactionManager = new TransactionManager();
       const errorRecovery = new ErrorRecoveryService();
-      const ingestionService = new EnhancedSignalIngestionService(
-        baseIngestion,
+      const ingestionService = new SignalIngestionService(
+        evidenceVault,
+        eventStore,
         idempotency,
-        transactionManager,
         errorRecovery
       );
       const claimService = new ClaimExtractionService(evidenceVault, eventStore);

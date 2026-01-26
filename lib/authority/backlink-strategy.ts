@@ -245,6 +245,7 @@ export class BacklinkStrategy {
 
   /**
    * Find broken link opportunities
+   * Uses WebCrawler to identify 404 links that could be replaced with targetUrl
    */
   private async findBrokenLinkOpportunities(
     targetUrl: string,
@@ -252,9 +253,68 @@ export class BacklinkStrategy {
   ): Promise<BacklinkOpportunity[]> {
     const opportunities: BacklinkOpportunity[] = [];
     
-    // This would require crawling sites and checking for 404 links
-    // For now, return empty array as this is a more complex operation
-    // that would require significant crawling infrastructure
+    try {
+      const crawler = new WebCrawler();
+      const targetDomain = new URL(targetUrl).hostname;
+      
+      // Extract potential target domains from content (simplified - in production would use NLP)
+      const urlPattern = /https?:\/\/([^\s"<>]+)/gi;
+      const urls = Array.from(content.matchAll(urlPattern)).map(match => match[0]);
+      const uniqueDomains = new Set(urls.map(url => {
+        try {
+          return new URL(url).hostname;
+        } catch {
+          return null;
+        }
+      }).filter(Boolean) as string[]);
+      
+      // For each domain, check for broken links (limited to avoid excessive crawling)
+      const maxDomainsToCheck = 5;
+      const domainsToCheck = Array.from(uniqueDomains).slice(0, maxDomainsToCheck);
+      
+      for (const domain of domainsToCheck) {
+        try {
+          // Crawl domain's sitemap or main page to find links
+          const crawlResult = await crawler.crawlUrl({
+            url: `https://${domain}`,
+            depth: 1,
+            maxPages: 10,
+            extractLinks: true,
+            respectRobots: true,
+          });
+          
+          if (crawlResult.links && crawlResult.links.length > 0) {
+            // Check each link for 404 status
+            for (const link of crawlResult.links.slice(0, 20)) { // Limit to 20 links per domain
+              try {
+                const response = await fetch(link, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
+                if (response.status === 404) {
+                  // Found a broken link - potential opportunity
+                  const opportunity: BacklinkOpportunity = {
+                    targetUrl,
+                    targetDomain,
+                    authority: this.estimateDomainAuthority(domain),
+                    opportunity: `Broken link on ${domain} could be replaced with ${targetUrl}`,
+                    suggestedAnchorText: this.extractKeyPhrases(content)[0] || 'Learn more',
+                    confidence: 0.6, // Moderate confidence
+                  };
+                  opportunities.push(opportunity);
+                }
+              } catch {
+                // Link check failed - skip
+                continue;
+              }
+            }
+          }
+        } catch (error) {
+          // Domain crawl failed - skip
+          continue;
+        }
+      }
+    } catch (error) {
+      // Crawling infrastructure unavailable - return empty array
+      // This is acceptable as broken link detection requires significant infrastructure
+    }
     
     return opportunities;
   }

@@ -295,24 +295,46 @@ export const ArtifactValidationRules = {
   /**
    * Validate artifact has required citations
    */
-  validateCitations: (citations: Array<{ url: string; title?: string }>): { valid: boolean; errors: string[] } => {
+  validateCitations: async (
+    tenantId: string,
+    evidenceIds: string[]
+  ): Promise<{ valid: boolean; errors: string[] }> => {
     const errors: string[] = [];
 
-    if (!citations || citations.length === 0) {
-      errors.push("Artifact must have at least one citation");
+    if (!evidenceIds || evidenceIds.length === 0) {
+      errors.push("Artifact must reference at least one evidence item");
       return { valid: false, errors };
     }
 
-    for (const citation of citations) {
-      if (!citation.url || citation.url.trim().length === 0) {
-        errors.push("Citation URL cannot be empty");
-      } else {
-        try {
-          new URL(citation.url);
-        } catch {
-          errors.push(`Invalid citation URL: ${citation.url}`);
+    const uniqueEvidenceIds = Array.from(
+      new Set(evidenceIds.map((id) => (typeof id === "string" ? id.trim() : "")).filter(Boolean))
+    );
+    if (uniqueEvidenceIds.length === 0) {
+      errors.push("Evidence references cannot be empty");
+      return { valid: false, errors };
+    }
+
+    // Validate evidence IDs exist for this tenant.
+    try {
+      const existing = await db.evidence.findMany({
+        where: {
+          tenantId,
+          id: { in: uniqueEvidenceIds },
+        },
+        select: { id: true },
+      });
+      const existingIds = new Set(existing.map((e) => e.id));
+      for (const id of uniqueEvidenceIds) {
+        if (!existingIds.has(id)) {
+          errors.push(`Referenced evidence not found: ${id}`);
         }
       }
+    } catch (error) {
+      logger.error("Error validating artifact evidence references", {
+        tenantId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      errors.push("Failed to validate artifact evidence references");
     }
 
     return {
@@ -586,9 +608,16 @@ export async function validateBusinessRules(
         const contentValidation = ArtifactValidationRules.validateContent(content, type);
         allErrors.push(...contentValidation.errors);
 
-        if (data.citations) {
-          const citationsValidation = ArtifactValidationRules.validateCitations(
-            data.citations as Array<{ url: string; title?: string }>
+        // Prefer explicit evidence IDs; keep compatibility with legacy `citations` shape.
+        const evidenceIds =
+          (data.evidenceIds as string[] | undefined) ??
+          (data.citations
+            ? (data.citations as Array<{ url: string; title?: string }>).map((c) => c.url)
+            : undefined);
+        if (Array.isArray(evidenceIds)) {
+          const citationsValidation = await ArtifactValidationRules.validateCitations(
+            tenantId,
+            evidenceIds
           );
           allErrors.push(...citationsValidation.errors);
         }

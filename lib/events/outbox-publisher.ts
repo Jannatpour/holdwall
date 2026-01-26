@@ -18,11 +18,33 @@ function getKafkaProducer() {
 
   try {
     const { Kafka } = require("kafkajs");
-    const brokers = (process.env.KAFKA_BROKERS || "localhost:9092").split(",");
+    const brokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+      .split(",")
+      .map((b: string) => b.trim())
+      .filter(Boolean);
+
+    const tlsEnabled =
+      process.env.KAFKA_SSL === "true" ||
+      process.env.KAFKA_TLS === "true" ||
+      brokers.some((b: string) => String(b).includes(":9094"));
+
+    const saslMechanism = process.env.KAFKA_SASL_MECHANISM?.trim();
+    const saslUsername = process.env.KAFKA_SASL_USERNAME?.trim();
+    const saslPassword = process.env.KAFKA_SASL_PASSWORD?.trim();
+    const sasl =
+      saslMechanism && saslUsername && saslPassword
+        ? {
+            mechanism: saslMechanism as any,
+            username: saslUsername,
+            password: saslPassword,
+          }
+        : undefined;
     
     kafkaClient = new Kafka({
       clientId: "holdwall-outbox-publisher",
       brokers,
+      ssl: tlsEnabled ? { rejectUnauthorized: true } : undefined,
+      sasl,
       retry: {
         retries: 8,
         initialRetryTime: 100,
@@ -51,6 +73,8 @@ export class EventOutboxPublisher {
   private kafkaTopic: string = "holdwall-events";
   private batchSize: number = 100;
   private maxRetries: number = 3;
+  private backgroundProcessingTimeout: NodeJS.Timeout | null = null;
+  private isBackgroundProcessing: boolean = false;
 
   constructor() {
     this.kafkaEnabled = process.env.KAFKA_ENABLED === "true";
@@ -174,23 +198,69 @@ export class EventOutboxPublisher {
    */
   async startBackgroundProcessing(intervalMs: number = 5000): Promise<void> {
     if (!this.kafkaEnabled) {
+      logger.info("Kafka not enabled, background processing skipped");
       return;
     }
 
+    if (this.isBackgroundProcessing) {
+      logger.warn("Background processing already running");
+      return;
+    }
+
+    this.isBackgroundProcessing = true;
+    logger.info("Starting background outbox processing", { intervalMs });
+
     const process = async () => {
+      if (!this.isBackgroundProcessing) {
+        return; // Stop processing if flag is false
+      }
+
       try {
         await this.processOutbox();
       } catch (error) {
         logger.error("Error processing outbox", {
           error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
         });
       }
 
-      // Schedule next run
-      setTimeout(process, intervalMs);
+      // Schedule next run if still processing
+      if (this.isBackgroundProcessing) {
+        this.backgroundProcessingTimeout = setTimeout(process, intervalMs);
+      }
     };
 
     // Start processing
     process();
+  }
+
+  /**
+   * Stop background processing
+   */
+  async stopBackgroundProcessing(): Promise<void> {
+    if (!this.isBackgroundProcessing) {
+      return;
+    }
+
+    logger.info("Stopping background outbox processing");
+    this.isBackgroundProcessing = false;
+
+    if (this.backgroundProcessingTimeout) {
+      clearTimeout(this.backgroundProcessingTimeout);
+      this.backgroundProcessingTimeout = null;
+    }
+
+    // Disconnect Kafka producer if connected
+    const producer = getKafkaProducer();
+    if (producer && producer.isConnected) {
+      try {
+        await producer.disconnect();
+        logger.info("Kafka producer disconnected");
+      } catch (error) {
+        logger.error("Error disconnecting Kafka producer", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
   }
 }

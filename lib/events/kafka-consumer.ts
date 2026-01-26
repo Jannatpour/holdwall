@@ -36,9 +36,29 @@ export class KafkaConsumer {
     // Lazy load kafkajs
     try {
       const { Kafka } = require("kafkajs");
+      const brokers = config.brokers;
+      const tlsEnabled =
+        process.env.KAFKA_SSL === "true" ||
+        process.env.KAFKA_TLS === "true" ||
+        brokers.some((b: string) => String(b).includes(":9094"));
+
+      const saslMechanism = process.env.KAFKA_SASL_MECHANISM?.trim();
+      const saslUsername = process.env.KAFKA_SASL_USERNAME?.trim();
+      const saslPassword = process.env.KAFKA_SASL_PASSWORD?.trim();
+      const sasl =
+        saslMechanism && saslUsername && saslPassword
+          ? {
+              mechanism: saslMechanism as any,
+              username: saslUsername,
+              password: saslPassword,
+            }
+          : undefined;
+
       this.kafka = new Kafka({
         clientId: "holdwall-consumer",
-        brokers: config.brokers,
+        brokers,
+        ssl: tlsEnabled ? { rejectUnauthorized: true } : undefined,
+        sasl,
         retry: {
           retries: 8,
           initialRetryTime: 100,

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Filter, Radio } from "lucide-react";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { SignalsDataClient } from "@/components/signals-data-client";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
+import { SignalsLoading } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = genMeta(
   "Signals",
@@ -52,13 +54,19 @@ export default function SignalsPage() {
             <TabsTrigger value="unclustered">Unclustered</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="space-y-4">
-            <SignalsDataClient tabFilter="all" />
+            <Suspense fallback={<SignalsLoading />}>
+              <SignalsDataClient tabFilter="all" />
+            </Suspense>
           </TabsContent>
           <TabsContent value="high-risk" className="space-y-4">
-            <SignalsDataClient tabFilter="high-risk" />
+            <Suspense fallback={<SignalsLoading />}>
+              <SignalsDataClient tabFilter="high-risk" />
+            </Suspense>
           </TabsContent>
           <TabsContent value="unclustered" className="space-y-4">
-            <SignalsDataClient tabFilter="unclustered" />
+            <Suspense fallback={<SignalsLoading />}>
+              <SignalsDataClient tabFilter="unclustered" />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>

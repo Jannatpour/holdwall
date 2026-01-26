@@ -302,12 +302,15 @@ Be concise and actionable for executive decision-making.`;
 
     const briefText = result.response || "";
 
+    // Calculate financial exposure based on actual data
+    const financialExposure = await this.calculateFinancialExposure(tenantId, cluster);
+
     return {
       rootCause: briefText.substring(0, 300),
       exposureAssessment: {
         customerImpact: cluster.size,
         regulatoryRisk: cluster.decisiveness > 0.7 ? "high" : "medium",
-        financialExposure: "TBD", // Would be calculated from actual data
+        financialExposure,
       },
       regulatoryImplications: [
         "Potential CFPB inquiry if not addressed",
@@ -403,6 +406,78 @@ Be concise and actionable for executive decision-making.`;
     });
 
     return artifact.id;
+  }
+
+  /**
+   * Calculate financial exposure based on actual data
+   */
+  private async calculateFinancialExposure(
+    tenantId: string,
+    cluster: any
+  ): Promise<string> {
+    try {
+      // Get related cases for this cluster
+      const cases = await db.case.findMany({
+        where: {
+          tenantId,
+          status: { in: ["SUBMITTED", "IN_PROGRESS", "RESOLVED"] },
+          createdAt: {
+            gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
+          },
+        },
+      });
+
+      // Calculate exposure factors
+      const clusterSize = cluster.size || 0;
+      const decisiveness = cluster.decisiveness || 0;
+      const caseCount = cases.length;
+      
+      // Get forecast probability if available
+      const forecast = await db.forecast.findFirst({
+        where: {
+          tenantId,
+          type: "OUTBREAK",
+          typeData: {
+            path: ["clusterId"],
+            equals: cluster.id,
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      // Forecast model stores the probability in `value` (0-1).
+      const outbreakProbability = forecast?.value ?? 0;
+      
+      // Calculate base exposure score
+      // Factors: cluster size (scale 1-10), decisiveness (0-1), case count, outbreak probability
+      const sizeFactor = Math.min(clusterSize / 10, 1) * 10;
+      const decisivenessFactor = decisiveness * 10;
+      const caseFactor = Math.min(caseCount / 5, 1) * 10;
+      const probabilityFactor = outbreakProbability * 10;
+      
+      const exposureScore = (sizeFactor + decisivenessFactor + caseFactor + probabilityFactor) / 4;
+      
+      // Map to exposure level
+      if (exposureScore >= 8) {
+        return "Critical - Immediate action required";
+      } else if (exposureScore >= 6) {
+        return "High - Significant financial risk";
+      } else if (exposureScore >= 4) {
+        return "Medium - Moderate financial impact expected";
+      } else if (exposureScore >= 2) {
+        return "Low - Minimal financial impact";
+      } else {
+        return "Very Low - Negligible financial exposure";
+      }
+    } catch (error) {
+      logger.error("Error calculating financial exposure", {
+        tenantId,
+        clusterId: cluster.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // Fallback to medium risk if calculation fails
+      return "Medium - Assessment in progress";
+    }
   }
 }
 

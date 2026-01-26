@@ -6,6 +6,7 @@ metadata:
   labels:
     app: holdwall
     component: worker
+    managed-by: kustomize
 spec:
   replicas: 2
   strategy:
@@ -17,11 +18,13 @@ spec:
     matchLabels:
       app: holdwall
       component: worker
+      managed-by: kustomize
   template:
     metadata:
       labels:
         app: holdwall
         component: worker
+        managed-by: kustomize
     spec:
       serviceAccountName: holdwall-worker
       securityContext:
@@ -30,9 +33,14 @@ spec:
         fsGroup: 1001
       containers:
         - name: pipeline-worker
-          image: 597743362576.dkr.ecr.us-east-1.amazonaws.com/holdwall-pos:20260122-141807
+          image: 597743362576.dkr.ecr.us-east-1.amazonaws.com/holdwall-pos:20260124-221959
           workingDir: /app
-          command: ["node", "-e", "require('./lib/workers/pipeline-worker').start()"]
+          command:
+            [
+              "sh",
+              "-lc",
+              "npx tsx -e \"require('./lib/workers/pipeline-worker').startPipelineWorker().catch((e)=>{ console.error(e); process.exit(1); })\"",
+            ]
           env:
             - name: DATABASE_URL
               valueFrom:

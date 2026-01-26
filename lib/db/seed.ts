@@ -25,6 +25,30 @@ export async function seedDatabase() {
     },
   });
 
+  // Seed baseline source policies so validation and verifiers can run end-to-end.
+  // Empty `allowedSources` means "allow all sources of this type".
+  const sourceTypes = ["reddit", "github", "rss", "webhook", "s3"];
+  for (const sourceType of sourceTypes) {
+    await db.sourcePolicy.upsert({
+      where: {
+        tenantId_sourceType: {
+          tenantId: tenant.id,
+          sourceType,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        sourceType,
+        allowedSources: [],
+        collectionMethod: "API",
+        retentionDays: 365,
+        autoDelete: false,
+        complianceFlags: [],
+      },
+    });
+  }
+
   // Generate password hashes
   const adminPasswordHash = await bcrypt.hash("admin123", 10);
   const userPasswordHash = await bcrypt.hash("user123", 10);

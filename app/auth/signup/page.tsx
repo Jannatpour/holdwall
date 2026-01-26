@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, Suspense, useEffect, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+export const dynamic = "force-dynamic";
+
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,10 +15,9 @@ import Link from "next/link";
 
 type PasswordStrength = "weak" | "medium" | "strong" | "";
 
-function SignUpPageContent() {
+export default function SignUpPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/overview";
+  const [callbackUrl, setCallbackUrl] = useState("/overview");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +34,18 @@ function SignUpPageContent() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
+
+  // Avoid `useSearchParams` so the page doesn't get stuck on a Suspense fallback in prod
+  // if hydration fails for any reason (CSP, blocked scripts, runtime errors, etc).
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const nextCallbackUrl = params.get("callbackUrl") || "/overview";
+      queueMicrotask(() => setCallbackUrl(nextCallbackUrl));
+    } catch {
+      queueMicrotask(() => setCallbackUrl("/overview"));
+    }
+  }, []);
 
   const calculatePasswordStrength = (pwd: string): PasswordStrength => {
     if (!pwd) return "";
@@ -142,7 +155,36 @@ function SignUpPageContent() {
         }),
       });
 
-      const signupData = await signupResponse.json();
+      // Check if response is JSON
+      const contentType = signupResponse.headers.get("content-type") || "";
+      let signupData: any = {};
+      
+      if (contentType.includes("application/json")) {
+        try {
+          signupData = await signupResponse.json();
+        } catch (parseError) {
+          // If JSON parsing fails, try to get text
+          const text = await signupResponse.text();
+          console.error("Failed to parse JSON response:", text);
+          setErrorMessage("Server returned an invalid response. Please try again.");
+          setIsLoading(false);
+          return;
+        }
+      } else {
+        // Response is not JSON (likely HTML error page)
+        const text = await signupResponse.text();
+        console.error("Non-JSON response received:", text.substring(0, 200));
+        
+        if (signupResponse.status === 500) {
+          setErrorMessage("Server error occurred. Please try again later or contact support.");
+        } else if (signupResponse.status === 503) {
+          setErrorMessage("Service temporarily unavailable. Please try again later.");
+        } else {
+          setErrorMessage("An unexpected error occurred. Please try again.");
+        }
+        setIsLoading(false);
+        return;
+      }
 
       if (!signupResponse.ok) {
         let errorMsg = signupData.error || "Failed to create account";
@@ -155,12 +197,22 @@ function SignUpPageContent() {
         if (signupResponse.status === 409) {
           errorMsg = "An account with this email already exists. Please sign in instead.";
         }
+        if (signupResponse.status === 400) {
+          errorMsg = signupData.message || signupData.error || "Invalid input. Please check your information.";
+        }
+        if (signupResponse.status === 500) {
+          errorMsg = signupData.message || "Server error occurred. Please try again later.";
+        }
         setErrorMessage(errorMsg);
         setIsLoading(false);
         return;
       }
 
       setSuccess(true);
+      
+      // Small delay to show success message
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const result = await signIn("credentials", {
         email: email.trim().toLowerCase(),
         password,
@@ -173,9 +225,23 @@ function SignUpPageContent() {
       } else if (result?.ok) {
         router.push(callbackUrl);
         router.refresh();
+      } else {
+        // If signin result is neither error nor ok, redirect anyway
+        router.push(callbackUrl);
+        router.refresh();
       }
     } catch (err) {
-      setErrorMessage("An error occurred. Please try again.");
+      console.error("Signup error:", err);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      
+      // Provide more specific error messages
+      if (errorMessage.includes("fetch") || errorMessage.includes("network")) {
+        setErrorMessage("Network error. Please check your connection and try again.");
+      } else if (errorMessage.includes("JSON")) {
+        setErrorMessage("Invalid server response. Please try again.");
+      } else {
+        setErrorMessage(`An error occurred: ${errorMessage}. Please try again.`);
+      }
       setIsLoading(false);
     }
   };
@@ -336,7 +402,6 @@ function SignUpPageContent() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    tabIndex={-1}
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
@@ -446,7 +511,6 @@ function SignUpPageContent() {
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    tabIndex={-1}
                     aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                   >
                     {showConfirmPassword ? (
@@ -598,20 +662,5 @@ function SignUpPageContent() {
         </p>
       </div>
     </div>
-  );
-}
-
-export default function SignUpPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    }>
-      <SignUpPageContent />
-    </Suspense>
   );
 }

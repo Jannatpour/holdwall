@@ -3,10 +3,35 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getAGUIProtocol } from "@/lib/ag-ui/protocol";
+import { getAGUIProtocol, type UserIntent } from "@/lib/ag-ui/protocol";
 import { requireAuth } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
 import { SSESender } from "@/lib/streaming/events";
+import { z } from "zod";
+import crypto from "crypto";
+
+const aguiSessionRequestSchema = z.object({
+  action: z.enum(["start", "end", "input"]),
+  agentId: z.string().uuid().optional(),
+  sessionId: z.string().uuid().optional(),
+  input: z.object({
+    mode: z.enum(["text", "voice", "multimodal"]).optional(),
+    content: z.string().min(1),
+    intent: z.enum(["question", "command", "clarification", "feedback", "correction", "navigation"]).optional(),
+    context: z.record(z.string(), z.unknown()).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
+  }).optional(),
+}).refine(
+  (data) => {
+    if (data.action === "start") return !!data.agentId;
+    if (data.action === "end" || data.action === "input") return !!data.sessionId;
+    if (data.action === "input") return !!data.input;
+    return true;
+  },
+  {
+    message: "Missing required fields for action",
+  }
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,21 +41,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, agentId, sessionId, input } = body;
+    const validated = aguiSessionRequestSchema.parse(body);
+    const { action, agentId, sessionId, input } = validated;
 
     const aguiProtocol = getAGUIProtocol();
 
     if (action === "start") {
-      if (!agentId) {
-        return NextResponse.json(
-          { error: "Missing required field: agentId" },
-          { status: 400 }
-        );
-      }
 
       const conversationSession = await aguiProtocol.startSession(
         (user as any).id,
-        agentId
+        agentId!
       );
 
       return NextResponse.json({
@@ -40,14 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "end") {
-      if (!sessionId) {
-        return NextResponse.json(
-          { error: "Missing required field: sessionId" },
-          { status: 400 }
-        );
-      }
-
-      await aguiProtocol.endSession(sessionId);
+      await aguiProtocol.endSession(sessionId!);
 
       return NextResponse.json({
         success: true,
@@ -55,12 +68,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "input") {
-      if (!sessionId || !input) {
-        return NextResponse.json(
-          { error: "Missing required fields: sessionId, input" },
-          { status: 400 }
-        );
-      }
 
       const isSse =
         (request.headers.get("accept") || "").includes("text/event-stream") ||
@@ -69,12 +76,12 @@ export async function POST(request: NextRequest) {
       const userInput = {
         inputId: crypto.randomUUID(),
         userId: (user as any).id,
-        sessionId,
-        mode: input.mode || "text",
-        content: input.content,
-        intent: input.intent,
-        context: input.context,
-        metadata: input.metadata,
+        sessionId: sessionId!,
+        mode: (input!.mode || "text") as "text" | "voice" | "multimodal",
+        content: input!.content,
+        intent: input!.intent as UserIntent | undefined,
+        context: input!.context,
+        metadata: input!.metadata,
       };
 
       if (isSse) {

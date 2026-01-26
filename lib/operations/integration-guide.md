@@ -13,26 +13,22 @@ npx prisma migrate dev --name add_idempotency_key
 **File**: `app/api/signals/route.ts`
 
 ```typescript
-import { EnhancedSignalIngestionService } from "@/lib/operations/enhanced-signal-ingestion";
-import { IdempotencyService } from "@/lib/operations/idempotency";
-import { TransactionManager } from "@/lib/operations/transaction-manager";
-import { ErrorRecoveryService } from "@/lib/operations/error-recovery";
 import { SignalIngestionService } from "@/lib/signals/ingestion";
+import { IdempotencyService } from "@/lib/operations/idempotency";
+import { ErrorRecoveryService } from "@/lib/operations/error-recovery";
 
 // Initialize services
 const idempotencyService = new IdempotencyService();
-const transactionManager = new TransactionManager();
 const errorRecovery = new ErrorRecoveryService();
-const baseIngestionService = new SignalIngestionService(evidenceVault, eventStore);
-const enhancedService = new EnhancedSignalIngestionService(
-  baseIngestionService,
+const ingestionService = new SignalIngestionService(
+  evidenceVault,
+  eventStore,
   idempotencyService,
-  transactionManager,
   errorRecovery
 );
 
-// Use enhanced service in POST handler
-const evidenceId = await enhancedService.ingestSignal(signal, connector);
+// Use production service in POST handler
+const evidenceId = await ingestionService.ingestSignal(signal, connector);
 ```
 
 ### 3. Update Claim Creation API

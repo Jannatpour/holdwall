@@ -7,11 +7,33 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
-import type { ACPMessageEnvelope } from "@/lib/acp/types";
+import type { ACPMessageEnvelope, ACPMessageType, ACPMessagePayload, ACPSignature } from "@/lib/acp/types";
 import { DatabaseEventStore } from "@/lib/events/store-db";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
 
 const eventStore = new DatabaseEventStore();
+
+const acpEnvelopeSchema = z.object({
+  message_id: z.string().uuid(),
+  tenant_id: z.string().min(1),
+  actor_id: z.string().min(1),
+  type: z.string().min(1),
+  timestamp: z.string().datetime(),
+  correlation_id: z.string().min(1),
+  causation_id: z.string().optional(),
+  schema_version: z.string().default("1.0"),
+  payload: z.record(z.string(), z.unknown()),
+  signatures: z.array(z.record(z.string(), z.unknown())).default([]),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+const acpMessageRequestSchema = z.union([
+  acpEnvelopeSchema,
+  z.object({
+    envelope: acpEnvelopeSchema,
+  }),
+]);
 
 function isEnvelope(value: unknown): value is ACPMessageEnvelope {
   if (!value || typeof value !== "object") return false;
@@ -36,18 +58,47 @@ export async function POST(request: NextRequest) {
     const userId = (user as any).id;
 
     const body = await request.json();
-    const envelope: ACPMessageEnvelope = isEnvelope(body)
-      ? body
-      : isEnvelope(body?.envelope)
-        ? body.envelope
-        : null as any;
+    let validated: z.infer<typeof acpEnvelopeSchema>;
+    
+    try {
+      const parsed = acpMessageRequestSchema.parse(body);
+      validated = "envelope" in parsed ? parsed.envelope : parsed;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: "Validation error", details: error.issues },
+          { status: 400 }
+        );
+      }
+      // Fallback to legacy validation
+      const envelope: ACPMessageEnvelope = isEnvelope(body)
+        ? body
+        : isEnvelope(body?.envelope)
+          ? body.envelope
+          : null as any;
 
-    if (!envelope) {
-      return NextResponse.json(
-        { error: "Invalid ACP envelope" },
-        { status: 400 }
-      );
+      if (!envelope) {
+        return NextResponse.json(
+          { error: "Invalid ACP envelope" },
+          { status: 400 }
+        );
+      }
+      validated = envelope as ACPMessageEnvelope & z.infer<typeof acpEnvelopeSchema>;
     }
+
+    const envelope: ACPMessageEnvelope = {
+      message_id: validated.message_id,
+      tenant_id: validated.tenant_id,
+      actor_id: validated.actor_id,
+      type: validated.type as ACPMessageType,
+      timestamp: validated.timestamp,
+      correlation_id: validated.correlation_id,
+      causation_id: validated.causation_id,
+      schema_version: validated.schema_version,
+      payload: validated.payload as unknown as ACPMessagePayload,
+      signatures: validated.signatures as unknown as ACPSignature[],
+      metadata: validated.metadata,
+    };
 
     // Enforce tenant scoping. Actor is attributed to the authenticated user.
     if (envelope.tenant_id !== tenantId) {

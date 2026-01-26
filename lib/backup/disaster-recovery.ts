@@ -544,7 +544,12 @@ export class BackupService {
    */
   private async encryptData(data: string): Promise<string> {
     const crypto = await import("crypto");
-    const encryptionKey = process.env.BACKUP_ENCRYPTION_KEY || crypto.randomBytes(32).toString("hex");
+    const configured = process.env.BACKUP_ENCRYPTION_KEY?.trim();
+    if (process.env.NODE_ENV === "production" && !configured) {
+      // Never create unrecoverable backups in production.
+      throw new Error("BACKUP_ENCRYPTION_KEY not configured");
+    }
+    const encryptionKey = configured || crypto.randomBytes(32).toString("hex");
     const key = Buffer.from(encryptionKey.slice(0, 64), "hex"); // 32 bytes for AES-256
     const iv = crypto.randomBytes(16); // 16 bytes for GCM
     
@@ -567,7 +572,7 @@ export class BackupService {
    */
   private async decryptData(data: string): Promise<string> {
     const crypto = await import("crypto");
-    const encryptionKey = process.env.BACKUP_ENCRYPTION_KEY || "";
+    const encryptionKey = process.env.BACKUP_ENCRYPTION_KEY?.trim() || "";
     
     if (!encryptionKey) {
       throw new Error("Backup encryption key not configured");
@@ -627,13 +632,11 @@ export class BackupService {
 
     try {
       if (provider === "s3") {
-        const s3AccessKey = process.env.AWS_ACCESS_KEY_ID;
-        const s3SecretKey = process.env.AWS_SECRET_ACCESS_KEY;
         const s3Region = process.env.AWS_REGION || "us-east-1";
         const s3Bucket = process.env.S3_BACKUP_BUCKET || process.env.S3_BUCKET;
 
-        if (!s3AccessKey || !s3SecretKey || !s3Bucket) {
-          throw new Error("AWS S3 credentials not configured for backups");
+        if (!s3Bucket) {
+          throw new Error("S3_BACKUP_BUCKET not configured for backups");
         }
 
         try {
@@ -641,10 +644,6 @@ export class BackupService {
           
           const s3Client = new S3Client({
             region: s3Region,
-            credentials: {
-              accessKeyId: s3AccessKey,
-              secretAccessKey: s3SecretKey,
-            },
           });
 
           await s3Client.send(
@@ -793,21 +792,11 @@ export class BackupService {
     try {
       if (location.startsWith("s3://")) {
         // S3 download
-        const s3AccessKey = process.env.AWS_ACCESS_KEY_ID;
-        const s3SecretKey = process.env.AWS_SECRET_ACCESS_KEY;
         const s3Region = process.env.AWS_REGION || "us-east-1";
-
-        if (!s3AccessKey || !s3SecretKey) {
-          throw new Error("AWS S3 credentials not configured");
-        }
 
         const { S3Client, GetObjectCommand } = await import("@aws-sdk/client-s3");
         const s3Client = new S3Client({
           region: s3Region,
-          credentials: {
-            accessKeyId: s3AccessKey,
-            secretAccessKey: s3SecretKey,
-          },
         });
 
         const match = location.match(/^s3:\/\/([^\/]+)\/(.+)$/);
@@ -1065,21 +1054,11 @@ export class BackupService {
     try {
       if (location.startsWith("s3://")) {
         // S3 delete
-        const s3AccessKey = process.env.AWS_ACCESS_KEY_ID;
-        const s3SecretKey = process.env.AWS_SECRET_ACCESS_KEY;
         const s3Region = process.env.AWS_REGION || "us-east-1";
-
-        if (!s3AccessKey || !s3SecretKey) {
-          throw new Error("AWS S3 credentials not configured");
-        }
 
         const { S3Client, DeleteObjectCommand } = await import("@aws-sdk/client-s3");
         const s3Client = new S3Client({
           region: s3Region,
-          credentials: {
-            accessKeyId: s3AccessKey,
-            secretAccessKey: s3SecretKey,
-          },
         });
 
         const match = location.match(/^s3:\/\/([^\/]+)\/(.+)$/);

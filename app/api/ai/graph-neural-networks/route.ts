@@ -15,24 +15,46 @@ import { ReaLTG } from "@/lib/graph/realtg";
 import { DatabaseBeliefGraphService } from "@/lib/graph/belief-implementation";
 import { db } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
 
 const beliefGraphService = new DatabaseBeliefGraphService();
+
+const codenSchema = z.object({
+  method: z.literal("coden"),
+  nodeId: z.string().min(1),
+  timeWindow: z.number().int().min(1).max(365).optional().default(7),
+});
+
+const tipGnnSchema = z.object({
+  nodeId: z.string().min(1),
+  neighborIds: z.array(z.string().min(1)).min(1),
+});
+
+const rgpSchema = z.object({
+  query: z.string().min(1),
+  nodeIds: z.array(z.string().min(1)).optional(),
+  maxNodes: z.number().int().min(1).max(500).optional().default(20),
+  temporalWindow: z.number().int().min(1).max(3650).optional().default(30),
+});
 
 /**
  * POST /api/ai/graph-neural-networks/coden
  * Continuous dynamic network predictions
+ * 
+ * Note: This endpoint may be intentionally public for certain AI model access patterns
+ * Consider adding authentication if this should be restricted
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { method, nodeId, timeWindow = 7 } = body;
+    const validated = codenSchema.parse(body);
 
-    if (method === "coden") {
+    if (validated.method === "coden") {
       const coden = new CODEN();
       
       // Get node and edges
       const node = await db.beliefNode.findUnique({
-        where: { id: nodeId },
+        where: { id: validated.nodeId },
       });
 
       if (!node) {
@@ -42,8 +64,8 @@ export async function POST(request: NextRequest) {
       const edges = await db.beliefEdge.findMany({
         where: {
           OR: [
-            { fromNodeId: nodeId },
-            { toNodeId: nodeId },
+            { fromNodeId: validated.nodeId },
+            { toNodeId: validated.nodeId },
           ],
         },
       });
@@ -77,7 +99,7 @@ export async function POST(request: NextRequest) {
           created_at: e.createdAt.toISOString(),
           updated_at: e.updatedAt.toISOString(),
         })),
-        timeWindow
+        validated.timeWindow
       );
 
       return NextResponse.json(forecast);
@@ -85,6 +107,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: "Invalid method" }, { status: 400 });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("Error in CODEN GNN prediction", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
@@ -103,13 +131,13 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { nodeId, neighborIds } = body;
+    const validated = tipGnnSchema.parse(body);
 
     const tipGnn = new TIPGNN();
 
     // Get node
     const node = await db.beliefNode.findUnique({
-      where: { id: nodeId },
+      where: { id: validated.nodeId },
     });
 
     if (!node) {
@@ -118,7 +146,7 @@ export async function PUT(request: NextRequest) {
 
     // Get neighbors
     const neighbors = await Promise.all(
-      neighborIds.map(async (neighborId: string) => {
+      validated.neighborIds.map(async (neighborId: string) => {
         const neighborNode = await db.beliefNode.findUnique({
           where: { id: neighborId },
         });
@@ -128,8 +156,8 @@ export async function PUT(request: NextRequest) {
         const edge = await db.beliefEdge.findFirst({
           where: {
             OR: [
-              { fromNodeId: nodeId, toNodeId: neighborId },
-              { fromNodeId: neighborId, toNodeId: nodeId },
+              { fromNodeId: validated.nodeId, toNodeId: neighborId },
+              { fromNodeId: neighborId, toNodeId: validated.nodeId },
             ],
           },
         });
@@ -183,6 +211,12 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(prediction);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("Error in TIP-GNN prediction", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
@@ -201,14 +235,14 @@ export async function PUT(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { query, nodeIds, maxNodes = 20, temporalWindow = 30 } = body;
+    const validated = rgpSchema.parse(body);
 
     const rgp = new RelationalGraphPerceiver();
 
     // Get nodes
     const nodes = await db.beliefNode.findMany({
-      where: nodeIds ? { id: { in: nodeIds } } : undefined,
-      take: maxNodes,
+      where: validated.nodeIds ? { id: { in: validated.nodeIds } } : undefined,
+      take: validated.maxNodes,
       orderBy: { createdAt: "desc" },
     });
 
@@ -248,13 +282,19 @@ export async function PATCH(request: NextRequest) {
       updated_at: e.updatedAt?.toISOString(),
     }));
 
-    const result = await rgp.process(query, beliefNodes, beliefEdges, {
-      maxNodes,
-      temporalWindow,
+    const result = await rgp.process(validated.query, beliefNodes, beliefEdges, {
+      maxNodes: validated.maxNodes,
+      temporalWindow: validated.temporalWindow,
     });
 
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("Error in RGP prediction", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,

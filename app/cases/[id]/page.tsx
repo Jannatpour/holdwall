@@ -6,6 +6,7 @@
 
 import { Metadata } from "next";
 import { CaseDetail } from "@/components/case-detail";
+import { AuthGuard } from "@/components/auth-guard";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -17,5 +18,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function CaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <CaseDetail caseId={id} />;
+  return (
+    <AuthGuard requiredRole="USER">
+      <CaseDetail caseId={id} />
+    </AuthGuard>
+  );
 }

@@ -128,6 +128,7 @@ export class GDPRCompliance {
   ): Promise<{
     requestId: string;
     data: {
+      tenantId: string;
       user: any;
       claims: any[];
       evidence: any[];
@@ -188,6 +189,7 @@ export class GDPRCompliance {
       return {
         requestId,
         data: {
+          tenantId,
           user,
           claims,
           evidence,
@@ -347,7 +349,14 @@ export class GDPRCompliance {
       const { DatabaseEventStore } = await import("@/lib/events/store-db");
       const eventStore = new DatabaseEventStore();
       // Try to upload to S3 if configured
-      let exportUrl = `/api/compliance/gdpr/export/${requestId}`;
+      const base =
+        process.env.NEXT_PUBLIC_BASE_URL ||
+        process.env.NEXTAUTH_URL ||
+        process.env.AUTH_URL ||
+        "";
+      let exportUrl = base
+        ? new URL(`/api/compliance/gdpr/export/${requestId}`, base).toString()
+        : `/api/compliance/gdpr/export/${requestId}`;
       try {
         const s3AccessKey = process.env.AWS_ACCESS_KEY_ID;
         const s3SecretKey = process.env.AWS_SECRET_ACCESS_KEY;

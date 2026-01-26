@@ -1498,7 +1498,7 @@ export function DemoWalkthroughClient() {
     }
     return true;
   });
-  const [showCompletion, setShowCompletion] = useState(false);
+  const [completionDismissed, setCompletionDismissed] = useState(false);
   const [showCategoryComplete, setShowCategoryComplete] = useState(false);
   const [justCompletedCategory, setJustCompletedCategory] = useState<string | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
@@ -1506,6 +1506,10 @@ export function DemoWalkthroughClient() {
   const currentCategory = CATEGORIES[currentCategoryIndex] || CATEGORIES[0];
   const categorySteps = getStepsForCategory(currentCategory.name);
   const currentStep = categorySteps[currentStepIndex] || categorySteps[0];
+
+  const allCategoriesCompleted =
+    completedCategories.size === CATEGORIES.length && CATEGORIES.length > 0;
+  const showCompletion = allCategoriesCompleted && !completionDismissed;
   
   const categoryProgress = ((currentCategoryIndex + 1) / CATEGORIES.length) * 100;
   const stepProgressInCategory = categorySteps.length > 0 
@@ -1545,13 +1549,13 @@ export function DemoWalkthroughClient() {
     }
   }, [currentCategoryIndex]);
 
-  const handleNextStep = useCallback(() => {
+  const handleNextStep = () => {
     if (currentStepIndex < categorySteps.length - 1) {
       setCurrentStepIndex(prev => prev + 1);
     } else {
       handleNextCategory();
     }
-  }, [currentStepIndex, categorySteps.length, handleNextCategory]);
+  };
 
   const handlePreviousStep = useCallback(() => {
     if (currentStepIndex > 0) {
@@ -1571,6 +1575,7 @@ export function DemoWalkthroughClient() {
     setCompletedCategories(new Set());
     setCompletedSteps(new Set());
     setIsPlaying(false);
+    setCompletionDismissed(false);
   }, []);
 
   const handleCompleteStep = (stepId: string) => {
@@ -1695,13 +1700,6 @@ export function DemoWalkthroughClient() {
     return `${minutes}m`;
   };
 
-  useEffect(() => {
-    if (completedCategories.size === CATEGORIES.length && CATEGORIES.length > 0) {
-      setShowCompletion(true);
-      setIsPlaying(false);
-    }
-  }, [completedCategories.size]);
-
   const handleStartGuidedTour = () => {
     setShowWelcome(false);
     setIsPlaying(true);
@@ -1773,7 +1771,14 @@ export function DemoWalkthroughClient() {
       </Dialog>
 
       {/* Final Completion Celebration */}
-      <Dialog open={showCompletion} onOpenChange={setShowCompletion}>
+      <Dialog
+        open={showCompletion}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCompletionDismissed(true);
+          }
+        }}
+      >
         <DialogContent className="max-w-md" showCloseButton={false}>
           <DialogHeader>
             <div className="flex items-center justify-center mb-4">
@@ -1789,11 +1794,15 @@ export function DemoWalkthroughClient() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setShowCompletion(false)} className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              onClick={() => setCompletionDismissed(true)}
+              className="w-full sm:w-auto"
+            >
               Close
             </Button>
             <Button onClick={() => {
-              setShowCompletion(false);
+              setCompletionDismissed(true);
               handleReset();
             }} className="w-full sm:w-auto">
               Start Over

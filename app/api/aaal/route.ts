@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     const validation = await validateBusinessRules("artifact", {
       content: validated.content,
       type: "REBUTTAL", // Default type, can be made configurable
-      citations: validated.evidence_refs.map((id) => ({ url: id, title: "" })),
+      evidenceIds: validated.evidence_refs,
     }, tenant_id);
 
     if (!validation.valid) {

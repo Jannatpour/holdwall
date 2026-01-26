@@ -47,11 +47,9 @@ import { DatabaseEvidenceVault } from '@/lib/evidence/vault-db';
 import { RAGPipeline } from '@/lib/ai/rag';
 import { SemanticChunking } from '@/lib/ai/semantic-chunking';
 import { AgenticChunking } from '@/lib/ai/agentic-chunking';
-import { EnhancedSignalIngestionService } from '@/lib/operations/enhanced-signal-ingestion';
 import { SignalIngestionService } from '@/lib/signals/ingestion';
 import { DatabaseEventStore } from '@/lib/events/store-db';
 import { IdempotencyService } from '@/lib/operations/idempotency';
-import { TransactionManager } from '@/lib/operations/transaction-manager';
 import { ErrorRecoveryService } from '@/lib/operations/error-recovery';
 import { ClaimExtractionService } from '@/lib/claims/extraction';
 import { AAALStudioService } from '@/lib/aaal/studio';
@@ -200,16 +198,14 @@ describe('Advanced Use Case Scenarios - Complete Coverage', () => {
         },
       });
 
-      // Step 1: Signal Ingestion with Enhanced Service
+      // Step 1: Signal Ingestion with Production Service
       const step1Start = Date.now();
-      const baseIngestion = new SignalIngestionService(evidenceVault, eventStore);
       const idempotency = new IdempotencyService();
-      const transactionManager = new TransactionManager();
       const errorRecovery = new ErrorRecoveryService();
-      const ingestionService = new EnhancedSignalIngestionService(
-        baseIngestion,
+      const ingestionService = new SignalIngestionService(
+        evidenceVault,
+        eventStore,
         idempotency,
-        transactionManager,
         errorRecovery
       );
 
@@ -240,12 +236,12 @@ describe('Advanced Use Case Scenarios - Complete Coverage', () => {
 
       steps.push({
         step: 'Signal Ingestion',
-        model: 'EnhancedSignalIngestion',
+        model: 'SignalIngestionService',
         duration: Date.now() - step1Start,
         status: 'pass',
       });
-      modelsUsed.push('EnhancedSignalIngestion');
-      algorithmsUsed.push('Idempotency', 'TransactionManager', 'ErrorRecovery');
+      modelsUsed.push('SignalIngestionService');
+      algorithmsUsed.push('Idempotency', 'ErrorRecovery', 'BusinessRulesValidation');
 
       // Step 2: Claim Extraction with Multiple Models
       const step2Start = Date.now();
@@ -1610,14 +1606,234 @@ describe('Advanced Use Case Scenarios - Complete Coverage', () => {
     const algorithmsUsed: string[] = [];
 
     try {
-      // This is the most comprehensive use case combining everything
-      // Step 1-10 would combine all previous use cases into one complete workflow
+      // Complete end-to-end workflow: Signal → Evidence → Claims → Clustering → Graph → Forecasting → Artifact → Evaluation → Publishing
       
-      // Signal → Evidence → Claims → Clustering → Graph → Forecasting → Artifact → Evaluation → Publishing
-      
-      expect(true).toBe(true); // Placeholder for full implementation
-      
+      // Step 0: Setup source policy
+      const { db } = await import('@/lib/db/client');
+      await db.sourcePolicy.upsert({
+        where: {
+          tenantId_sourceType: {
+            tenantId: tenantId,
+            sourceType: 'reddit',
+          },
+        },
+        create: {
+          tenantId: tenantId,
+          sourceType: 'reddit',
+          allowedSources: ['*', 'reddit-123'],
+          collectionMethod: 'API',
+          retentionDays: 90,
+          autoDelete: false,
+          complianceFlags: [],
+        },
+        update: {
+          allowedSources: ['*', 'reddit-123'],
+        },
+      });
+
+      // Step 1: Signal Ingestion
+      const step1Start = Date.now();
+      const idempotency = new IdempotencyService();
+      const errorRecovery = new ErrorRecoveryService();
+      const ingestionService = new SignalIngestionService(
+        evidenceVault,
+        eventStore,
+        idempotency,
+        errorRecovery
+      );
+
+      const signal = {
+        tenant_id: tenantId,
+        content: { raw: 'Multiple customers reporting hidden fees in our product. This is becoming a major concern that needs immediate attention.' },
+        source: {
+          type: 'reddit',
+          id: 'reddit-123',
+          url: 'https://reddit.com/r/complaints/123',
+          collected_at: new Date().toISOString(),
+          collected_by: 'test',
+          method: 'api' as const,
+        },
+        metadata: { url: 'https://reddit.com/r/complaints/123', subreddit: 'complaints' },
+        compliance: {
+          source_allowed: true,
+          collection_method: 'api',
+          retention_policy: 'standard',
+        },
+      };
+
+      const evidenceId = await ingestionService.ingestSignal(signal, {
+        name: 'test-connector',
+        type: 'RSS',
+        config: {},
+      } as any);
+
+      steps.push({
+        step: 'Signal Ingestion',
+        model: 'SignalIngestionService',
+        duration: Date.now() - step1Start,
+        status: 'pass',
+      });
+      modelsUsed.push('SignalIngestionService');
+      algorithmsUsed.push('Idempotency', 'ErrorRecovery', 'BusinessRulesValidation');
+
+      // Step 2: Claim Extraction
+      const step2Start = Date.now();
+      const claimService = new ClaimExtractionService(evidenceVault, eventStore);
+      const claims = await claimService.extractClaims(evidenceId, {
+        use_llm: true,
+        rules: [],
+      });
+
+      steps.push({
+        step: 'Claim Extraction',
+        model: 'ClaimExtractionService',
+        duration: Date.now() - step2Start,
+        status: 'pass',
+      });
+      modelsUsed.push('ClaimExtractionService');
+      algorithmsUsed.push('LLMExtraction', 'ClaimNormalization');
+
+      // Step 3: Claim Clustering
+      const step3Start = Date.now();
+      const clusterer = new ClaimClusterer();
+      const claimTexts = claims.map(c => c.canonical_text).filter(text => text && text.trim().length > 0);
+      const clusters = await clusterer.cluster(claimTexts, {
+        method: 'hierarchical',
+        similarityThreshold: 0.7,
+      });
+
+      steps.push({
+        step: 'Claim Clustering',
+        model: 'ClaimClusterer',
+        duration: Date.now() - step3Start,
+        status: 'pass',
+      });
+      modelsUsed.push('ClaimClusterer');
+      algorithmsUsed.push('HierarchicalClustering', 'EmbeddingSimilarity');
+
+      // Step 4: Graph Construction
+      const step4Start = Date.now();
+      const graphService = new DatabaseBeliefGraphService();
+      const testNodes: BeliefNode[] = claims.slice(0, 5).map((claim, i) => ({
+        node_id: `node-${i}`,
+        tenant_id: tenantId,
+        type: 'claim' as const,
+        content: claim.canonical_text || `Claim ${i}`,
+        trust_score: 0.5 + Math.random() * 0.3,
+        decisiveness: 0.6 + Math.random() * 0.2,
+        actor_weights: {},
+        decay_factor: 0.95,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }));
+
+      const testEdges: BeliefEdge[] = [
+        {
+          edge_id: 'edge-1',
+          tenant_id: tenantId,
+          from_node_id: 'node-0',
+          to_node_id: 'node-1',
+          type: 'reinforcement',
+          weight: 0.8,
+          actor_weights: {},
+          created_at: new Date().toISOString(),
+        },
+      ];
+
+      await graphService.updateGraph(tenantId, testNodes, testEdges);
+
+      steps.push({
+        step: 'Graph Construction',
+        model: 'DatabaseBeliefGraphService',
+        duration: Date.now() - step4Start,
+        status: 'pass',
+      });
+      modelsUsed.push('DatabaseBeliefGraphService');
+      algorithmsUsed.push('GraphUpdate', 'NodeCreation', 'EdgeCreation');
+
+      // Step 5: Forecasting
+      const step5Start = Date.now();
+      const forecastService = new ForecastService(eventStore, graphService as any);
+      const coden = new CODEN();
+      coden.recordState(testNodes[0]);
+      const forecast = coden.predict(testNodes[0], testEdges, 7);
+
+      steps.push({
+        step: 'Forecasting',
+        model: 'CODEN + ForecastService',
+        duration: Date.now() - step5Start,
+        status: 'pass',
+      });
+      modelsUsed.push('CODEN', 'ForecastService');
+      algorithmsUsed.push('TimeSeriesPrediction', 'GraphNeuralNetworks');
+
+      // Step 6: Artifact Creation (AAAL)
+      const step6Start = Date.now();
+      const aaalService = new AAALStudioService(evidenceVault, eventStore);
+      const artifactContent = 'Based on comprehensive analysis of customer feedback, we acknowledge concerns about hidden fees and are taking immediate action.';
+      const artifactId = await aaalService.createDraft(
+        tenantId,
+        'Response to Hidden Fees Concerns',
+        artifactContent,
+        [evidenceId]
+      );
+      const artifact = {
+        artifact_id: artifactId,
+        content: artifactContent,
+        evidence_refs: [evidenceId],
+      };
+
+      steps.push({
+        step: 'Artifact Creation (AAAL)',
+        model: 'AAALStudioService',
+        duration: Date.now() - step6Start,
+        status: 'pass',
+      });
+      modelsUsed.push('AAALStudioService');
+      algorithmsUsed.push('ArtifactAuthoring', 'EvidenceLinking');
+
+      // Step 7: Evaluation
+      const step7Start = Date.now();
+      const deepTRACE = new DeepTRACE();
+      const citeGuard = new CiteGuard(ragPipeline);
+      const testAnswer = artifact.content || '';
+      const testCitations = artifact.evidence_refs || [];
+
+      const deepTRACEResult = await deepTRACE.audit(testAnswer, testCitations);
+      const citeGuardResult = await citeGuard.validate(testAnswer, testCitations, tenantId);
+
+      steps.push({
+        step: 'Evaluation',
+        model: 'DeepTRACE + CiteGuard',
+        duration: Date.now() - step7Start,
+        status: 'pass',
+      });
+      modelsUsed.push('DeepTRACE', 'CiteGuard');
+      algorithmsUsed.push('CitationFaithfulness', 'EvidenceMatching');
+
+      // Step 8: Publishing (PADL)
+      const step8Start = Date.now();
+      // In production, this would publish to PADL
+      // For test, we simulate publishing
+      const published = {
+        artifactId: artifact.artifact_id,
+        publishedAt: new Date().toISOString(),
+        url: `https://padl.example.com/artifacts/${artifact.artifact_id}`,
+      };
+
+      steps.push({
+        step: 'Publishing (PADL)',
+        model: 'PADLPublishing',
+        duration: Date.now() - step8Start,
+        status: 'pass',
+      });
+      modelsUsed.push('PADLPublishing');
+      algorithmsUsed.push('PublicDelivery', 'ArtifactDistribution');
+
       const totalDuration = Date.now() - startTime;
+      const totalModels = new Set(modelsUsed).size;
+      const totalAlgorithms = new Set(algorithmsUsed).size;
+
       useCaseReporter.record({
         useCase: 'End-to-End Perception Engineering Workflow',
         models: Array.from(new Set(modelsUsed)),
@@ -1625,13 +1841,25 @@ describe('Advanced Use Case Scenarios - Complete Coverage', () => {
         status: 'pass',
         duration: totalDuration,
         metrics: {
-          modelsUsed: modelsUsed.length,
-          algorithmsUsed: algorithmsUsed.length,
+          modelsUsed: totalModels,
+          algorithmsUsed: totalAlgorithms,
+          accuracy: (deepTRACEResult.overallFaithfulness + citeGuardResult.overallAccuracy) / 2,
           throughput: (steps.length / totalDuration) * 1000,
           latency: totalDuration / steps.length,
         },
         steps,
       });
+
+      // Assertions
+      expect(evidenceId).toBeDefined();
+      expect(claims.length).toBeGreaterThan(0);
+      expect(clusters.length).toBeGreaterThan(0);
+      expect(testNodes.length).toBeGreaterThan(0);
+      expect(forecast).toBeDefined();
+      expect(artifact.artifact_id).toBeDefined();
+      expect(deepTRACEResult.overallFaithfulness).toBeGreaterThanOrEqual(0);
+      expect(citeGuardResult.overallAccuracy).toBeGreaterThanOrEqual(0);
+      expect(published.artifactId).toBeDefined();
     } catch (error) {
       const totalDuration = Date.now() - startTime;
       useCaseReporter.record({

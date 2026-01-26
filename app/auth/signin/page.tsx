@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, Suspense, useEffect as ReactUseEffect } from "react";
+export const dynamic = "force-dynamic";
+
+import { useState, useEffect as ReactUseEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,20 +13,30 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Loader2, Mail, Lock, Eye, EyeOff, Shield, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-function SignInPageContent() {
+export default function SignInPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/overview";
-  const error = searchParams.get("error");
+  const [callbackUrl, setCallbackUrl] = useState("/overview");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(error);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [oauthProviders, setOauthProviders] = useState({ google: false, github: false });
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  // Avoid `useSearchParams` so the page doesn't get stuck on a Suspense fallback in prod
+  // if hydration fails for any reason (CSP, blocked scripts, runtime errors, etc).
+  ReactUseEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      setCallbackUrl(params.get("callbackUrl") || "/overview");
+      setErrorMessage(params.get("error"));
+    } catch {
+      setCallbackUrl("/overview");
+    }
+  }, []);
 
   const validateEmail = (value: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -74,19 +86,47 @@ function SignInPageContent() {
       if (result?.error) {
         if (result.error === "CredentialsSignin") {
           setErrorMessage("Invalid email or password. Please check your credentials and try again.");
+        } else if (result.error.includes("fetch") || result.error.includes("network")) {
+          setErrorMessage("Network error. Please check your connection and try again.");
+        } else if (result.error.includes("503") || result.error.includes("unavailable")) {
+          setErrorMessage("Service temporarily unavailable. Please try again later.");
         } else {
-          setErrorMessage(`Sign in failed: ${result.error}`);
+          setErrorMessage(`Sign in failed: ${result.error}. Please try again.`);
         }
         setIsLoading(false);
       } else if (result?.ok) {
         router.push(callbackUrl);
         router.refresh();
       } else {
+        // If result is undefined or null, check session endpoint
+        try {
+          const sessionResponse = await fetch("/api/auth/session");
+          if (sessionResponse.ok) {
+            const sessionData = await sessionResponse.json();
+            if (sessionData?.user) {
+              // User is actually logged in, redirect
+              router.push(callbackUrl);
+              router.refresh();
+              return;
+            }
+          }
+        } catch (sessionError) {
+          console.error("Session check failed:", sessionError);
+        }
         setErrorMessage("An unexpected error occurred. Please try again.");
         setIsLoading(false);
       }
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "An error occurred. Please try again.");
+      console.error("Signin error:", err);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      
+      if (errorMessage.includes("fetch") || errorMessage.includes("network")) {
+        setErrorMessage("Network error. Please check your connection and try again.");
+      } else if (errorMessage.includes("503") || errorMessage.includes("unavailable")) {
+        setErrorMessage("Service temporarily unavailable. Please try again later.");
+      } else {
+        setErrorMessage(`An error occurred: ${errorMessage}. Please try again.`);
+      }
       setIsLoading(false);
     }
   };
@@ -209,7 +249,6 @@ function SignInPageContent() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    tabIndex={-1}
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
@@ -341,20 +380,5 @@ function SignInPageContent() {
         </p>
       </div>
     </div>
-  );
-}
-
-export default function SignInPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    }>
-      <SignInPageContent />
-    </Suspense>
   );
 }

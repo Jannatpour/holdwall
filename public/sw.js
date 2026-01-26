@@ -5,17 +5,22 @@
 
 const CACHE_NAME = "holdwall-v1";
 const RUNTIME_CACHE = "holdwall-runtime";
+// Only cache truly static/public routes during install
+// Protected routes will be cached on-demand during fetch events when authenticated
 const STATIC_ASSETS = [
-  "/",
-  "/overview",
-  "/signals",
-  "/claims",
-  "/graph",
-  "/forecasts",
-  "/studio",
-  "/governance",
   "/offline",
+  "/manifest.json",
+  "/favicon.ico",
+  "/favicon-16x16.png",
+  "/favicon-32x32.png",
+  "/apple-touch-icon.png",
+  "/icon-192x192.png",
+  "/icon-512x512.png",
 ];
+
+// IMPORTANT:
+// Do NOT cache HTML navigations (Next.js pages). Caching HTML can serve stale chunk references
+// after a deploy, causing ChunkLoadError when the old chunk filenames no longer exist.
 
 // Helper function to check if URL scheme is cacheable
 function isCacheableScheme(url) {
@@ -24,29 +29,64 @@ function isCacheableScheme(url) {
   return scheme === "http:" || scheme === "https:";
 }
 
-// Install event - cache static assets
+// Helper to safely cache a URL with error handling
+async function safeCacheUrl(cache, url) {
+  try {
+    const urlObj = new URL(url, self.location.origin);
+    // Only cache http/https URLs
+    if (!isCacheableScheme(urlObj)) {
+      return { success: false, reason: "Unsupported URL scheme" };
+    }
+    
+    // Use fetch + cache.put instead of cache.add to handle errors gracefully
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include", // Include cookies for authenticated routes
+      cache: "no-store", // Always fetch fresh
+    });
+    
+    // Only cache successful responses (200-299)
+    if (response && response.ok && response.status >= 200 && response.status < 300) {
+      // Clone response before caching (responses can only be read once)
+      const clone = response.clone();
+      await cache.put(url, clone);
+      return { success: true };
+    } else {
+      return { 
+        success: false, 
+        reason: `Response not ok: ${response.status} ${response.statusText}` 
+      };
+    }
+  } catch (err) {
+    return { 
+      success: false, 
+      reason: err instanceof Error ? err.message : String(err) 
+    };
+  }
+}
+
+// Install event - cache only truly static assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      // Cache assets individually to handle failures gracefully
-      return Promise.allSettled(
-        STATIC_ASSETS.map((url) => {
-          try {
-            const urlObj = new URL(url, self.location.origin);
-            // Only cache http/https URLs
-            if (!isCacheableScheme(urlObj)) {
-              return Promise.resolve({ status: "rejected", reason: new Error("Unsupported URL scheme") });
-            }
-            return cache.add(url).catch((err) => {
-              console.warn(`Failed to cache ${url}:`, err);
-              return null;
-            });
-          } catch (err) {
-            console.warn(`Invalid URL ${url}:`, err);
-            return Promise.resolve({ status: "rejected", reason: err });
-          }
-        })
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Cache only public/static assets during install
+      const results = await Promise.allSettled(
+        STATIC_ASSETS.map((url) => safeCacheUrl(cache, url))
       );
+      
+      // Log failures for debugging (but don't fail installation)
+      results.forEach((result, index) => {
+        if (result.status === "rejected" || (result.status === "fulfilled" && !result.value.success)) {
+          const url = STATIC_ASSETS[index];
+          const reason = result.status === "rejected" 
+            ? result.reason 
+            : result.value.reason;
+          // Only log if it's not an expected auth failure
+          if (!reason?.includes("401") && !reason?.includes("403")) {
+            console.warn(`Failed to cache ${url}:`, reason);
+          }
+        }
+      });
     })
   );
   self.skipWaiting();
@@ -55,15 +95,18 @@ self.addEventListener("install", (event) => {
 // Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
-          .map((name) => caches.delete(name))
-      );
-    }).then(() => {
-      return self.clients.claim();
-    })
+    Promise.all([
+      // Clear runtime cache to drop any previously cached HTML/pages
+      caches.delete(RUNTIME_CACHE).catch(() => {}),
+      // Clean up unknown/old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
+            .map((name) => caches.delete(name))
+        );
+      }),
+    ]).then(() => self.clients.claim())
   );
 });
 
@@ -80,6 +123,35 @@ self.addEventListener("fetch", (event) => {
   
   // Early exit for non-GET requests
   if (request.method !== "GET") {
+    return;
+  }
+
+  // Never cache navigations / HTML documents (prevents stale chunk references after deploys)
+  const acceptHeader = request.headers.get("accept") || "";
+  const isNavigationRequest =
+    request.mode === "navigate" ||
+    request.destination === "document" ||
+    acceptHeader.includes("text/html");
+  if (isNavigationRequest) {
+    event.respondWith(
+      (async () => {
+        try {
+          // Always fetch fresh for navigations
+          const response = await fetch(request, { cache: "no-store" });
+          return response;
+        } catch (error) {
+          // Offline fallback
+          const offlinePage = await caches.match("/offline");
+          if (offlinePage) {
+            return offlinePage;
+          }
+          return new Response("You are offline", {
+            status: 503,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }
+      })()
+    );
     return;
   }
   
@@ -122,59 +194,65 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Cache-first strategy for static assets
-  if (STATIC_ASSETS.includes(url.pathname)) {
+  // Cache-first strategy for static public assets only (icons/manifest/offline page)
+  const isStaticAsset = STATIC_ASSETS.includes(url.pathname);
+  
+  if (isStaticAsset) {
     event.respondWith(
-      caches.match(request).then((cached) => {
+      (async () => {
+        // Check cache first
+        const cached = await caches.match(request);
         if (cached) {
           return cached;
         }
-        return fetch(request).then((response) => {
-          // Double-check both URL and request URL before caching
-          const requestUrl = new URL(request.url);
-          // Only cache if both URLs are http/https and response is valid
-          if (response && response.ok && isCacheableScheme(url) && isCacheableScheme(requestUrl)) {
-            // Additional check: ensure request URL is actually cacheable
-            const requestUrlString = request.url;
-            if (requestUrlString && (requestUrlString.startsWith('http://') || requestUrlString.startsWith('https://'))) {
-              const clone = response.clone();
-              caches.open(RUNTIME_CACHE).then((cache) => {
-                // Additional safety check before cache.put - validate request URL scheme
-                try {
-                  // Only attempt to cache if request URL is definitely http/https
-                  if (requestUrlString.startsWith('http://') || requestUrlString.startsWith('https://')) {
-                    cache.put(request, clone).catch((err) => {
-                      // Silently ignore chrome-extension and other unsupported schemes
-                      const errorMsg = err?.message || String(err);
-                      if (!errorMsg.includes("chrome-extension") && !errorMsg.includes("unsupported")) {
-                        console.warn(`Failed to cache ${url.pathname}:`, err);
-                      }
-                    });
+        
+        // Not in cache, fetch from network
+        try {
+          const response = await fetch(request, {
+            credentials: "include", // Include cookies for authenticated routes
+          });
+          
+          // Only cache successful responses (200-299)
+          if (response && response.ok && response.status >= 200 && response.status < 300 && isCacheableScheme(url)) {
+            const requestUrl = new URL(request.url);
+            if (isCacheableScheme(requestUrl)) {
+              const requestUrlString = request.url;
+              if (requestUrlString && (requestUrlString.startsWith('http://') || requestUrlString.startsWith('https://'))) {
+                const clone = response.clone();
+                caches.open(RUNTIME_CACHE).then((cache) => {
+                  try {
+                    if (requestUrlString.startsWith('http://') || requestUrlString.startsWith('https://')) {
+                      cache.put(request, clone).catch((err) => {
+                        // Silently ignore chrome-extension and other unsupported schemes
+                        const errorMsg = err?.message || String(err);
+                        if (!errorMsg.includes("chrome-extension") && !errorMsg.includes("unsupported")) {
+                          // Only log unexpected errors for debugging
+                        }
+                      });
+                    }
+                  } catch (err) {
+                    // Ignore errors for unsupported schemes
+                    const errorMsg = err?.message || String(err);
+                    if (!errorMsg.includes("chrome-extension") && !errorMsg.includes("unsupported")) {
+                      // Only log unexpected errors
+                    }
                   }
-                } catch (err) {
-                  // Ignore errors for unsupported schemes
-                  const errorMsg = err?.message || String(err);
-                  if (!errorMsg.includes("chrome-extension") && !errorMsg.includes("unsupported")) {
-                    console.warn(`Failed to cache ${url.pathname}:`, err);
-                  }
-                }
-              }).catch((err) => {
-                // Ignore cache open errors silently
-              });
+                }).catch(() => {
+                  // Ignore cache open errors silently
+                });
+              }
             }
           }
           return response;
-        }).catch((err) => {
-          console.warn(`Failed to fetch ${url.pathname}:`, err);
-          // Return cached version if available
-          return caches.match(request).then((cached) => {
-            if (cached) {
-              return cached;
-            }
-            throw err;
-          });
-        });
-      })
+        } catch (err) {
+          // Return cached version if available (fallback)
+          const cached = await caches.match(request);
+          if (cached) {
+            return cached;
+          }
+          throw err;
+        }
+      })()
     );
     return;
   }
@@ -186,7 +264,9 @@ self.addEventListener("fetch", (event) => {
         const response = await fetch(request);
         // Double-check both URL and request URL before caching
         const requestUrl = new URL(request.url);
-        if (response && response.ok && isCacheableScheme(url) && isCacheableScheme(requestUrl)) {
+        const responseContentType = response.headers.get("content-type") || "";
+        const isHtmlResponse = responseContentType.includes("text/html");
+        if (response && response.ok && isCacheableScheme(url) && isCacheableScheme(requestUrl) && !isHtmlResponse) {
           // Don't cache Next.js chunks or static assets
           const shouldCache = !(
             url.pathname.startsWith("/_next/") ||

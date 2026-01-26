@@ -147,10 +147,31 @@ export class KafkaDLQ {
       try {
         const { Kafka } = await import("kafkajs");
         
-        const kafkaBrokers = process.env.KAFKA_BROKERS?.split(",") || ["localhost:9092"];
+        const kafkaBrokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+          .split(",")
+          .map((b) => b.trim())
+          .filter(Boolean);
+        const tlsEnabled =
+          process.env.KAFKA_SSL === "true" ||
+          process.env.KAFKA_TLS === "true" ||
+          kafkaBrokers.some((b) => String(b).includes(":9094"));
+
+        const saslMechanism = process.env.KAFKA_SASL_MECHANISM?.trim();
+        const saslUsername = process.env.KAFKA_SASL_USERNAME?.trim();
+        const saslPassword = process.env.KAFKA_SASL_PASSWORD?.trim();
+        const sasl =
+          saslMechanism && saslUsername && saslPassword
+            ? {
+                mechanism: saslMechanism as any,
+                username: saslUsername,
+                password: saslPassword,
+              }
+            : undefined;
         const kafka = new Kafka({
           clientId: process.env.KAFKA_CLIENT_ID || "holdwall-dlq",
           brokers: kafkaBrokers,
+          ssl: tlsEnabled ? { rejectUnauthorized: true } : undefined,
+          sasl,
         });
 
         const producer = kafka.producer();

@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, requireRole } from "@/lib/auth/session";
-import { abTesting } from "@/lib/publishing/ab-testing";
+import { abTesting } from "@/lib/ab-testing/framework";
 import { logger } from "@/lib/logging/logger";
 import { z } from "zod";
 
@@ -40,7 +40,18 @@ export async function POST(request: NextRequest) {
       data.platform
     );
 
-    return NextResponse.json({ test }, { status: 201 });
+    return NextResponse.json({ 
+      test: {
+        id: test.id,
+        name: test.name,
+        description: test.description,
+        variants: test.variants,
+        platform: test.platform,
+        startTime: test.startDate instanceof Date ? test.startDate.toISOString() : (typeof test.startDate === "string" ? test.startDate : new Date().toISOString()),
+        endTime: test.endDate instanceof Date ? test.endDate.toISOString() : (typeof test.endDate === "string" ? test.endDate : undefined),
+        status: test.status || (test.active ? "running" : "paused"),
+      }
+    }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -73,13 +84,14 @@ export async function GET(request: NextRequest) {
     const testId = request.nextUrl.searchParams.get("testId");
 
     if (testId) {
-      const results = abTesting.analyzeTest(testId);
+      const results = await abTesting.analyzeTest(testId);
       return NextResponse.json({ testId, results });
     }
 
     // List all tests (admin only)
     await requireRole("ADMIN");
-    return NextResponse.json({ message: "List all tests - implementation needed" });
+    const tests = await abTesting.listTests();
+    return NextResponse.json({ tests });
   } catch (error) {
     if ((error as Error).message === "Unauthorized" || (error as Error).message === "Forbidden") {
       return NextResponse.json(

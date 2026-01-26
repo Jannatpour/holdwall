@@ -1,10 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { LoadingState } from "@/components/ui/loading-states";
 
 const PlaybooksData = dynamic(() => import("@/components/playbooks-data").then(mod => ({ default: mod.PlaybooksData })), {
   ssr: false,
-  loading: () => <div className="space-y-4"><div className="h-32 w-full bg-muted animate-pulse rounded" /></div>,
+  loading: () => <LoadingState count={5} />,
 });
 
 interface PlaybooksDataClientProps {

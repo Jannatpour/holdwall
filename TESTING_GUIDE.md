@@ -46,6 +46,8 @@ docker-compose exec postgres psql -U holdwall -d holdwall -c "SELECT version();"
 docker-compose exec postgres psql -U holdwall -d holdwall -c "\dt"
 ```
 
+**Note on ports**: This repo maps Postgres to `localhost:15432` and Redis to `localhost:16379` to avoid conflicts with local installs.
+
 ### 3. Test Sign-In Page
 
 **Open in browser**:

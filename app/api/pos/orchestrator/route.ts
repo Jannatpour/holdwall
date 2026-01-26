@@ -6,8 +6,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
 import { POSOrchestrator } from "@/lib/pos/orchestrator";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
 
 const orchestrator = new POSOrchestrator();
+
+const orchestratorPostSchema = z.object({
+  action: z.literal("execute-cycle"),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -102,7 +107,7 @@ export async function POST(request: NextRequest) {
     const tenantId = (user as any).tenantId || "";
 
     const body = await request.json();
-    const { action } = body;
+    const { action } = orchestratorPostSchema.parse(body);
 
     if (action === "execute-cycle") {
       const result = await orchestrator.executePOSCycle(tenantId);
@@ -114,6 +119,12 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     const { logger } = await import("@/lib/logging/logger");
     logger.error("POS Orchestrator API error", {
       error: error instanceof Error ? error.message : String(error),

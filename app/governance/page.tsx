@@ -5,13 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Download, Settings, Shield, Sparkles, ArrowRight, CheckCircle2, FileText, Users } from "lucide-react";
+import { Download, Settings, Shield, Sparkles, ArrowRight, CheckCircle2, FileText, Users, PlayCircle } from "lucide-react";
 import { AuditBundleExport } from "@/components/audit-bundle-export";
 import { AuthGuard } from "@/components/auth-guard";
 import { GovernanceApprovals } from "@/components/governance-approvals";
 import { GovernancePolicies } from "@/components/governance-policies";
 import { GovernanceEntitlements } from "@/components/governance-entitlements";
 import { AutopilotControls } from "@/components/autopilot-controls";
+import { VerificationMode } from "@/components/verification-mode";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { auth } from "@/lib/auth";
 
@@ -70,7 +71,7 @@ export default async function GovernancePage({
           </div>
 
           <Tabs defaultValue="approvals" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="approvals" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <CheckCircle2 className="mr-2 size-4" />
                 Approvals
@@ -78,6 +79,10 @@ export default async function GovernancePage({
               <TabsTrigger value="autopilot" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Sparkles className="mr-2 size-4" />
                 Autopilot
+              </TabsTrigger>
+              <TabsTrigger value="verification" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <PlayCircle className="mr-2 size-4" />
+                Verification
               </TabsTrigger>
               <TabsTrigger value="audit" className="transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <FileText className="mr-2 size-4" />
@@ -110,6 +115,12 @@ export default async function GovernancePage({
 
             <TabsContent value="autopilot" className="space-y-4">
               <AutopilotControls />
+            </TabsContent>
+
+            <TabsContent value="verification" className="space-y-4">
+              <AuthGuard requiredRole="ADMIN">
+                <VerificationMode />
+              </AuthGuard>
             </TabsContent>
 
             <TabsContent value="audit" className="space-y-4">

@@ -1,21 +1,37 @@
 /**
  * Error Handling
  * Centralized error handling with proper logging
+ * 
+ * Canonical error handling module - use this for all error handling
  */
 
 import { logError } from "@/lib/logging/logger";
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 
+/**
+ * Application Error
+ * Canonical error class for API and service layers
+ */
 export class AppError extends Error {
+  public readonly statusCode: number;
+  public readonly code: string;
+  public readonly context?: Record<string, unknown>;
+  public readonly details?: unknown;
+
   constructor(
     message: string,
-    public statusCode: number = 500,
-    public code?: string,
-    public context?: Record<string, unknown>
+    statusCode: number = 500,
+    code: string = "INTERNAL_ERROR",
+    context?: Record<string, unknown>,
+    details?: unknown
   ) {
     super(message);
     this.name = "AppError";
+    this.statusCode = statusCode;
+    this.code = code;
+    this.context = context;
+    this.details = details;
   }
 }
 

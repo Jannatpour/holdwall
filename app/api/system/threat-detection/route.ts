@@ -7,9 +7,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, requireRole } from "@/lib/auth/session";
 import { ThreatDetectionService, ThreatDetectionConfig } from "@/lib/security/threat-detection";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
 
 // Singleton threat detection service
 let threatDetection: ThreatDetectionService | null = null;
+
+const threatPostSchema = z.object({
+  action: z.enum(["block", "unblock"]),
+  ip: z.string().min(1),
+});
 
 function getThreatDetection(): ThreatDetectionService {
   if (!threatDetection) {
@@ -61,7 +67,7 @@ export async function POST(request: NextRequest) {
     await requireRole("ADMIN");
 
     body = await request.json();
-    const { action, ip } = body;
+    const { action, ip } = threatPostSchema.parse(body);
 
     const service = getThreatDetection();
 
@@ -77,6 +83,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     if ((error as Error).message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

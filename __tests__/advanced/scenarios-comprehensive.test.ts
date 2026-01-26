@@ -10,12 +10,10 @@
  */
 
 import { describe, test, expect, beforeEach } from '@jest/globals';
-import { EnhancedSignalIngestionService } from '@/lib/operations/enhanced-signal-ingestion';
 import { SignalIngestionService } from '@/lib/signals/ingestion';
 import { DatabaseEvidenceVault } from '@/lib/evidence/vault-db';
 import { DatabaseEventStore } from '@/lib/events/store-db';
 import { IdempotencyService } from '@/lib/operations/idempotency';
-import { TransactionManager } from '@/lib/operations/transaction-manager';
 import { ErrorRecoveryService } from '@/lib/operations/error-recovery';
 import { ClaimExtractionService } from '@/lib/claims/extraction';
 import { AAALStudioService } from '@/lib/aaal/studio';
@@ -26,7 +24,7 @@ import { BeliefGraphService } from '@/lib/graph/belief';
 describe('Real-World Scenarios - Complete Coverage', () => {
   let evidenceVault: DatabaseEvidenceVault;
   let eventStore: DatabaseEventStore;
-  let ingestionService: EnhancedSignalIngestionService;
+  let ingestionService: SignalIngestionService;
   let claimService: ClaimExtractionService;
   let studioService: AAALStudioService;
   let forecastService: ForecastService;
@@ -37,15 +35,13 @@ describe('Real-World Scenarios - Complete Coverage', () => {
     evidenceVault = new DatabaseEvidenceVault();
     eventStore = new DatabaseEventStore();
     beliefGraph = new BeliefGraphService(eventStore);
-    const baseIngestion = new SignalIngestionService(evidenceVault, eventStore);
     const idempotency = new IdempotencyService();
-    const transactionManager = new TransactionManager();
     const errorRecovery = new ErrorRecoveryService();
     
-    ingestionService = new EnhancedSignalIngestionService(
-      baseIngestion,
+    ingestionService = new SignalIngestionService(
+      evidenceVault,
+      eventStore,
       idempotency,
-      transactionManager,
       errorRecovery
     );
     

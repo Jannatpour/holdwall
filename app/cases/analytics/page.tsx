@@ -6,9 +6,11 @@
 
 import { Metadata } from "next";
 import Link from "next/link";
+import { AppShell } from "@/components/app-shell";
+import { AuthGuard } from "@/components/auth-guard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, TrendingUp, Users, Clock } from "lucide-react";
+import { BarChart3, TrendingUp, Users } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Case Analytics | Holdwall",
@@ -17,7 +19,9 @@ export const metadata: Metadata = {
 
 export default function CaseAnalyticsPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <AuthGuard requiredRole="USER">
+      <AppShell>
+        <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Case Analytics</h1>
         <p className="text-muted-foreground">
@@ -86,6 +90,8 @@ export default function CaseAnalyticsPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </AppShell>
+    </AuthGuard>
   );
 }

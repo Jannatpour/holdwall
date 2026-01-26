@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
-import { abTesting } from "@/lib/publishing/ab-testing";
+import { abTesting } from "@/lib/ab-testing/framework";
 import { logger } from "@/lib/logging/logger";
 import { z } from "zod";
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { testId, variantId, engagement } = engagementSchema.parse(body);
 
-    abTesting.recordEngagement(testId, variantId, engagement);
+    abTesting.recordEngagement(testId, variantId, engagement, (user as any).id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

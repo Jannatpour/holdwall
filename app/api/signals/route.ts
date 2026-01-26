@@ -7,23 +7,19 @@ import { requireAuth } from "@/lib/auth/session";
 import { DatabaseEventStore } from "@/lib/events/store-db";
 import { DatabaseEvidenceVault } from "@/lib/evidence/vault-db";
 import { SignalIngestionService } from "@/lib/signals/ingestion";
-import { EnhancedSignalIngestionService } from "@/lib/operations/enhanced-signal-ingestion";
 import { IdempotencyService } from "@/lib/operations/idempotency";
-import { TransactionManager } from "@/lib/operations/transaction-manager";
 import { ErrorRecoveryService } from "@/lib/operations/error-recovery";
 import { logger } from "@/lib/logging/logger";
 import { z } from "zod";
 
 const eventStore = new DatabaseEventStore();
 const evidenceVault = new DatabaseEvidenceVault();
-const baseIngestionService = new SignalIngestionService(evidenceVault, eventStore);
 const idempotencyService = new IdempotencyService();
-const transactionManager = new TransactionManager();
 const errorRecovery = new ErrorRecoveryService();
-const ingestionService = new EnhancedSignalIngestionService(
-  baseIngestionService,
+const ingestionService = new SignalIngestionService(
+  evidenceVault,
+  eventStore,
   idempotencyService,
-  transactionManager,
   errorRecovery
 );
 

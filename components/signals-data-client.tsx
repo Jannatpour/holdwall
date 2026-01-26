@@ -1,9 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { SignalsLoading } from "@/components/ui/loading-states";
 
 const SignalsData = dynamic(() => import("@/components/signals-data").then((mod) => ({ default: mod.SignalsData })), {
-  loading: () => <div className="space-y-4"><div className="h-32 w-full bg-muted animate-pulse rounded" /></div>,
+  loading: () => <SignalsLoading />,
   ssr: false,
 });
 

@@ -81,12 +81,27 @@ export class LLMProvider {
   }
 
   private detectProvider(model: string): "openai" | "anthropic" | "generic" {
-    if (model.startsWith("gpt-") || model.startsWith("o1-") || model.startsWith("o3-") || model.startsWith("gpt-5")) {
+    // OpenAI models: GPT series, o1/o3 reasoning models, GPT-5 series
+    if (
+      model.startsWith("gpt-") ||
+      model.startsWith("o1-") ||
+      model.startsWith("o3-") ||
+      model.startsWith("o1") ||
+      model.startsWith("o3") ||
+      model.startsWith("gpt-5")
+    ) {
       return "openai";
     }
-    if (model.startsWith("claude-") || model.startsWith("claude-opus-")) {
+    // Anthropic models: Claude series (including 2026 versions)
+    if (
+      model.startsWith("claude-") ||
+      model.startsWith("claude-opus-") ||
+      model.startsWith("claude-sonnet-") ||
+      model.startsWith("claude-haiku-")
+    ) {
       return "anthropic";
     }
+    // Google Gemini models
     if (model.startsWith("gemini-")) {
       return "generic"; // Gemini uses generic provider interface
     }
@@ -445,11 +460,26 @@ export class LLMProvider {
   }
 
   /**
-   * Calculate OpenAI cost (approximate, based on pricing as of 2024)
+   * Calculate OpenAI cost (updated with 2026 pricing)
    */
   private calculateOpenAICost(model: string, tokens: number): number {
     const pricing: Record<string, { input: number; output: number }> = {
+      // Reasoning models (2026)
+      "o1-preview": { input: 0.015 / 1000, output: 0.06 / 1000 },
+      "o1-mini": { input: 0.006 / 1000, output: 0.024 / 1000 },
+      "o3": { input: 0.025 / 1000, output: 0.1 / 1000 },
+      "o3-mini": { input: 0.012 / 1000, output: 0.048 / 1000 },
+      // GPT-5 series (2026)
+      "gpt-5.2": { input: 0.018 / 1000, output: 0.072 / 1000 },
+      "gpt-5.2-turbo": { input: 0.012 / 1000, output: 0.048 / 1000 },
+      "gpt-5": { input: 0.02 / 1000, output: 0.08 / 1000 },
+      "gpt-5-mini": { input: 0.003 / 1000, output: 0.012 / 1000 },
+      // GPT-4o series
       "gpt-4o": { input: 0.0025 / 1000, output: 0.01 / 1000 },
+      "gpt-4o-mini": { input: 0.00015 / 1000, output: 0.0006 / 1000 },
+      "gpt-4.1": { input: 0.008 / 1000, output: 0.032 / 1000 },
+      "gpt-4.1-mini": { input: 0.0002 / 1000, output: 0.0008 / 1000 },
+      // Legacy models
       "gpt-4-turbo": { input: 0.01 / 1000, output: 0.03 / 1000 },
       "gpt-4": { input: 0.03 / 1000, output: 0.06 / 1000 },
       "gpt-3.5-turbo": { input: 0.0005 / 1000, output: 0.0015 / 1000 },
@@ -461,10 +491,15 @@ export class LLMProvider {
   }
 
   /**
-   * Calculate Anthropic cost (approximate, based on pricing as of 2024)
+   * Calculate Anthropic cost (updated with 2026 pricing)
    */
   private calculateAnthropicCost(model: string, tokens: number): number {
     const pricing: Record<string, { input: number; output: number }> = {
+      // Claude 4.5 series (2026)
+      "claude-opus-4.5": { input: 0.05 / 1000, output: 0.25 / 1000 },
+      "claude-sonnet-4.5": { input: 0.012 / 1000, output: 0.06 / 1000 },
+      "claude-haiku-4.5": { input: 0.0003 / 1000, output: 0.0015 / 1000 },
+      // Claude 3 series (legacy)
       "claude-3-opus-20240229": { input: 0.015 / 1000, output: 0.075 / 1000 },
       "claude-3-sonnet-20240229": { input: 0.003 / 1000, output: 0.015 / 1000 },
       "claude-3-haiku-20240307": { input: 0.00025 / 1000, output: 0.00125 / 1000 },

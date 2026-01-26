@@ -47,6 +47,7 @@ function makeRequest(url, options = {}) {
       method: options.method || 'GET',
       headers: {
         'Content-Type': 'application/json',
+        ...(process.env.VERIFY_TOKEN ? { 'x-verify-token': process.env.VERIFY_TOKEN } : {}),
         ...options.headers,
       },
     }, (res) => {
@@ -126,19 +127,21 @@ async function checkServer() {
   try {
     const response = await makeRequest(`${BASE_URL}/api/verification/run`, {
       method: 'POST',
-      body: { flow: 'all' },
+      body: { flow: 'all', tenantId: process.env.VERIFY_TENANT_ID },
     });
     
     if (response.status === 200) {
       const verification = response.data;
       
       // Check overall status
-      if (verification.report?.overallStatus === 'pass') {
-        success('End-to-end verification passed');
-      } else if (verification.report?.overallStatus === 'fail') {
-        error('End-to-end verification failed');
+      const failed = verification.summary?.failed ?? null;
+      const passed = verification.summary?.passed ?? null;
+      if (failed === 0) {
+        success(`End-to-end verification passed (${passed ?? "?"} flows)`);
+      } else if (typeof failed === "number" && failed > 0) {
+        error(`End-to-end verification failed (${failed} failing flow(s))`);
       } else {
-        warning('Could not determine verification status');
+        warning("Could not determine verification status");
       }
       
       log('\nVerification Details:');
@@ -176,7 +179,7 @@ async function checkServer() {
   log(`      -H 'Content-Type: application/json' \\`);
   log(`      -d '{"flow":"all"}' | jq`);
   log('');
-  info('For complete verification guide, see: HOW_TO_BE_100_PERCENT_SURE.md');
+  info('For complete verification guide, see: VERIFY_EVERYTHING.md');
   log('');
 }
 

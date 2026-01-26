@@ -13,10 +13,11 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { logger } from "@/lib/logging/logger";
 import { handleAuthError, InvalidCredentialsError, DatabaseAuthError } from "@/lib/auth/error-handler";
+import { validateAuthConfig } from "@/lib/auth/config-validator";
 
 // Lazy load database client to prevent initialization errors
 let db: any = null;
@@ -58,6 +59,18 @@ const providers: any[] = [
       }
 
       try {
+        // Validate auth configuration
+        const configStatus = validateAuthConfig();
+        if (!configStatus.valid) {
+          logger.error("Authorize: Authentication configuration invalid", {
+            missing: configStatus.missing,
+            errors: configStatus.errors,
+          });
+          // Return null to indicate authentication failure
+          // This prevents exposing configuration details
+          return null;
+        }
+
         // Normalize email to lowercase for consistent lookup
         // This ensures case-insensitive email matching
         const normalizedEmail = (credentials.email as string).trim().toLowerCase();
@@ -152,11 +165,32 @@ const providers: any[] = [
         };
       } catch (error) {
         const authError = handleAuthError(error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        // Log detailed error information
         logger.error("Authorize: Database error", {
           error: authError.message,
+          originalError: errorMessage,
           email: credentials.email as string,
-          stack: authError instanceof Error ? authError.stack : undefined,
+          stack: error instanceof Error ? error.stack : undefined,
+          databaseUrl: process.env.DATABASE_URL ? "configured" : "missing",
         });
+        
+        // Check for specific database connection errors
+        if (
+          errorMessage.includes("denied access") ||
+          errorMessage.includes("not available") ||
+          errorMessage.includes("connection") ||
+          errorMessage.includes("timeout") ||
+          errorMessage.includes("ECONNREFUSED") ||
+          errorMessage.includes("ENOTFOUND")
+        ) {
+          logger.error("Authorize: Database connection failed", {
+            error: errorMessage,
+            suggestion: "Check DATABASE_URL environment variable",
+          });
+        }
+        
         return null;
       }
     },
@@ -327,9 +361,17 @@ const nextAuthConfig: any = {
     signIn: "/auth/signin",
     error: "/auth/error",
   },
-  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development-only",
+  // Never use a hardcoded secret in production.
+  // In development/test we allow a fallback to keep local onboarding friction low,
+  // but production must set NEXTAUTH_SECRET.
+  secret:
+    process.env.NEXTAUTH_SECRET ||
+    (process.env.NODE_ENV === "production" ? undefined : "fallback-secret-for-development-only"),
   debug: process.env.NODE_ENV === "development",
   trustHost: true, // Required for Next.js 13+ App Router
+  // Ensure local http environments (e.g. E2E on localhost) can set session cookies
+  // even when running a production build. In real prod (https), cookies stay secure.
+  useSecureCookies: !!process.env.NEXTAUTH_URL?.startsWith("https://"),
 };
 
 // Try to add adapter only if database URL is valid
@@ -427,9 +469,11 @@ async function handleRequest(
     // Clone response to read it without consuming the stream
     const clonedResponse = response.clone();
     
-    // If response is HTML error page, convert to JSON
+    // If response is an HTML *error* page, convert to JSON.
+    // Important: NextAuth frequently uses 302/303 redirects (especially for sign-in flows).
+    // Redirects are not errors and must preserve headers (e.g. Set-Cookie).
     const contentType = response.headers.get("content-type") || "";
-    if (contentType.includes("text/html") && !response.ok) {
+    if (contentType.includes("text/html") && response.status >= 400) {
       try {
         const text = await clonedResponse.text();
         logger.error("NextAuth returned HTML error", {
@@ -540,8 +584,163 @@ async function safeHandleRequest(
 }
 
 export async function GET(req: NextRequest) {
-  // Handle session endpoint with special error handling
-  if (req.nextUrl.pathname.includes("/session")) {
+  // Wrap entire function in try-catch to ensure JSON responses
+  try {
+    // Handle session endpoint with special error handling
+    if (req.nextUrl.pathname.includes("/session")) {
+      try {
+        // Ensure adapter is available for OAuth flows (non-blocking)
+        ensureAdapter().catch((error) => {
+          logger.warn("Failed to ensure adapter", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+        
+        // Check if handlers are available
+        if (!handlers || !handlers.GET) {
+          logger.warn("NextAuth handlers not available, returning null session");
+          return NextResponse.json(
+            { user: null, expires: null },
+            {
+              status: 200,
+              headers: { 
+                "Cache-Control": "no-store, must-revalidate",
+              },
+            }
+          );
+        }
+        
+        // Try to get session, but always return JSON
+        try {
+          const response = await handlers.GET(req);
+          
+          // Clone response to check content without consuming stream
+          const clonedResponse = response.clone();
+          
+          // If response is HTML error, convert to null session
+          const contentType = response.headers.get("content-type") || "";
+          if (contentType.includes("text/html")) {
+            logger.warn("NextAuth session returned HTML, returning null session", {
+              status: response.status,
+            });
+            return NextResponse.json(
+              { user: null, expires: null },
+              {
+                status: 200,
+                headers: { 
+                  "Cache-Control": "no-store, must-revalidate",
+                },
+              }
+            );
+          }
+          
+          // Ensure response is JSON
+          if (!contentType.includes("application/json")) {
+            // Try to parse as JSON, if fails return null session
+            try {
+              const text = await clonedResponse.text();
+              const parsed = JSON.parse(text);
+              return NextResponse.json(parsed, {
+                status: response.status,
+                headers: {
+                  "Cache-Control": "no-store, must-revalidate",
+                },
+              });
+            } catch {
+              logger.warn("NextAuth session response is not valid JSON, returning null session");
+              return NextResponse.json(
+                { user: null, expires: null },
+                {
+                  status: 200,
+                  headers: { 
+                    "Cache-Control": "no-store, must-revalidate",
+                  },
+                }
+              );
+            }
+          }
+          
+          // If response is not OK, return null session instead of error
+          if (!response.ok) {
+            logger.warn("NextAuth session returned error status, returning null session", {
+              status: response.status,
+            });
+            return NextResponse.json(
+              { user: null, expires: null },
+              {
+                status: 200,
+                headers: { 
+                  "Cache-Control": "no-store, must-revalidate",
+                },
+              }
+            );
+          }
+          
+          return response;
+        } catch (error) {
+          logger.error("Error in NextAuth session handler", {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+          return NextResponse.json(
+            { user: null, expires: null },
+            {
+              status: 200,
+              headers: { 
+                "Cache-Control": "no-store, must-revalidate",
+              },
+            }
+          );
+        }
+      } catch (error) {
+        logger.error("NextAuth GET session error", {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        return NextResponse.json(
+          { user: null, expires: null },
+          {
+            status: 200,
+            headers: { 
+              "Cache-Control": "no-store, must-revalidate",
+            },
+          }
+        );
+      }
+    }
+  
+    // Providers endpoint must conform to NextAuth's expected shape.
+    // next-auth/react uses `/api/auth/providers` to validate provider existence (including "credentials").
+    if (req.nextUrl.pathname.includes("/providers")) {
+      try {
+        if (!handlers || !handlers.GET) {
+          // Fail open with empty providers so client can render fallback UI without redirect loops.
+          return NextResponse.json({}, { status: 200 });
+        }
+
+        const response = await handlers.GET(req);
+        const contentType = response.headers.get("content-type") || "";
+
+        // If NextAuth returns an error or HTML, return an empty object (client treats as "no providers").
+        if (!response.ok || contentType.includes("text/html")) {
+          return NextResponse.json({}, { status: 200 });
+        }
+
+        // Normalize via JSON to ensure a stable response for clients.
+        const data = await response.clone().json().catch(() => ({}));
+        if (!data || typeof data !== "object") {
+          return NextResponse.json({}, { status: 200 });
+        }
+        return NextResponse.json(data as Record<string, unknown>, { status: 200 });
+      } catch (error) {
+        logger.error("Error getting providers", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return NextResponse.json({}, { status: 200 });
+      }
+    }
+    
+    // Handle all other NextAuth endpoints
     try {
       // Ensure adapter is available for OAuth flows (non-blocking)
       ensureAdapter().catch((error) => {
@@ -552,159 +751,48 @@ export async function GET(req: NextRequest) {
       
       // Check if handlers are available
       if (!handlers || !handlers.GET) {
-        logger.warn("NextAuth handlers not available, returning null session");
-        return new Response(
-          JSON.stringify({ user: null, expires: null }),
-          {
-            status: 200,
-            headers: { 
-              "Content-Type": "application/json",
-              "Cache-Control": "no-store, must-revalidate",
-            },
-          }
+        logger.error("NextAuth handlers not available");
+        return NextResponse.json(
+          { error: "Authentication service unavailable" },
+          { status: 503 }
         );
       }
-      
-      // Try to get session, but always return JSON
-      try {
-        const response = await handlers.GET(req);
-        
-        // If response is HTML error, convert to null session
-        const contentType = response.headers.get("content-type") || "";
-        if (contentType.includes("text/html") && !response.ok) {
-          logger.warn("NextAuth session returned HTML error, returning null session");
-          return new Response(
-            JSON.stringify({ user: null, expires: null }),
-            {
-              status: 200,
-              headers: { 
-                "Content-Type": "application/json",
-                "Cache-Control": "no-store, must-revalidate",
-              },
-            }
-          );
-        }
-        
-        // Ensure response is JSON
-        if (!contentType.includes("application/json")) {
-          // Try to parse as JSON, if fails return null session
-          try {
-            const text = await response.text();
-            JSON.parse(text);
-            return new Response(text, {
-              status: response.status,
-              headers: {
-                "Content-Type": "application/json",
-                "Cache-Control": "no-store, must-revalidate",
-              },
-            });
-          } catch {
-            return new Response(
-              JSON.stringify({ user: null, expires: null }),
-              {
-                status: 200,
-                headers: { 
-                  "Content-Type": "application/json",
-                  "Cache-Control": "no-store, must-revalidate",
-                },
-              }
-            );
-          }
-        }
-        
-        return response;
-      } catch (error) {
-        logger.error("Error in NextAuth session handler", {
-          error: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        });
-        return new Response(
-          JSON.stringify({ user: null, expires: null }),
-          {
-            status: 200,
-            headers: { 
-              "Content-Type": "application/json",
-              "Cache-Control": "no-store, must-revalidate",
-            },
-          }
-        );
-      }
+      return await safeHandleRequest(handlers.GET, req);
     } catch (error) {
-      logger.error("NextAuth GET session error", {
+      logger.error("NextAuth GET handler error", {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        pathname: req.nextUrl.pathname,
       });
-      return new Response(
-        JSON.stringify({ user: null, expires: null }),
+      return NextResponse.json(
+        { error: "Authentication service unavailable" },
+        { status: 503 }
+      );
+    }
+  } catch (error) {
+    // Top-level catch to ensure we always return JSON, never HTML
+    logger.error("NextAuth GET top-level error", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      pathname: req.nextUrl.pathname,
+    });
+    
+    // For session endpoint, return null session
+    if (req.nextUrl.pathname.includes("/session")) {
+      return NextResponse.json(
+        { user: null, expires: null },
         {
           status: 200,
           headers: { 
-            "Content-Type": "application/json",
             "Cache-Control": "no-store, must-revalidate",
           },
         }
       );
     }
-  }
-  
-  // Handle providers endpoint explicitly
-  if (req.nextUrl.pathname.includes("/providers")) {
-    try {
-      const providers: Record<string, boolean> = {};
-      if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-        providers.google = true;
-      }
-      if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-        providers.github = true;
-      }
-      return new Response(
-        JSON.stringify(providers),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } catch (error) {
-      logger.error("Error getting providers", {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return new Response(
-        JSON.stringify({ google: false, github: false }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-  }
-  
-  // Handle all other NextAuth endpoints
-  try {
-    // Ensure adapter is available for OAuth flows (non-blocking)
-    ensureAdapter().catch((error) => {
-      logger.warn("Failed to ensure adapter", {
-        error: error instanceof Error ? error.message : String(error),
-      });
-    });
     
-    // Check if handlers are available
-    if (!handlers || !handlers.GET) {
-      logger.error("NextAuth handlers not available");
-      return new Response(
-        JSON.stringify({ error: "Authentication service unavailable" }),
-        { status: 503, headers: { "Content-Type": "application/json" } }
-      );
-    }
-    return await safeHandleRequest(handlers.GET, req);
-  } catch (error) {
-    logger.error("NextAuth GET handler error", {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      pathname: req.nextUrl.pathname,
-    });
-    return new Response(
-      JSON.stringify({ error: "Authentication service unavailable" }),
-      { status: 503, headers: { "Content-Type": "application/json" } }
+    return NextResponse.json(
+      { error: "Authentication service unavailable" },
+      { status: 503 }
     );
   }
 }

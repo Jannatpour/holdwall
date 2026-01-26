@@ -6,6 +6,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getANPProtocol } from "@/lib/anp/protocol";
 import { requireAuth } from "@/lib/auth/session";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
+
+const createNetworkSchema = z.object({
+  networkId: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().optional(),
+  agents: z.array(z.string().min(1)).optional(),
+  topology: z.enum(["mesh", "star", "hierarchical", "ring"]),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+  creatorAgentId: z.string().min(1).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,38 +26,37 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { networkId, name, description, agents, topology, metadata } = body;
-
-    if (!networkId || !name || !topology) {
-      return NextResponse.json(
-        { error: "Missing required fields: networkId, name, topology" },
-        { status: 400 }
-      );
-    }
+    const validated = createNetworkSchema.parse(body);
 
     const anpProtocol = getANPProtocol();
-    const creatorAgentId = body.creatorAgentId || (user as any).id;
+    const creatorAgentId = validated.creatorAgentId || (user as any).id;
     
     await anpProtocol.createNetwork({
-      networkId,
-      name,
-      description,
-      agents: agents || [],
-      topology,
-      metadata,
+      networkId: validated.networkId,
+      name: validated.name,
+      description: validated.description,
+      agents: validated.agents || [],
+      topology: validated.topology,
+      metadata: validated.metadata,
     }, creatorAgentId);
 
     logger.info("Network created via API", {
-      networkId,
-      name,
+      networkId: validated.networkId,
+      name: validated.name,
       userId: (user as any).id,
     });
 
     return NextResponse.json({
       success: true,
-      networkId,
+      networkId: validated.networkId,
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     logger.error("Network creation failed", {
       error: error instanceof Error ? error.message : String(error),
     });

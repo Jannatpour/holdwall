@@ -52,7 +52,13 @@ export class EmbeddingService {
       }
     }
 
-    // Fallback to local embedding (for development)
+    // Fallback to local embedding (development only). In production we must not return synthetic vectors.
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "Embedding providers unavailable (check OPENAI_API_KEY / VOYAGE_API_KEY / GOOGLE_API_KEY and billing/quota)."
+      );
+    }
+
     const embedding = this.embedLocal(text, model);
     this.cache.set(cacheKey, embedding);
     return embedding;

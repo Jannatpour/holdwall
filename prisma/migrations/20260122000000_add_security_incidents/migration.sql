@@ -7,8 +7,28 @@ CREATE TYPE "SecurityIncidentSeverity" AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'CRITIC
 -- CreateEnum
 CREATE TYPE "SecurityIncidentStatus" AS ENUM ('OPEN', 'INVESTIGATING', 'CONTAINED', 'RESOLVED', 'CLOSED');
 
--- AlterTable
-ALTER TABLE "IncidentExplanation" ADD COLUMN "securityIncidentId" TEXT;
+-- CreateTable
+CREATE TABLE "IncidentExplanation" (
+    "id" TEXT NOT NULL,
+    "tenantId" TEXT NOT NULL,
+    "incidentId" TEXT,
+    "securityIncidentId" TEXT,
+    "title" TEXT NOT NULL,
+    "summary" TEXT NOT NULL,
+    "explanation" TEXT NOT NULL,
+    "rootCause" TEXT,
+    "resolution" TEXT,
+    "prevention" TEXT,
+    "evidenceRefs" TEXT[],
+    "publicUrl" TEXT,
+    "isPublished" BOOLEAN NOT NULL DEFAULT false,
+    "publishedAt" TIMESTAMP(3),
+    "metadata" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "IncidentExplanation_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "SecurityIncident" (
@@ -37,6 +57,18 @@ CREATE TABLE "SecurityIncident" (
 );
 
 -- CreateIndex
+CREATE INDEX "IncidentExplanation_tenantId_idx" ON "IncidentExplanation"("tenantId");
+
+-- CreateIndex
+CREATE INDEX "IncidentExplanation_incidentId_idx" ON "IncidentExplanation"("incidentId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "IncidentExplanation_securityIncidentId_key" ON "IncidentExplanation"("securityIncidentId");
+
+-- CreateIndex
+CREATE INDEX "IncidentExplanation_isPublished_idx" ON "IncidentExplanation"("isPublished");
+
+-- CreateIndex
 CREATE INDEX "SecurityIncident_tenantId_idx" ON "SecurityIncident"("tenantId");
 
 -- CreateIndex
@@ -60,11 +92,11 @@ CREATE INDEX "SecurityIncident_narrativeRiskScore_idx" ON "SecurityIncident"("na
 -- CreateIndex
 CREATE UNIQUE INDEX "SecurityIncident_explanationId_key" ON "SecurityIncident"("explanationId");
 
--- CreateIndex
-CREATE UNIQUE INDEX "IncidentExplanation_securityIncidentId_key" ON "IncidentExplanation"("securityIncidentId");
-
 -- AddForeignKey
 ALTER TABLE "SecurityIncident" ADD CONSTRAINT "SecurityIncident_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "IncidentExplanation" ADD CONSTRAINT "IncidentExplanation_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SecurityIncident" ADD CONSTRAINT "SecurityIncident_explanationId_fkey" FOREIGN KEY ("explanationId") REFERENCES "IncidentExplanation"("id") ON DELETE SET NULL ON UPDATE CASCADE;

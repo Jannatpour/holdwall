@@ -159,6 +159,7 @@ export class FileUploadService {
   ): Promise<{
     success: boolean;
     file_id?: string;
+    storage_url?: string;
     error?: string;
   }> {
     // Validate
@@ -404,7 +405,7 @@ export class FileUploadService {
         });
       }
 
-      return { success: true, file_id };
+      return { success: true, file_id, storage_url: storageUrl };
     } catch (error) {
       logger.error("File upload failed", {
         error: error instanceof Error ? error.message : String(error),

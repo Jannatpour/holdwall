@@ -164,6 +164,8 @@ model Tenant {
   caseTags               CaseTag[]
   caseWebhooks           CaseWebhook[]
   caseTemplates          CaseTemplate[]
+  workflows              Workflow[]
+  plugins                Plugin[]
 
   @@index([slug])
 }
@@ -267,6 +269,7 @@ model EvidenceAccessLog {
   @@index([actorId])
   @@index([accessType])
   @@index([createdAt])
+  @@index([tenantId, createdAt]) // Composite index for time-range access log queries
 }
 
 enum EvidenceAccessType {
@@ -347,6 +350,8 @@ model Event {
   @@index([type])
   @@index([correlationId])
   @@index([occurredAt])
+  @@index([tenantId, occurredAt]) // Composite index for time-range queries
+  @@index([tenantId, type]) // Composite index for filtered event queries
 }
 
 model EventEvidence {
@@ -2442,4 +2447,99 @@ enum CaseRelationshipType {
   PARENT
   CHILD
   LINKED
+}
+
+// Universal Workflow Engine
+model Workflow {
+  id          String         @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?        @db.Text
+  version     Int
+  status      WorkflowStatus @default(draft)
+  trigger     Json           // WorkflowTrigger
+  steps       Json           // WorkflowStep[]
+  variables   Json?          // Workflow-level variables
+  metadata    Json?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  executions WorkflowExecution[]
+
+  @@unique([tenantId, name, version])
+  @@index([tenantId, status])
+  @@index([tenantId, name])
+  @@index([status])
+}
+
+enum WorkflowStatus {
+  draft
+  active
+  paused
+  archived
+}
+
+model WorkflowExecution {
+  id          String              @id @default(cuid())
+  workflowId  String
+  tenantId    String
+  status      WorkflowExecutionStatus @default(running)
+  currentStepId String?
+  stepResults Json?               // Record<string, WorkflowStepResult>
+  context     Json                // Execution context/variables
+  startedAt   DateTime            @default(now())
+  completedAt DateTime?
+  error       String?             @db.Text
+  metadata    Json?
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([tenantId, status])
+  @@index([tenantId, startedAt])
+  @@index([status])
+}
+
+enum WorkflowExecutionStatus {
+  running
+  completed
+  failed
+  paused
+  cancelled
+}
+
+// Plugin System for Extensibility
+model Plugin {
+  id          String     @id @default(cuid())
+  tenantId    String
+  name        String
+  type        PluginType
+  version     String
+  description String?    @db.Text
+  config      Json
+  handler     String     // Function name or module path
+  enabled     Boolean    @default(true)
+  metadata    Json?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name, version])
+  @@index([tenantId, type])
+  @@index([tenantId, enabled])
+  @@index([type])
+}
+
+enum PluginType {
+  workflow_action
+  business_rule
+  integration
+  ai_model
+  data_transform
+  custom_handler
+  validator
+  notifier
+  analyzer
 }

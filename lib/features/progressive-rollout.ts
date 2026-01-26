@@ -5,7 +5,7 @@
  * Gradually increases feature availability
  */
 
-import { featureFlags } from "./feature-flags";
+import { getFeatureFlagManager } from "@/lib/feature-flags/config";
 
 export interface RolloutConfig {
   flag_id: string;
@@ -76,9 +76,13 @@ export class ProgressiveRolloutManager {
     const currentPercentage = rollout.stages[currentStage].percentage;
 
     // Update feature flag
-    const flag = featureFlags.getAllFlags().find(f => f.id === flagId);
+    const flagManager = getFeatureFlagManager();
+    const flag = flagManager.getFlag(flagId);
     if (flag) {
-      flag.rollout_percentage = currentPercentage;
+      flagManager.setFlag({
+        ...flag,
+        rollout_percentage: currentPercentage,
+      });
     }
 
     // Schedule next update if not at final stage
@@ -129,9 +133,13 @@ export class ProgressiveRolloutManager {
     const rollout = this.rollouts.get(flagId);
     if (rollout) {
       // Set percentage to 0
-      const flag = featureFlags.getAllFlags().find(f => f.id === flagId);
+      const flagManager = getFeatureFlagManager();
+      const flag = flagManager.getFlag(flagId);
       if (flag) {
-        flag.rollout_percentage = 0;
+        flagManager.setFlag({
+          ...flag,
+          rollout_percentage: 0,
+        });
       }
       console.log(`[Rollout] ${flagId} rolled back`);
     }

@@ -2,6 +2,30 @@
 
 This guide covers deploying Holdwall POS to production, including setting up VAPID keys, running tests, and configuring CI/CD.
 
+## Deployment paths
+
+- **Vercel**: app hosting (Next.js), edge/CDN, preview deployments.
+- **AWS**: durable workloads (ECS/EKS), private networking, RDS/ElastiCache, higher control.
+
+This repo supports both. The standard pattern is: **Vercel for the web app** + **AWS for data/workers** when you outgrow managed storage or need dedicated compute.
+
+## Automated deployment scripts (optional)
+
+If you prefer a guided workflow, the repo includes deployment scripts (see `package.json` scripts and `scripts/`).
+Typical flow:
+
+```bash
+# Validate environment + run migrations + build + deploy
+npm run deploy:complete
+```
+
+The `deploy:complete` script is intended to:
+- validate prerequisites (tooling + env)
+- ensure `DATABASE_URL` is set in your hosting platform
+- run `prisma migrate deploy`
+- run a production build
+- deploy (for Vercel workflows)
+
 ## 📋 Pre-Deployment Checklist
 
 - [ ] Database migrations applied
@@ -69,6 +93,12 @@ REDIS_URL=redis://host:6379
 
 # Error Tracking
 SENTRY_DSN=<your-sentry-dsn>
+
+# Backups (S3 recommended for production)
+# Used by /api/backup/* endpoints via lib/backup/disaster-recovery.ts
+S3_BACKUP_BUCKET=<your-backup-bucket>
+AWS_REGION=<aws-region>
+# Provide AWS credentials via your hosting platform's secret manager / IAM role.
 
 # OAuth Providers
 GOOGLE_CLIENT_ID=<your-google-client-id>

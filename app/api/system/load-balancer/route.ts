@@ -6,10 +6,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, requireRole } from "@/lib/auth/session";
 import { DynamicLoadBalancer, LoadBalancingConfig, AutoScalingPolicy } from "@/lib/load-balancing/distributor";
+import type { ServiceInstance } from "@/lib/load-balancing/distributor";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
 
 // Singleton load balancer instance
 let loadBalancer: DynamicLoadBalancer | null = null;
+
+const serviceInstanceInputSchema = z.object({
+  id: z.string().min(1),
+  url: z.string().min(1),
+  region: z.string().min(1).optional(),
+  zone: z.string().min(1).optional(),
+  health: z.enum(["healthy", "degraded", "unhealthy"]).optional().default("healthy"),
+  load: z.number().min(0).max(1).optional().default(0),
+  capacity: z.number().int().positive().optional().default(100),
+  activeRequests: z.number().int().min(0).optional().default(0),
+  responseTime: z.number().min(0).optional().default(0),
+  errorRate: z.number().min(0).max(1).optional().default(0),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+const loadBalancerPostSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("register"),
+    instance: serviceInstanceInputSchema,
+  }),
+  z.object({
+    action: z.literal("unregister"),
+    instance: z.object({ id: z.string().min(1) }),
+  }),
+]);
 
 function getLoadBalancer(): DynamicLoadBalancer {
   if (!loadBalancer) {
@@ -70,12 +97,17 @@ export async function POST(request: NextRequest) {
     await requireRole("ADMIN");
 
     body = await request.json();
-    const { action, instance } = body;
+    const validated = loadBalancerPostSchema.parse(body);
+    const { action, instance } = validated;
 
     const balancer = getLoadBalancer();
 
     if (action === "register" && instance) {
-      balancer.registerInstance(instance);
+      const fullInstance: ServiceInstance = {
+        ...instance,
+        lastHealthCheck: new Date(),
+      };
+      balancer.registerInstance(fullInstance);
       return NextResponse.json({ success: true, message: "Instance registered" });
     }
 
@@ -86,6 +118,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     if ((error as Error).message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

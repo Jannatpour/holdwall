@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { AppShell } from "@/components/app-shell";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,9 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Play, BarChart3, TrendingUp } from "lucide-react";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
+import { ForecastsLoading } from "@/components/ui/loading-states";
 
 const ForecastsData = dynamic(() => import("@/components/forecasts-data").then((mod) => ({ default: mod.ForecastsData })), {
-  loading: () => <div className="space-y-6"><div className="h-32 w-full bg-muted animate-pulse rounded" /></div>,
+  loading: () => <ForecastsLoading />,
   ssr: true,
 });
 
@@ -55,15 +57,21 @@ export default function ForecastsPage() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
-            <ForecastsData />
+            <Suspense fallback={<ForecastsLoading />}>
+              <ForecastsData />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="drift" className="space-y-4">
-            <ForecastsData />
+            <Suspense fallback={<ForecastsLoading />}>
+              <ForecastsData />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="outbreak" className="space-y-4">
-            <ForecastsData />
+            <Suspense fallback={<ForecastsLoading />}>
+              <ForecastsData />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="simulation" className="space-y-4">

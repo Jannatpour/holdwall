@@ -6,8 +6,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
 import { FileUploadService } from "@/lib/file/upload";
 import { logger } from "@/lib/logging/logger";
+import { z } from "zod";
 
 const uploadService = new FileUploadService();
+
+const uploadFormSchema = z.object({
+  file: z.instanceof(File),
+});
 
 export async function POST(request: NextRequest) {
   let file: File | null = null;
@@ -23,6 +28,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    uploadFormSchema.parse({ file });
+
     const result = await uploadService.processUpload(file);
 
     if (!result.success) {
@@ -31,6 +38,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ file_id: result.file_id });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.issues },
+        { status: 400 }
+      );
+    }
     if ((error as Error).message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

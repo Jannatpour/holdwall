@@ -3,20 +3,8 @@
  * Production rate limiting implementation
  */
 
-import Redis from "ioredis";
-
-// Get Redis client (since it's private in redis.ts)
-function getRedisClient(): Redis | null {
-  const redisUrl = process.env.REDIS_URL;
-  if (!redisUrl) {
-    return null;
-  }
-  try {
-    return new Redis(redisUrl);
-  } catch {
-    return null;
-  }
-}
+import type Redis from "ioredis";
+import { getRedisClient } from "@/lib/cache/redis";
 
 export interface RateLimitResult {
   allowed: boolean;

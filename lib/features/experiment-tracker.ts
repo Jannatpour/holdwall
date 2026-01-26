@@ -4,8 +4,8 @@
  * Track experiments, measure impact, rollback capability
  */
 
-import { abTesting } from "./ab-testing";
-import { featureFlags } from "./feature-flags";
+import { abTesting } from "@/lib/ab-testing/framework";
+import { getFeatureFlagManager } from "@/lib/feature-flags/config";
 
 export interface Experiment {
   id: string;
@@ -92,26 +92,25 @@ export class ExperimentTracker {
     }
 
     if (experiment.type === "ab_test") {
-      const abResults = await abTesting.getResults(experimentId);
+      const abResults = await abTesting.analyzeTest(experimentId);
       
       // Calculate improvements
       const metrics: Record<string, any> = {};
       if (abResults.variants.length >= 2) {
-        const baseline = abResults.variants[0];
-        const variant = abResults.variants[1];
+        // Sort by conversion rate (ascending for baseline, descending for variant)
+        const sorted = [...abResults.variants].sort((a, b) => a.conversionRate - b.conversionRate);
+        const baseline = sorted[0];
+        const topVariant = sorted[sorted.length - 1];
         
-        const improvement = baseline.conversion_rate > 0
-          ? ((variant.conversion_rate - baseline.conversion_rate) / baseline.conversion_rate) * 100
-          : 0;
+        const improvement = baseline.conversionRate > 0
+          ? ((topVariant.conversionRate - baseline.conversionRate) / baseline.conversionRate) * 100
+          : topVariant.conversionRate > 0 ? 100 : 0;
 
-        const significance = abTesting.calculateStatisticalSignificance(
-          { participants: baseline.participants, conversions: baseline.conversions },
-          { participants: variant.participants, conversions: variant.conversions }
-        );
+        const significance = topVariant.statisticalSignificance || 1.0;
 
         metrics["conversion_rate"] = {
-          baseline: baseline.conversion_rate,
-          variant: variant.conversion_rate,
+          baseline: baseline.conversionRate,
+          variant: topVariant.conversionRate,
           improvement,
           confidence: 1 - significance, // Convert p-value to confidence
         };
