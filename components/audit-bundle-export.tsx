@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Download, FileText, FileJson, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Download, FileText, FileJson, Loader2, CheckCircle2, AlertCircle } from "@/components/demo-icons";
 import { toast } from "sonner";
 
 export type ResourceType = "incident" | "claim_cluster" | "artifact" | "approval" | "workflow";

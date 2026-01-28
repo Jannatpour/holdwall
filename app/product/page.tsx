@@ -18,7 +18,7 @@ import {
   Settings,
   Zap,
   CheckCircle2,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 const productAreas = [
   {

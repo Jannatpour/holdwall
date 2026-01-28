@@ -5,6 +5,8 @@
 
 import { db } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
+import { metrics } from "@/lib/observability/metrics";
+import { createKafkaConfig, isConnectionError, logConnectionError } from "./kafka-utils";
 import type { EventEnvelope, EventStore } from "./types";
 
 // Lazy load Kafka producer and DLQ
@@ -12,24 +14,49 @@ let kafkaProducer: any = null;
 let kafkaClient: any = null;
 let kafkaDLQ: any = null;
 
+// Avoid hammering DNS / brokers when Kafka is unreachable.
+let nextKafkaConnectAttemptAt = 0;
+let kafkaConnectFailureCount = 0;
+function computeKafkaConnectBackoffMs(): number {
+  const maxMs = parseInt(process.env.KAFKA_CONNECT_BACKOFF_MAX_MS || "60000", 10);
+  const baseMs = parseInt(process.env.KAFKA_CONNECT_BACKOFF_BASE_MS || "1000", 10);
+  const exp = Math.min(kafkaConnectFailureCount, 6);
+  return Math.min(baseMs * Math.pow(2, exp), maxMs);
+}
+
 function getKafkaProducer() {
   if (kafkaProducer) {
     return kafkaProducer;
   }
 
   try {
-    const { Kafka } = require("kafkajs");
-    const brokers = (process.env.KAFKA_BROKERS || "localhost:9092").split(",");
-    
-    kafkaClient = new Kafka({
+    const brokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+      .split(",")
+      .map((b: string) => b.trim())
+      .filter(Boolean);
+
+    const tlsEnabled =
+      process.env.KAFKA_SSL === "true" ||
+      process.env.KAFKA_TLS === "true" ||
+      brokers.some((b: string) => String(b).includes(":9094"));
+
+    const saslMechanism = process.env.KAFKA_SASL_MECHANISM?.trim();
+    const saslUsername = process.env.KAFKA_SASL_USERNAME?.trim();
+    const saslPassword = process.env.KAFKA_SASL_PASSWORD?.trim();
+    const sasl =
+      saslMechanism && saslUsername && saslPassword
+        ? {
+            mechanism: saslMechanism as "plain" | "scram-sha-256" | "scram-sha-512",
+            username: saslUsername,
+            password: saslPassword,
+          }
+        : undefined;
+
+    kafkaClient = createKafkaConfig({
       clientId: "holdwall-producer",
       brokers,
-      retry: {
-        retries: 8,
-        initialRetryTime: 100,
-        multiplier: 2,
-        maxRetryTime: 30000,
-      },
+      ssl: tlsEnabled,
+      sasl,
     });
 
     kafkaProducer = kafkaClient.producer({
@@ -43,7 +70,25 @@ function getKafkaProducer() {
     logger.warn("kafkajs not available. Kafka publishing disabled.", {
       error: error instanceof Error ? error.message : String(error),
     });
+    metrics.increment("kafka_producer_init_failures");
     return null;
+  }
+}
+
+/**
+ * Export for graceful shutdown
+ */
+export async function disconnectKafkaProducers(): Promise<void> {
+  try {
+    if (kafkaProducer?.isConnected) {
+      await kafkaProducer.disconnect();
+      kafkaProducer = null;
+      logger.info("Kafka store producer disconnected");
+    }
+  } catch (error) {
+    logger.warn("Error disconnecting Kafka store producer", {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -84,71 +129,82 @@ export class DatabaseEventStore implements EventStore {
   }
 
   async append(event: EventEnvelope): Promise<void> {
-    // 1. Store in Postgres (contract of record)
-    const eventRecord = await db.event.create({
-      data: {
-        id: event.event_id,
-        tenantId: event.tenant_id,
-        actorId: event.actor_id,
-        type: event.type,
-        occurredAt: new Date(event.occurred_at),
-        correlationId: event.correlation_id,
-        causationId: event.causation_id,
-        schemaVersion: event.schema_version,
-        payload: event.payload as any,
-        signatures: event.signatures as any,
-        metadata: (event.metadata || {}) as any,
-      },
+    // Use transaction to ensure atomicity: event + evidence + outbox
+    await db.$transaction(async (tx) => {
+      // 1. Store in Postgres (contract of record)
+      const eventRecord = await tx.event.create({
+        data: {
+          id: event.event_id,
+          tenantId: event.tenant_id,
+          actorId: event.actor_id,
+          type: event.type,
+          occurredAt: new Date(event.occurred_at),
+          correlationId: event.correlation_id,
+          causationId: event.causation_id,
+          schemaVersion: event.schema_version,
+          payload: event.payload as any,
+          signatures: event.signatures as any,
+          metadata: (event.metadata || {}) as any,
+        },
+      });
+
+      // Link evidence references
+      if (event.evidence_refs.length > 0) {
+        await tx.eventEvidence.createMany({
+          data: event.evidence_refs.map((evidenceId) => ({
+            eventId: eventRecord.id,
+            evidenceId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      // 2. Add to outbox for reliable Kafka publishing (atomic with event creation)
+      if (this.kafkaEnabled) {
+        const partition = this.getPartition(event.tenant_id);
+        await tx.eventOutbox.create({
+          data: {
+            eventId: eventRecord.id,
+            tenantId: event.tenant_id,
+            topic: this.kafkaTopic,
+            partition,
+            key: event.tenant_id,
+            value: JSON.stringify(event),
+            headers: {
+              event_type: event.type,
+              tenant_id: event.tenant_id,
+              correlation_id: event.correlation_id,
+              schema_version: event.schema_version,
+            } as any,
+          },
+        });
+      }
     });
 
-    // Link evidence references
-    if (event.evidence_refs.length > 0) {
-      await db.eventEvidence.createMany({
-        data: event.evidence_refs.map((evidenceId) => ({
-          eventId: eventRecord.id,
-          evidenceId,
-        })),
-        skipDuplicates: true,
-      });
-    }
-
-    // 2. Add to outbox for reliable Kafka publishing
+    // Try to publish immediately (non-blocking, outbox ensures eventual delivery)
     if (this.kafkaEnabled) {
-      await this.addToOutbox(event, eventRecord.id);
+      this.publishToKafka(event).catch((error) => {
+        logger.warn("Immediate Kafka publish failed, will retry via outbox", {
+          error: error instanceof Error ? error.message : String(error),
+          eventId: event.event_id,
+          eventType: event.type,
+        });
+      });
     }
   }
 
   /**
-   * Add event to outbox for reliable publishing
+   * Get partition number for tenant_id
+   * Uses consistent hashing to ensure same tenant always goes to same partition
    */
-  private async addToOutbox(event: EventEnvelope, eventId: string): Promise<void> {
-    const partition = this.getPartition(event.tenant_id);
-
-    await db.eventOutbox.create({
-      data: {
-        eventId,
-        tenantId: event.tenant_id,
-        topic: this.kafkaTopic,
-        partition,
-        key: event.tenant_id,
-        value: JSON.stringify(event),
-        headers: {
-          event_type: event.type,
-          tenant_id: event.tenant_id,
-          correlation_id: event.correlation_id,
-          schema_version: event.schema_version,
-        } as any,
-      },
-    });
-
-    // Try to publish immediately (non-blocking)
-    this.publishToKafka(event).catch((error) => {
-      logger.warn("Immediate Kafka publish failed, will retry via outbox", {
-        error: error instanceof Error ? error.message : String(error),
-        eventId: event.event_id,
-        eventType: event.type,
-      });
-    });
+  private getPartition(tenantId: string): number {
+    const numPartitions = parseInt(process.env.KAFKA_PARTITIONS || "3", 10);
+    let hash = 0;
+    for (let i = 0; i < tenantId.length; i++) {
+      hash = ((hash << 5) - hash) + tenantId.charCodeAt(i);
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash) % numPartitions;
   }
 
   /**
@@ -163,7 +219,39 @@ export class DatabaseEventStore implements EventStore {
     try {
       // Ensure producer is connected
       if (!producer.isConnected) {
-        await producer.connect();
+        if (Date.now() < nextKafkaConnectAttemptAt) {
+          return; // Backing off after previous failure
+        }
+        try {
+          await producer.connect();
+          kafkaConnectFailureCount = 0;
+          nextKafkaConnectAttemptAt = 0;
+        } catch (connectError: any) {
+          kafkaConnectFailureCount += 1;
+          nextKafkaConnectAttemptAt = Date.now() + computeKafkaConnectBackoffMs();
+
+          const brokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+            .split(",")
+            .map((b: string) => b.trim())
+            .filter(Boolean);
+
+          if (isConnectionError(connectError)) {
+            logConnectionError(connectError, brokers, "store-db-producer-connect", {
+              eventId: event.event_id,
+              eventType: event.type,
+              hint: "Kafka broker unreachable. Event stored in DB but not published to Kafka.",
+              nextConnectAttemptAt: nextKafkaConnectAttemptAt,
+            });
+          } else {
+            logger.error("Kafka producer connection failed", {
+              error: connectError instanceof Error ? connectError.message : String(connectError),
+              eventId: event.event_id,
+              eventType: event.type,
+            });
+          }
+          // Don't throw - event is already stored in DB
+          return;
+        }
       }
 
       // Partition by tenant_id for better distribution
@@ -185,31 +273,33 @@ export class DatabaseEventStore implements EventStore {
           },
         ],
       });
-    } catch (error) {
+    } catch (error: any) {
       // Log error but don't fail the append operation
       // Postgres is the source of truth, Kafka is for streaming
-      logger.error("Kafka publish failed (event still stored in DB)", {
-        error: error instanceof Error ? error.message : String(error),
-        eventId: event.event_id,
-        eventType: event.type,
-      });
+      const brokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+        .split(",")
+        .map((b: string) => b.trim())
+        .filter(Boolean);
+
+      if (isConnectionError(error)) {
+        kafkaConnectFailureCount += 1;
+        nextKafkaConnectAttemptAt = Date.now() + computeKafkaConnectBackoffMs();
+        logConnectionError(error, brokers, "store-db-publish", {
+          eventId: event.event_id,
+          eventType: event.type,
+          hint: "Kafka broker unreachable. Event stored in DB but not published to Kafka.",
+          nextConnectAttemptAt: nextKafkaConnectAttemptAt,
+        });
+      } else {
+        logger.error("Kafka publish failed (event still stored in DB)", {
+          error: error instanceof Error ? error.message : String(error),
+          eventId: event.event_id,
+          eventType: event.type,
+        });
+      }
     }
   }
 
-  /**
-   * Get partition number for tenant_id
-   * Uses consistent hashing to ensure same tenant always goes to same partition
-   */
-  private getPartition(tenantId: string): number {
-    const numPartitions = parseInt(process.env.KAFKA_PARTITIONS || "3", 10);
-    // Simple hash-based partitioning
-    let hash = 0;
-    for (let i = 0; i < tenantId.length; i++) {
-      hash = ((hash << 5) - hash) + tenantId.charCodeAt(i);
-      hash = hash & hash;
-    }
-    return Math.abs(hash) % numPartitions;
-  }
 
   async get(event_id: string): Promise<EventEnvelope | null> {
     const result = await db.event.findUnique({
@@ -250,11 +340,15 @@ export class DatabaseEventStore implements EventStore {
     occurred_after?: string;
     occurred_before?: string;
   }): Promise<EventEnvelope[]> {
-    const where: any = {};
-
-    if (filters.tenant_id) {
-      where.tenantId = filters.tenant_id;
+    // Enforce tenant isolation - tenant_id is required for security
+    if (!filters.tenant_id) {
+      throw new Error("tenant_id is required for event queries to enforce tenant isolation");
     }
+
+    const where: any = {
+      tenantId: filters.tenant_id, // Always include tenantId filter
+    };
+
     if (filters.type) {
       where.type = filters.type;
     }

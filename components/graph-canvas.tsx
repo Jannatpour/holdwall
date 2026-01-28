@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ZoomIn, ZoomOut, RefreshCw, Download } from "lucide-react";
+import { ZoomIn, ZoomOut, RefreshCw, Download } from "@/components/demo-icons";
 
 export interface GraphNode {
   id: string;

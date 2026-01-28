@@ -25,7 +25,7 @@ import {
   Send,
   Download,
   ExternalLink,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import { toast } from "sonner";
 import Link from "next/link";
 import { ResolutionPlanDisplay } from "@/components/resolution-plan-display";

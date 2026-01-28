@@ -81,8 +81,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Optimize query and check cache
-    const optimization = await queryOptimizer.optimizeQuery(query, variables);
+    // Enforce tenant ID validation
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: "Tenant ID required" },
+        { status: 400 }
+      );
+    }
+
+    // Optimize query and check cache (with tenant isolation)
+    const optimization = await queryOptimizer.optimizeQuery(query, variables, tenantId);
     
     // Return cached result if available
     if (optimization.cacheHit && optimization.cachedResponse) {
@@ -108,9 +116,9 @@ export async function POST(request: NextRequest) {
     });
     const duration = Date.now() - startTime;
 
-    // Cache successful queries
+    // Cache successful queries (with tenant isolation)
     if (result.errors === undefined || result.errors.length === 0) {
-      await queryOptimizer.cacheQuery(query, result, variables).catch((error) => {
+      await queryOptimizer.cacheQuery(query, result, variables, tenantId).catch((error) => {
         logger.warn("Failed to cache GraphQL query", { error });
       });
     }

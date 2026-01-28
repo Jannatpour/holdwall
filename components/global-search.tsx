@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Search, FileText, Database, Shield, BookOpen, Loader2, CheckSquare, User, Star } from "lucide-react";
+import { Search, FileText, Database, Shield, BookOpen, Loader2, CheckSquare, User, Star } from "@/components/demo-icons";
 import {
   Dialog,
   DialogContent,

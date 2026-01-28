@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, RefreshCw, Inbox } from "lucide-react";
+import { AlertCircle, RefreshCw, Inbox } from "@/components/demo-icons";
 
 interface LoadingStateProps {
   count?: number;

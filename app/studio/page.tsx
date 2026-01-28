@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { StudioEditorClient } from "@/components/studio-editor-client";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
-import { Sparkles } from "lucide-react";
+import { Sparkles } from "@/components/demo-icons";
 import { LoadingState } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = genMeta(

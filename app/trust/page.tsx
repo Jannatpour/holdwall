@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Globe, Shield, TriangleAlert, TrendingUp, Filter, Search, BarChart3, Sparkles, ArrowRight, Target } from "lucide-react";
+import { Globe, Shield, TriangleAlert, TrendingUp, Filter, Search, BarChart3, Sparkles, ArrowRight, Target } from "@/components/demo-icons";
 import { TrustGapMap } from "@/components/trust-gap-map";
 import { ExplainScoreDrawer } from "@/components/explain-score-drawer";
 

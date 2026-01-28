@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { FinancialServicesPlaybookContent } from "@/components/financial-services/playbook-content";
-import { Building2, ArrowLeft, Download } from "lucide-react";
+import { Building2, ArrowLeft, Download } from "@/components/demo-icons";
 
 export const metadata: Metadata = genMeta(
   "Financial Services Playbook - Complete Operating Guide",

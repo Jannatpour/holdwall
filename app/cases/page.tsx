@@ -9,7 +9,7 @@ import { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { CasesList } from "@/components/cases-list";
 import { AuthGuard } from "@/components/auth-guard";
-import { Briefcase } from "lucide-react";
+import { Briefcase } from "@/components/demo-icons";
 
 export const metadata: Metadata = {
   title: "Cases | Holdwall",

@@ -18,12 +18,12 @@ import {
   Info, 
   TrendingUp, 
   TrendingDown, 
-  Link as LinkIcon,
+  Link2 as LinkIcon,
   FileText,
   Database,
   Shield,
   BarChart3
-} from "lucide-react";
+} from "@/components/demo-icons";
 import Link from "next/link";
 
 export type ScoreType = "trust" | "decisiveness" | "outbreak_probability" | "narrative_risk";

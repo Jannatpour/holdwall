@@ -31,7 +31,10 @@ export class RateLimitManager {
       try {
         this.redis = new Redis(redisUrl);
       } catch (error) {
-        console.warn("Redis not available, using memory cache for rate limiting:", error);
+        const { logger } = require("@/lib/logging/logger");
+        logger.warn("Redis not available, using memory cache for rate limiting", {
+          error: error instanceof Error ? error.message : String(error),
+        });
         this.redis = null;
       }
     } else {

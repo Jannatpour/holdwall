@@ -11,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { CaseIntakeForm } from "./case-intake-form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supportedLocales, type Locale } from "@/lib/i18n/config";
-import { Globe } from "lucide-react";
+import { Globe } from "@/components/demo-icons";
 
 export function CaseIntakeFormI18n() {
   const searchParams = useSearchParams();

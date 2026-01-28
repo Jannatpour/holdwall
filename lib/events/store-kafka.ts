@@ -11,6 +11,8 @@
 
 import type { EventEnvelope, EventStore } from "./types";
 import { logger } from "@/lib/logging/logger";
+import { isConnectionError, logConnectionError } from "./kafka-utils";
+import { metrics } from "@/lib/observability/metrics";
 
 export interface KafkaConfig {
   brokers: string[];
@@ -79,6 +81,8 @@ export class KafkaEventStore implements EventStore {
         brokers: this.config.brokers,
         ssl: this.config.ssl,
         sasl: this.config.sasl as any,
+        connectionTimeout: parseInt(process.env.KAFKA_CONNECTION_TIMEOUT || "10000", 10),
+        requestTimeout: parseInt(process.env.KAFKA_REQUEST_TIMEOUT || "30000", 10),
         retry: this.config.retry,
       });
 
@@ -89,7 +93,42 @@ export class KafkaEventStore implements EventStore {
         transactionTimeout: 30000,
       });
 
-      await this.producer.connect();
+      // Connect with a small backoff to avoid startup log spam in Kafka-disabled environments.
+      const maxRetriesRaw = process.env.KAFKA_CONNECT_MAX_RETRIES;
+      const maxRetries = maxRetriesRaw ? parseInt(maxRetriesRaw, 10) : 5;
+      const initialDelay = parseInt(process.env.KAFKA_CONNECT_RETRY_INITIAL_DELAY || "1000", 10);
+      const maxDelay = parseInt(process.env.KAFKA_CONNECT_RETRY_MAX_DELAY || "30000", 10);
+      let attempt = 0;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        try {
+          await this.producer.connect();
+          break;
+        } catch (connectError: any) {
+          if (isConnectionError(connectError)) {
+            logConnectionError(connectError, this.config.brokers, "store-kafka-producer-connect", {
+              clientId: this.config.clientId,
+              topic: this.config.topic,
+              attempt: attempt + 1,
+            });
+          } else {
+            logger.error("Kafka producer connection failed", {
+              error: connectError instanceof Error ? connectError.message : String(connectError),
+              brokers: this.config.brokers,
+            });
+          }
+
+          attempt += 1;
+          if (attempt > maxRetries) {
+            const errorMessage = connectError instanceof Error ? connectError.message : String(connectError);
+            throw new Error(`Kafka producer connection failed: ${errorMessage}`);
+          }
+
+          const cappedExp = Math.min(attempt, 6);
+          const delay = Math.min(initialDelay * Math.pow(2, cappedExp), maxDelay);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
 
       // Create consumer if groupId is provided
       if (this.config.groupId) {
@@ -99,7 +138,39 @@ export class KafkaEventStore implements EventStore {
           heartbeatInterval: 3000,
         });
 
-        await this.consumer.connect();
+        attempt = 0;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          try {
+            await this.consumer.connect();
+            break;
+          } catch (connectError: any) {
+            if (isConnectionError(connectError)) {
+              logConnectionError(connectError, this.config.brokers, "store-kafka-consumer-connect", {
+                clientId: this.config.clientId,
+                groupId: this.config.groupId,
+                topic: this.config.topic,
+                attempt: attempt + 1,
+              });
+            } else {
+              logger.error("Kafka consumer connection failed", {
+                error: connectError instanceof Error ? connectError.message : String(connectError),
+                brokers: this.config.brokers,
+              });
+            }
+
+            attempt += 1;
+            if (attempt > maxRetries) {
+              const errorMessage = connectError instanceof Error ? connectError.message : String(connectError);
+              throw new Error(`Kafka consumer connection failed: ${errorMessage}`);
+            }
+
+            const cappedExp = Math.min(attempt, 6);
+            const delay = Math.min(initialDelay * Math.pow(2, cappedExp), maxDelay);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+        }
+        
         await this.consumer.subscribe({
           topic: this.config.topic,
           fromBeginning: false,
@@ -146,10 +217,40 @@ export class KafkaEventStore implements EventStore {
           },
         ],
       });
-    } catch (error) {
-      throw new Error(
-        `Kafka append failed: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+    } catch (error: any) {
+      // Handle connection errors gracefully
+      const brokers = this.config.brokers;
+      if (isConnectionError(error)) {
+        logConnectionError(error, brokers, "store-kafka-append", {
+          eventId: event.event_id,
+          eventType: event.type,
+          tenantId: event.tenant_id,
+          hint: "Kafka broker unreachable. Event append failed.",
+        });
+        metrics.increment("kafka_append_errors", {
+          error_type: "connection",
+          event_type: event.type,
+        });
+        // Don't throw - allow caller to handle gracefully
+        throw new Error(
+          `Kafka append failed (connection error): ${error instanceof Error ? error.message : "Unknown error"}`
+        );
+      } else {
+        logger.error("Kafka append failed (non-connection error)", {
+          error: error instanceof Error ? error.message : String(error),
+          eventId: event.event_id,
+          eventType: event.type,
+          tenantId: event.tenant_id,
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        metrics.increment("kafka_append_errors", {
+          error_type: "non_connection",
+          event_type: event.type,
+        });
+        throw new Error(
+          `Kafka append failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
+      }
     }
   }
 
@@ -226,8 +327,9 @@ export class KafkaEventStore implements EventStore {
             return;
           }
 
+          let event: EventEnvelope | null = null;
           try {
-            const event: EventEnvelope = JSON.parse(message.value?.toString() || "{}");
+            event = JSON.parse(message.value?.toString() || "{}") as EventEnvelope;
 
             // Apply filters
             if (filters.tenant_id && event.tenant_id !== filters.tenant_id) {
@@ -239,12 +341,54 @@ export class KafkaEventStore implements EventStore {
 
             await handler(event);
           } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
             logger.error("Error processing Kafka message", {
-              error: error instanceof Error ? error.message : String(error),
+              error: errorMessage,
               partition,
               offset: offset.toString(),
+              eventId: event?.event_id || "unknown",
+              eventType: event?.type || "unknown",
+              tenantId: event?.tenant_id || "unknown",
+              stack: error instanceof Error ? error.stack : undefined,
             });
+            
+            // Record metrics
+            metrics.increment("kafka_message_processing_errors", {
+              event_type: event?.type || "parse_error",
+              error_type: error instanceof Error ? error.name : "unknown",
+            });
+            
             // In production, send to dead letter queue
+            try {
+              const { KafkaDLQ } = await import("./kafka-dlq");
+              const dlqConfig = {
+                maxRetries: parseInt(process.env.KAFKA_DLQ_MAX_RETRIES || "3", 10),
+                initialRetryDelay: parseInt(process.env.KAFKA_DLQ_INITIAL_DELAY || "1000", 10),
+                maxRetryDelay: parseInt(process.env.KAFKA_DLQ_MAX_DELAY || "60000", 10),
+                retryBackoffMultiplier: parseFloat(process.env.KAFKA_DLQ_BACKOFF || "2"),
+                dlqTopic: process.env.KAFKA_DLQ_TOPIC || "holdwall-dlq",
+                enableDLQ: process.env.KAFKA_DLQ_ENABLED !== "false",
+                retryTopic: process.env.KAFKA_DLQ_RETRY_TOPIC,
+              } as any;
+              
+              const dlq = new KafkaDLQ(dlqConfig);
+              await dlq.handleFailure(
+                {
+                  topic: this.config.topic,
+                  partition,
+                  offset: offset.toString(),
+                  value: message.value?.toString() || JSON.stringify({ error: "failed_to_parse" }),
+                },
+                error instanceof Error ? error : new Error(errorMessage),
+                0
+              );
+            } catch (dlqError) {
+              logger.error("Failed to send message to DLQ", {
+                dlqError: dlqError instanceof Error ? dlqError.message : String(dlqError),
+                originalError: errorMessage,
+                eventId: event?.event_id || "unknown",
+              });
+            }
           }
         },
       });

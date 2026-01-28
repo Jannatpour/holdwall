@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState, ErrorState } from "@/components/ui/loading-states";
-import { Users, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Users, Clock, AlertCircle, CheckCircle2 } from "@/components/demo-icons";
 
 interface OperationalMetrics {
   teamPerformance: Array<{

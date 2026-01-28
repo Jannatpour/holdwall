@@ -15,7 +15,7 @@ import {
   Loader2,
   Shield,
   Calendar,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import { format } from "date-fns";
 
 export function FinancialServicesAuditExport() {

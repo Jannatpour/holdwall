@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { FinancialServicesDashboardClient } from "@/components/financial-services/dashboard-client";
-import { Building2 } from "lucide-react";
+import { Building2 } from "@/components/demo-icons";
 import { DashboardLoading } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = {

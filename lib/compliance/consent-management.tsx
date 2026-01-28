@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info, CheckCircle2 } from "lucide-react";
+import { Info, CheckCircle2 } from "@/components/demo-icons";
 import { gdprCompliance, type ConsentRecord } from "./gdpr";
 
 interface ConsentManagementProps {

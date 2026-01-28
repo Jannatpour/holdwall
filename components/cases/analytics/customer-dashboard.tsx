@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState, ErrorState } from "@/components/ui/loading-states";
-import { Star, Clock, CheckCircle2, TrendingUp } from "lucide-react";
+import { Star, Clock, CheckCircle2, TrendingUp } from "@/components/demo-icons";
 
 interface CustomerMetrics {
   customerSatisfaction: number;

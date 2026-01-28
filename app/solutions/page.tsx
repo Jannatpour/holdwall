@@ -20,7 +20,7 @@ import {
   Shield,
   ShoppingCart,
   HeadphonesIcon,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 const solutions = [
   {

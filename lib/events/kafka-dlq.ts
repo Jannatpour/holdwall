@@ -7,6 +7,7 @@
 
 import { logger } from "@/lib/logging/logger";
 import { metrics } from "@/lib/observability/metrics";
+import { isConnectionError, logConnectionError } from "./kafka-utils";
 
 export interface DLQMessage {
   id: string;
@@ -172,10 +173,21 @@ export class KafkaDLQ {
           brokers: kafkaBrokers,
           ssl: tlsEnabled ? { rejectUnauthorized: true } : undefined,
           sasl,
+          connectionTimeout: parseInt(process.env.KAFKA_CONNECTION_TIMEOUT || "10000", 10),
+          requestTimeout: parseInt(process.env.KAFKA_REQUEST_TIMEOUT || "30000", 10),
         });
 
         const producer = kafka.producer();
-        await producer.connect();
+        try {
+          await producer.connect();
+        } catch (connectError: any) {
+          if (isConnectionError(connectError)) {
+            logConnectionError(connectError, kafkaBrokers, "dlq-producer-connect", {
+              hint: "Check network connectivity, DNS resolution, and broker hostnames. Ensure KAFKA_BROKERS is correctly configured.",
+            });
+          }
+          throw connectError;
+        }
 
         await producer.send({
           topic: this.config.dlqTopic,
@@ -214,7 +226,19 @@ export class KafkaDLQ {
           });
           // Fall through to local logging
         } else {
-          throw kafkaError;
+          if (isConnectionError(kafkaError)) {
+            const kafkaBrokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+              .split(",")
+              .map((b) => b.trim())
+              .filter(Boolean);
+            logConnectionError(kafkaError, kafkaBrokers, "dlq-send", {
+              messageId: dlqMessage.id,
+              hint: "Kafka broker unreachable. DLQ message will be logged locally. Check network connectivity and KAFKA_BROKERS configuration.",
+            });
+            // Fall through to local logging instead of throwing
+          } else {
+            throw kafkaError;
+          }
         }
       }
     } catch (error) {
@@ -262,10 +286,21 @@ export class KafkaDLQ {
           const kafka = new Kafka({
             clientId: process.env.KAFKA_CLIENT_ID || "holdwall-dlq-retry",
             brokers: kafkaBrokers,
+            connectionTimeout: parseInt(process.env.KAFKA_CONNECTION_TIMEOUT || "10000", 10),
+            requestTimeout: parseInt(process.env.KAFKA_REQUEST_TIMEOUT || "30000", 10),
           });
 
           const producer = kafka.producer();
-          await producer.connect();
+          try {
+            await producer.connect();
+          } catch (connectError: any) {
+            if (isConnectionError(connectError)) {
+              logConnectionError(connectError, kafkaBrokers, "dlq-retry-producer-connect", {
+                hint: "Check network connectivity, DNS resolution, and broker hostnames. Ensure KAFKA_BROKERS is correctly configured.",
+              });
+            }
+            throw connectError;
+          }
 
           const retryTopic = this.config.retryTopic || message.originalTopic;
           await producer.send({

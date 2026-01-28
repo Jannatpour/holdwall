@@ -11,7 +11,7 @@ import { SchemaGenerator } from "@/lib/seo/schema-generator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Calendar, Shield, ExternalLink, CheckCircle2 } from "lucide-react";
+import { FileText, Calendar, Shield, ExternalLink, CheckCircle2 } from "@/components/demo-icons";
 import Link from "next/link";
 
 interface PageProps {

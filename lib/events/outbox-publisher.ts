@@ -5,6 +5,13 @@
 
 import { db } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
+import { metrics } from "@/lib/observability/metrics";
+import {
+  isConnectionError,
+  logConnectionError,
+  createKafkaConfig,
+  type BrokerValidationResult,
+} from "./kafka-utils";
 import type { EventEnvelope } from "./types";
 
 // Lazy load Kafka producer
@@ -17,7 +24,6 @@ function getKafkaProducer() {
   }
 
   try {
-    const { Kafka } = require("kafkajs");
     const brokers = (process.env.KAFKA_BROKERS || "localhost:9092")
       .split(",")
       .map((b: string) => b.trim())
@@ -34,23 +40,17 @@ function getKafkaProducer() {
     const sasl =
       saslMechanism && saslUsername && saslPassword
         ? {
-            mechanism: saslMechanism as any,
+            mechanism: saslMechanism as "plain" | "scram-sha-256" | "scram-sha-512",
             username: saslUsername,
             password: saslPassword,
           }
         : undefined;
-    
-    kafkaClient = new Kafka({
+
+    kafkaClient = createKafkaConfig({
       clientId: "holdwall-outbox-publisher",
       brokers,
-      ssl: tlsEnabled ? { rejectUnauthorized: true } : undefined,
+      ssl: tlsEnabled,
       sasl,
-      retry: {
-        retries: 8,
-        initialRetryTime: 100,
-        multiplier: 2,
-        maxRetryTime: 30000,
-      },
     });
 
     kafkaProducer = kafkaClient.producer({
@@ -64,6 +64,7 @@ function getKafkaProducer() {
     logger.warn("kafkajs not available. Outbox publishing disabled.", {
       error: error instanceof Error ? error.message : String(error),
     });
+    metrics.increment("kafka_producer_init_failures");
     return null;
   }
 }
@@ -100,10 +101,27 @@ export class EventOutboxPublisher {
     if (!producer.isConnected) {
       try {
         await producer.connect();
-      } catch (error) {
-        logger.error("Failed to connect Kafka producer", {
-          error: error instanceof Error ? error.message : String(error),
-        });
+      } catch (error: unknown) {
+        const brokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+          .split(",")
+          .map((b: string) => b.trim())
+          .filter(Boolean);
+        
+        if (isConnectionError(error)) {
+          logConnectionError(error, brokers, "outbox-publisher-connect", {
+            operation: "producer_connect",
+          });
+        } else {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          logger.error("Failed to connect Kafka producer", {
+            error: errorMessage,
+            brokers,
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+          metrics.increment("kafka_producer_connection_errors", {
+            error_type: "unknown",
+          });
+        }
         return { published: 0, failed: 0 };
       }
     }
@@ -125,16 +143,26 @@ export class EventOutboxPublisher {
     let published = 0;
     let failed = 0;
 
-    // Publish in batches
+    // Group entries by topic for batch sending
+    const entriesByTopic = new Map<string, typeof outboxEntries>();
     for (const entry of outboxEntries) {
-      try {
-        const event: EventEnvelope = JSON.parse(entry.value);
-        const partition = entry.partition ?? this.getPartition(event.tenant_id);
+      const topic = entry.topic || this.kafkaTopic;
+      if (!entriesByTopic.has(topic)) {
+        entriesByTopic.set(topic, []);
+      }
+      entriesByTopic.get(topic)!.push(entry);
+    }
 
-        await producer.send({
-          topic: entry.topic || this.kafkaTopic,
-          messages: [
-            {
+    // Process each topic batch
+    for (const [topic, entries] of entriesByTopic) {
+      try {
+        // Prepare batch messages
+        const messages = await Promise.all(
+          entries.map(async (entry) => {
+            const event: EventEnvelope = JSON.parse(entry.value);
+            const partition = entry.partition ?? this.getPartition(event.tenant_id);
+            
+            return {
               key: entry.key || event.tenant_id,
               value: entry.value,
               partition,
@@ -144,37 +172,126 @@ export class EventOutboxPublisher {
                 correlation_id: event.correlation_id,
                 schema_version: event.schema_version,
               },
-            },
-          ],
+            };
+          })
+        );
+
+        // Send batch
+        await producer.send({
+          topic,
+          messages,
         });
 
-        // Mark as published
-        await db.eventOutbox.update({
-          where: { id: entry.id },
+        // Mark all as published atomically
+        const entryIds = entries.map((e) => e.id);
+        await db.eventOutbox.updateMany({
+          where: {
+            id: { in: entryIds },
+            published: false, // Idempotency check
+          },
           data: {
             published: true,
             publishedAt: new Date(),
           },
         });
 
-        published++;
-      } catch (error) {
-        // Increment retry count
-        await db.eventOutbox.update({
-          where: { id: entry.id },
-          data: {
-            retryCount: { increment: 1 },
-            lastError: error instanceof Error ? error.message : String(error),
-          },
+        published += entries.length;
+        metrics.increment("kafka_outbox_published", {
+          topic,
+          count: entries.length.toString(),
         });
+      } catch (error: unknown) {
+        // Handle batch failure - process individually for better error tracking
+        const brokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+          .split(",")
+          .map((b: string) => b.trim())
+          .filter(Boolean);
 
-        failed++;
-        logger.error("Failed to publish outbox entry", {
-          entryId: entry.id,
-          error: error instanceof Error ? error.message : String(error),
-          retryCount: entry.retryCount + 1,
-        });
+        if (isConnectionError(error)) {
+          logConnectionError(error, brokers, "outbox-publisher-send", {
+            topic,
+            batch_size: entries.length,
+          });
+        }
+
+        // Fall back to individual processing
+        for (const entry of entries) {
+          try {
+            const event: EventEnvelope = JSON.parse(entry.value);
+            const partition = entry.partition ?? this.getPartition(event.tenant_id);
+
+            await producer.send({
+              topic,
+              messages: [
+                {
+                  key: entry.key || event.tenant_id,
+                  value: entry.value,
+                  partition,
+                  headers: (entry.headers as Record<string, string>) || {
+                    event_type: event.type,
+                    tenant_id: event.tenant_id,
+                    correlation_id: event.correlation_id,
+                    schema_version: event.schema_version,
+                  },
+                },
+              ],
+            });
+
+            // Mark as published with idempotency check
+            const updateResult = await db.eventOutbox.updateMany({
+              where: {
+                id: entry.id,
+                published: false, // Idempotency check
+              },
+              data: {
+                published: true,
+                publishedAt: new Date(),
+              },
+            });
+
+            if (updateResult.count > 0) {
+              published++;
+              metrics.increment("kafka_outbox_published", { topic });
+            }
+          } catch (individualError: unknown) {
+            // Increment retry count
+            await db.eventOutbox.update({
+              where: { id: entry.id },
+              data: {
+                retryCount: { increment: 1 },
+                lastError: individualError instanceof Error ? individualError.message : String(individualError),
+              },
+            });
+
+            failed++;
+            const errorMessage = individualError instanceof Error ? individualError.message : String(individualError);
+            
+            if (isConnectionError(individualError)) {
+              logConnectionError(individualError, brokers, "outbox-publisher-individual", {
+                entryId: entry.id,
+                topic,
+              });
+            } else {
+              logger.error("Failed to publish outbox entry", {
+                entryId: entry.id,
+                error: errorMessage,
+                retryCount: entry.retryCount + 1,
+                topic,
+              });
+              metrics.increment("kafka_outbox_publish_errors", {
+                error_type: "non_connection",
+                topic,
+              });
+            }
+          }
+        }
       }
+    }
+
+    if (failed > 0) {
+      metrics.increment("kafka_outbox_batch_failures", {
+        failed_count: failed.toString(),
+      });
     }
 
     return { published, failed };
@@ -255,12 +372,31 @@ export class EventOutboxPublisher {
     if (producer && producer.isConnected) {
       try {
         await producer.disconnect();
-        logger.info("Kafka producer disconnected");
+        logger.info("Kafka outbox producer disconnected");
       } catch (error) {
-        logger.error("Error disconnecting Kafka producer", {
+        logger.error("Error disconnecting Kafka outbox producer", {
           error: error instanceof Error ? error.message : String(error),
         });
       }
+    }
+  }
+}
+
+/**
+ * Export for graceful shutdown
+ */
+export async function disconnectOutboxKafkaProducer(): Promise<void> {
+  const producer = getKafkaProducer();
+  if (producer?.isConnected) {
+    try {
+      await producer.disconnect();
+      kafkaProducer = null;
+      kafkaClient = null;
+      logger.info("Kafka outbox producer disconnected");
+    } catch (error) {
+      logger.warn("Error disconnecting Kafka outbox producer", {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 }

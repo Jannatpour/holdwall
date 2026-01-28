@@ -8,7 +8,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, Circle, Clock } from "lucide-react";
+import { Check, Circle, Clock } from "@/components/demo-icons";
 import { cn } from "@/lib/utils";
 
 export type ApprovalStatus = "draft" | "in_review" | "approved" | "published" | "rejected";

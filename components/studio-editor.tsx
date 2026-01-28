@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Link2, Sparkles, Search, Loader2, FileText, Plus } from "lucide-react";
+import { CheckCircle2, Link2, Sparkles, Search, Loader2, FileText, Plus } from "@/components/demo-icons";
 import { toast } from "sonner";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/loading-states";
 import { PADLPublishDialog } from "@/components/padl-publish-dialog";

@@ -5,7 +5,7 @@
  * Handles CRUD operations, case number generation, and case lifecycle management.
  */
 
-import { db } from "@/lib/db/client";
+import { db, enforceTenantId, withTenantFilter } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
 import { metrics } from "@/lib/observability/metrics";
 import { DatabaseEventStore } from "@/lib/events/store-db";
@@ -349,10 +349,34 @@ export class CaseService {
 
   /**
    * Get case by case number (for public tracking)
+   * Note: tenantId is optional for public endpoints - if provided, enforces tenant isolation
    */
-  async getCaseByNumber(caseNumber: string): Promise<Case | null> {
+  async getCaseByNumber(caseNumber: string, tenantId?: string): Promise<Case | null> {
+    // If tenantId is provided, enforce tenant isolation
+    if (tenantId) {
+      const enforcedTenantId = enforceTenantId(tenantId, "get case by number");
+      return await db.case.findFirst({
+        where: {
+          caseNumber,
+          tenantId: enforcedTenantId, // Enforce tenant isolation
+        },
+        include: {
+          resolution: true,
+          evidence: {
+            include: {
+              evidence: true,
+            },
+          },
+        },
+      });
+    }
+    
+    // For public endpoints without tenantId, still query but don't filter by tenant
+    // This is acceptable for public case tracking where caseNumber is the identifier
     return await db.case.findUnique({
-      where: { caseNumber },
+      where: {
+        caseNumber,
+      },
       include: {
         resolution: true,
         evidence: {
@@ -375,8 +399,10 @@ export class CaseService {
   ): Promise<CaseListResult> {
     const skip = (page - 1) * limit;
 
+    // Enforce tenant isolation - tenantId is required
+    const enforcedTenantId = enforceTenantId(tenantId, "list cases");
     const where: any = {
-      tenantId,
+      tenantId: enforcedTenantId, // Always include tenantId filter
     };
 
     if (filters.status && filters.status.length > 0) {

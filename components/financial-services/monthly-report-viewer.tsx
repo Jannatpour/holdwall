@@ -20,7 +20,7 @@ import {
   DollarSign,
   Shield,
   BarChart3,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import { format } from "date-fns";
 
 interface MonthlyReport {

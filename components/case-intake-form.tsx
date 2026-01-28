@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Upload, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Upload, CheckCircle2, AlertCircle } from "@/components/demo-icons";
 import { toast } from "sonner";
 import { t, type Locale } from "@/lib/i18n/config";
 

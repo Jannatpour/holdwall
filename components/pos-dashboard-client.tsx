@@ -20,7 +20,7 @@ import {
   FileText,
   Users,
   Zap,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 interface POSMetrics {
   bge: {

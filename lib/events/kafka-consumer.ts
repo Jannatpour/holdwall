@@ -7,6 +7,7 @@
 
 import type { EventEnvelope } from "./types";
 import { logger } from "@/lib/logging/logger";
+import { isConnectionError, logConnectionError } from "./kafka-utils";
 
 export interface KafkaConsumerConfig {
   brokers: string[];
@@ -59,6 +60,8 @@ export class KafkaConsumer {
         brokers,
         ssl: tlsEnabled ? { rejectUnauthorized: true } : undefined,
         sasl,
+        connectionTimeout: parseInt(process.env.KAFKA_CONNECTION_TIMEOUT || "10000", 10),
+        requestTimeout: parseInt(process.env.KAFKA_REQUEST_TIMEOUT || "30000", 10),
         retry: {
           retries: 8,
           initialRetryTime: 100,
@@ -94,7 +97,43 @@ export class KafkaConsumer {
     }
 
     try {
-      await this.consumer.connect();
+      // Keep the worker alive on transient DNS/network failures.
+      // If Kafka is private (e.g., AWS MSK in a VPC) and the app is outside that network,
+      // the error will persist; we'll back off to avoid crash-loop + log spam.
+      const maxRetriesRaw = process.env.KAFKA_CONSUMER_CONNECT_MAX_RETRIES;
+      const maxRetries = maxRetriesRaw ? parseInt(maxRetriesRaw, 10) : -1; // -1 => retry forever
+      const initialDelay = parseInt(process.env.KAFKA_CONSUMER_RECONNECT_INITIAL_DELAY || "1000", 10);
+      const maxDelay = parseInt(process.env.KAFKA_CONSUMER_RECONNECT_MAX_DELAY || "60000", 10);
+      let attempt = 0;
+
+      // Connect with exponential backoff
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        try {
+          await this.consumer.connect();
+          break;
+        } catch (connectError: any) {
+          if (!isConnectionError(connectError)) {
+            throw connectError;
+          }
+
+          logConnectionError(connectError, this.config.brokers, "kafka-consumer-connect", {
+            groupId: this.config.groupId,
+            topics: this.config.topics,
+            attempt: attempt + 1,
+          });
+
+          attempt += 1;
+          if (Number.isFinite(maxRetries) && maxRetries >= 0 && attempt > maxRetries) {
+            throw connectError;
+          }
+
+          const cappedExp = Math.min(attempt, 6); // cap exponent growth
+          const delay = Math.min(initialDelay * Math.pow(2, cappedExp), maxDelay);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+      
       await this.consumer.subscribe({
         topics: this.config.topics,
         fromBeginning: this.config.fromBeginning || false,

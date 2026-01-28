@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
-import { Shield, Lock, Key, Database, Network, CheckCircle2, AlertTriangle, FileCheck } from "lucide-react";
+import { Shield, Lock, Key, Database, Network, CheckCircle2, AlertTriangle, FileCheck } from "@/components/demo-icons";
 
 export const metadata: Metadata = genMeta(
   "Security",

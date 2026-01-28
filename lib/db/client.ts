@@ -37,7 +37,8 @@ function createPrismaClient() {
     // But we'll create a client that will fail gracefully on first use
     // rather than throwing during module initialization
     if (process.env.NODE_ENV === "production") {
-      console.warn("DATABASE_URL not configured in production. Database operations will fail.");
+      const { logger } = require("@/lib/logging/logger");
+      logger.warn("DATABASE_URL not configured in production. Database operations will fail.");
     }
     // Use a dummy URL that will fail on connection attempt, not on client creation.
     const dummyUrl = "postgresql://dummy:dummy@localhost:5432/dummy";
@@ -94,7 +95,11 @@ function createPrismaClient() {
       log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     });
   } catch (error) {
-    console.error("Failed to create Prisma client:", error);
+    const { logger } = require("@/lib/logging/logger");
+    logger.error("Failed to create Prisma client", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     // Return a client anyway - it will fail on first use, not during initialization
     const dummyUrl = "postgresql://dummy:dummy@localhost:5432/dummy";
     const pool = new Pool({
@@ -113,4 +118,95 @@ export const db = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = db;
+}
+
+/**
+ * Tenant Isolation Enforcement
+ * Production-grade tenant isolation helpers to prevent cross-tenant data access
+ */
+
+/**
+ * Enforce tenant ID in query where clause
+ * Throws if tenantId is missing or invalid
+ */
+export function enforceTenantId(tenantId: string | undefined | null, operation: string = "database query"): string {
+  if (!tenantId || typeof tenantId !== "string" || tenantId.trim() === "") {
+    throw new Error(`Tenant ID required for ${operation}`);
+  }
+  return tenantId.trim();
+}
+
+/**
+ * Create tenant-scoped where clause
+ * Ensures all queries include tenantId filter
+ */
+export function withTenantFilter<T extends Record<string, any>>(
+  where: T,
+  tenantId: string | undefined | null,
+  operation: string = "database query"
+): T & { tenantId: string } {
+  const enforcedTenantId = enforceTenantId(tenantId, operation);
+  return {
+    ...where,
+    tenantId: enforcedTenantId,
+  };
+}
+
+/**
+ * Validate tenant ownership of a resource
+ * Returns true if resource belongs to tenant, false otherwise
+ */
+export async function validateTenantOwnership(
+  model: string,
+  resourceId: string,
+  tenantId: string
+): Promise<boolean> {
+  try {
+    const enforcedTenantId = enforceTenantId(tenantId, `validate ownership of ${model}`);
+    
+    // Use Prisma's dynamic model access
+    const resource = await (db as any)[model].findFirst({
+      where: {
+        id: resourceId,
+        tenantId: enforcedTenantId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return resource !== null;
+  } catch (error) {
+    // On error, fail closed (assume not owned)
+    return false;
+  }
+}
+
+/**
+ * Get tenant-scoped query helper
+ * Returns a function that automatically adds tenantId to queries
+ */
+export function createTenantScopedQuery(tenantId: string | undefined | null) {
+  const enforcedTenantId = enforceTenantId(tenantId, "create tenant-scoped query");
+
+  return {
+    /**
+     * Add tenant filter to where clause
+     */
+    where: <T extends Record<string, any>>(where: T): T & { tenantId: string } => {
+      return withTenantFilter(where, enforcedTenantId);
+    },
+
+    /**
+     * Validate resource ownership
+     */
+    validateOwnership: async (model: string, resourceId: string): Promise<boolean> => {
+      return validateTenantOwnership(model, resourceId, enforcedTenantId);
+    },
+
+    /**
+     * Get tenant ID
+     */
+    getTenantId: (): string => enforcedTenantId,
+  };
 }

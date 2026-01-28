@@ -574,7 +574,28 @@ export class ANPProtocol {
     if (directConnection) {
       const fromHealth = this.agentHealth.get(fromAgentId);
       const toHealth = this.agentHealth.get(toAgentId);
+      
+      // Enhanced health-based routing: prefer healthy agents
+      if (options?.preferHighReliability) {
+        if (fromHealth?.status === "unhealthy" || toHealth?.status === "unhealthy") {
+          throw new Error(
+            `Cannot route through unhealthy agents: ${fromAgentId} (${fromHealth?.status}), ${toAgentId} (${toHealth?.status})`
+          );
+        }
+      }
+      
       const latency = (fromHealth?.latency || 0) + (toHealth?.latency || 0);
+      
+      // Record routing metrics
+      metrics.increment("anp_messages_routed", {
+        network_id: networkId,
+        from_agent: fromAgentId,
+        to_agent: toAgentId,
+        routing_strategy: options?.preferLowLatency ? "low_latency" : options?.preferHighReliability ? "high_reliability" : "default",
+      });
+      metrics.observe("anp_routing_latency_ms", latency, {
+        network_id: networkId,
+      });
 
       return {
         path: [fromAgentId, toAgentId],
@@ -857,7 +878,7 @@ export class ANPProtocol {
 
     await Promise.allSettled(healthCheckPromises);
 
-    // Update metrics
+    // Update metrics with enhanced health tracking
     const healthyCount = Array.from(this.agentHealth.values()).filter(
       (h) => h.status === "healthy"
     ).length;
@@ -868,9 +889,29 @@ export class ANPProtocol {
       (h) => h.status === "unhealthy" || h.status === "unknown"
     ).length;
 
+    const totalAgents = this.agentHealth.size;
+    const averageLatency = totalAgents > 0
+      ? Array.from(this.agentHealth.values())
+          .filter((h) => h.latency !== undefined)
+          .reduce((sum, h) => sum + (h.latency || 0), 0) / totalAgents
+      : 0;
+
     metrics.gauge("anp_agents_healthy_total", healthyCount);
     metrics.gauge("anp_agents_degraded_total", degradedCount);
     metrics.gauge("anp_agents_unhealthy_total", unhealthyCount);
+    metrics.gauge("anp_agents_total", totalAgents);
+    metrics.observe("anp_agent_health_check_latency_ms", averageLatency);
+
+    // Log health summary periodically
+    if (unhealthyCount > 0 || degradedCount > totalAgents * 0.3) {
+      logger.warn("ANP network health degraded", {
+        totalAgents,
+        healthyCount,
+        degradedCount,
+        unhealthyCount,
+        averageLatency,
+      });
+    }
   }
 
   /**
@@ -928,25 +969,38 @@ export class ANPProtocol {
     // Score candidates
     const scored = candidates.map((agentId) => {
       const health = this.agentHealth.get(agentId);
-      let score = 0;
-
+      // Enhanced scoring with health status weighting
+      const latency = health?.latency || 0;
+      const errorRate = health?.errorRate || 0;
+      
+      // Health score (most important for reliability)
+      let healthScore = 1.0;
       if (health?.status === "healthy") {
-        score += 100;
+        healthScore = 1.0;
       } else if (health?.status === "degraded") {
-        score += 50;
+        healthScore = 0.5;
+      } else {
+        healthScore = 0.1; // Unhealthy or unknown
       }
-
-      if (criteria.preferLowLatency && health?.latency) {
-        score += Math.max(0, 100 - health.latency);
-      }
-
-      if (criteria.preferHighReliability) {
-        const connections = this.a2aProtocol.getConnections(agentId);
-        const reliability = connections.length > 0
-          ? connections.filter((c) => c.status === "connected").length / connections.length
-          : 0;
-        score += reliability * 50;
-      }
+      
+      const healthWeight = criteria.preferHighReliability ? 0.6 : 0.3;
+      const latencyWeight = criteria.preferLowLatency ? 0.5 : 0.2;
+      const reliabilityWeight = criteria.preferHighReliability ? 0.3 : 0.2;
+      const baseWeight = 0.2;
+      
+      // Health component (most important for reliability)
+      const healthComponent = healthScore * 1000 * healthWeight;
+      
+      // Latency component (inverse - lower latency = higher score)
+      const latencyComponent = (1000 / Math.max(latency, 1)) * latencyWeight;
+      
+      // Reliability component (lower error rate = higher score)
+      const reliabilityComponent = (1 - errorRate) * 1000 * reliabilityWeight;
+      
+      // Base score for all agents
+      const baseComponent = 100 * baseWeight;
+      
+      const score = healthComponent + latencyComponent + reliabilityComponent + baseComponent;
 
       return { agentId, score };
     });

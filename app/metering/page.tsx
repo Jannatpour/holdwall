@@ -21,7 +21,7 @@ import {
   TrendingUp,
   TrendingDown,
   CheckCircle2,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 interface Entitlement {
   id: string;

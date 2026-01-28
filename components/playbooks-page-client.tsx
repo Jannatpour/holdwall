@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AutopilotControls } from "@/components/autopilot-controls";
-import { Play, Sparkles, BookOpen, Clock, History, Settings } from "lucide-react";
+import { Play, Sparkles, BookOpen, Clock, History, Settings } from "@/components/demo-icons";
 import { PlaybooksDataClient } from "@/components/playbooks-data-client";
 import { CreatePlaybookDialog } from "@/components/create-playbook-dialog";
 import { PlaybookEditor } from "@/components/playbook-editor";

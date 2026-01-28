@@ -17,7 +17,7 @@ import {
   ExternalLink,
   Target,
   BarChart3,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import Link from "next/link";
 import { format } from "date-fns";
 

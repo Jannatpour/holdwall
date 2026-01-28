@@ -25,7 +25,7 @@ import {
   RefreshCw,
   Info,
   Package,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 interface Forecast {
   id: string;

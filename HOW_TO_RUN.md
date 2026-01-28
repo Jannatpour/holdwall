@@ -109,9 +109,15 @@ NVIDIA_API_KEY="your-nvidia-key"
 CHROMA_URL="http://localhost:8000"
 OPENSEARCH_URL="http://localhost:9200"
 
-# Kafka (for event streaming)
+# Kafka (for event streaming) - Optional
+# See docs/KAFKA_TROUBLESHOOTING.md for detailed configuration
 KAFKA_ENABLED=false
 KAFKA_BROKERS="localhost:9092"
+# Optional: Connection timeouts (defaults: 10000ms, 30000ms)
+# KAFKA_CONNECTION_TIMEOUT=10000
+# KAFKA_REQUEST_TIMEOUT=30000
+# Optional: Enable startup validation (recommended for production)
+# KAFKA_VALIDATE_ON_STARTUP=true
 ```
 
 ### Step 3: Set Up Database

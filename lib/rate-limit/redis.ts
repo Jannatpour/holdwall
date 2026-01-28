@@ -5,6 +5,7 @@
 
 import type Redis from "ioredis";
 import { getRedisClient } from "@/lib/cache/redis";
+import { logger } from "@/lib/logging/logger";
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -58,7 +59,11 @@ export async function checkRateLimit(
       resetAt: now + windowMs,
     };
   } catch (error) {
-    console.error("Rate limit check error:", error);
+    logger.error("Rate limit check error", {
+      error: error instanceof Error ? error.message : String(error),
+      key,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     // On error, allow (fail open)
     return {
       allowed: true,

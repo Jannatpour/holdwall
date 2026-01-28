@@ -135,7 +135,11 @@ export class VERITASNLI {
           });
         }
       } catch (error) {
-        console.warn(`Failed to scrape source for query "${query}":`, error);
+        const { logger } = require("@/lib/logging/logger");
+        logger.warn("Failed to scrape source for query", {
+          query,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -210,7 +214,11 @@ Return JSON with: entailment (one of: "entails", "contradicts", "neutral"), conf
           }
         }
       } catch (error) {
-        console.warn(`NLI failed for source ${source.url}:`, error);
+        const { logger } = require("@/lib/logging/logger");
+        logger.warn("NLI failed for source", {
+          url: source.url,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 

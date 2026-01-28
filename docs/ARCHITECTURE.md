@@ -33,7 +33,7 @@ Holdwall POS is an **evidence-first** system: every claim, decision, and publish
 
 ### Agent Protocol Architecture
 
-**Protocol Bridge** (`lib/agents/protocol-bridge.ts`): Unified orchestration across all agent protocols:
+**Protocol Bridge** (`lib/agents/protocol-bridge.ts`): Unified orchestration across all agent protocols with production-grade resilience:
 - **MCP (Model Context Protocol)**: Tool execution with RBAC/ABAC, safety enforcement, audit logging
 - **ACP (Agent Communication Protocol)**: Message-based agent communication with LMOS transport abstraction
 - **A2A (Agent-to-Agent Protocol)**: Direct agent discovery, connection, and communication with:
@@ -52,6 +52,14 @@ Holdwall POS is an **evidence-first** system: every claim, decision, and publish
   - Mandates (intent/cart/payment), signatures, wallet management
   - Payment adapters (Stripe, Adyen)
   - Circuit breakers and retry strategies
+
+**Resilience Features**:
+- **Circuit Breakers**: Per-protocol circuit breakers prevent cascading failures
+- **Retry Logic**: Configurable exponential backoff with jitter for transient failures
+- **Timeouts**: Protocol-specific timeouts prevent hanging operations
+- **Metrics**: Comprehensive latency and error rate tracking per protocol
+- **Health Monitoring**: Real-time protocol health status with circuit breaker state
+- **Fallback Strategies**: Graceful degradation when protocols are unavailable
 
 **LMOS Transport** (`lib/phoenix/transport.ts`): Transport-agnostic abstraction supporting:
 - HTTP/SSE: Standard request/response with Server-Sent Events
@@ -99,8 +107,19 @@ Holdwall POS is an **evidence-first** system: every claim, decision, and publish
 
 **Caching Strategy** (`lib/cache/strategy.ts`):
 - Multi-tier caching (in-memory → Redis → database)
-- Cache warming and invalidation
+- **Tenant-aware caching**: Cache keys include tenantId for isolation
+- Cache warming and invalidation with tenant-scoped invalidation
 - TTL management and cache hit/miss tracking
+- Tenant-scoped cache operations: `getTenantScoped()`, `setTenantScoped()`, `invalidateTenant()`
+
+**Database Optimization**:
+- **Composite Indexes**: Optimized for common query patterns
+  - `Case_tenantId_status_createdAt_idx` - Case list queries
+  - `Evidence_tenantId_type_createdAt_idx` - Evidence type queries
+  - `EventOutbox_tenantId_published_createdAt_idx` - Outbox worker queries
+  - Additional indexes for Claims, Events, and EventProcessing
+- **Query Patterns**: All queries enforce tenantId first (indexed field)
+- **GraphQL Caching**: Tenant-aware query result caching
 
 **Load Balancing** (`lib/load-balancing/distributor.ts`):
 - Dynamic load balancer with multiple strategies (least-connections, round-robin, weighted)

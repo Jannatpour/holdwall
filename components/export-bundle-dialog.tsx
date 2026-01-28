@@ -8,7 +8,7 @@
 "use client";
 
 import * as React from "react";
-import { Download, FileArchive, Loader2 } from "lucide-react";
+import { Download, FileArchive, Loader2 } from "@/components/demo-icons";
 import {
   Dialog,
   DialogContent,

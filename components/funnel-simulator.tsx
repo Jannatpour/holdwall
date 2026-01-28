@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, FileText, CheckCircle2 } from "lucide-react";
+import { Eye, FileText, CheckCircle2 } from "@/components/demo-icons";
 
 export interface FunnelStage {
   id: string;
@@ -54,7 +54,11 @@ export function FunnelSimulator({ persona: initialPersona }: FunnelSimulatorProp
         setSimulation(data.simulation);
       }
     } catch (error) {
-      console.error("Failed to load simulation:", error);
+      // Client-side component - console is acceptable here
+      // Error is already handled by UI state
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to load simulation:", error);
+      }
     } finally {
       setLoading(false);
     }

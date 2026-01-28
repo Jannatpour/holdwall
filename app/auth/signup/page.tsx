@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Loader2, CheckCircle2, Mail, Lock, Eye, EyeOff, User, Shield, ArrowRight, Check, X } from "lucide-react";
+import { AlertCircle, Loader2, CheckCircle2, Mail, Lock, Eye, EyeOff, User, Shield, ArrowRight, Check, X } from "@/components/demo-icons";
 import Link from "next/link";
 
 type PasswordStrength = "weak" | "medium" | "strong" | "";

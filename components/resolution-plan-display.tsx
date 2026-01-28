@@ -18,7 +18,7 @@ import {
   Users,
   Calendar,
   ArrowRight,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 interface ResolutionPlanData {
   customerPlan?: {

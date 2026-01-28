@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, Save, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Trash2 } from "@/components/demo-icons";
 import { PLAYBOOK_TEMPLATES, type PlaybookTemplate, getTemplateById } from "@/lib/playbooks/templates";
 import { LoadingState, ErrorState } from "@/components/ui/loading-states";
 

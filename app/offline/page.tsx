@@ -7,7 +7,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { WifiOff, RefreshCw } from "lucide-react";
+import { WifiOff, RefreshCw } from "@/components/demo-icons";
 
 export default function OfflinePage() {
   return (

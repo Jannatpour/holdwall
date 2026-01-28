@@ -19,7 +19,7 @@ import {
   Save,
   Plus,
   X,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 interface EscalationRule {
   id: string;

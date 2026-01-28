@@ -3,6 +3,8 @@
  * Production embedding generation for RAG/KAG
  */
 
+import { logger } from "@/lib/logging/logger";
+
 export interface Embedding {
   vector: number[];
   model: string;
@@ -37,7 +39,10 @@ export class EmbeddingService {
         this.cache.set(cacheKey, embedding);
         return embedding;
       } catch (error) {
-        console.warn("OpenAI embedding failed, trying fallback:", error);
+        logger.warn("OpenAI embedding failed, trying fallback", {
+          error: error instanceof Error ? error.message : String(error),
+          model,
+        });
       }
     }
 
@@ -48,7 +53,10 @@ export class EmbeddingService {
         this.cache.set(cacheKey, embedding);
         return embedding;
       } catch (error) {
-        console.warn("Cohere embedding failed, trying fallback:", error);
+        logger.warn("Cohere embedding failed, trying fallback", {
+          error: error instanceof Error ? error.message : String(error),
+          model,
+        });
       }
     }
 

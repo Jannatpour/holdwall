@@ -56,8 +56,11 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validated = lookupSchema.parse({ caseNumber, email });
 
-    // Find case by case number
-    const case_ = await caseService.getCaseByNumber(validated.caseNumber);
+    // Find case by case number (public endpoint - query directly)
+    // Note: For public tracking, we query by caseNumber which is unique
+    const case_ = await db.case.findUnique({
+      where: { caseNumber: validated.caseNumber },
+    });
 
     if (!case_) {
       return NextResponse.json(

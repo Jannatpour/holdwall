@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Play, BarChart3, TrendingUp } from "lucide-react";
+import { Play, BarChart3, TrendingUp } from "@/components/demo-icons";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
 import { ForecastsLoading } from "@/components/ui/loading-states";

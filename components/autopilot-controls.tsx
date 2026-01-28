@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertTriangle, CheckCircle2, Globe, Info, Settings, Zap } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Globe, Info, Settings, Zap } from "@/components/demo-icons";
 import { toast } from "sonner";
 
 type AutopilotModeId = "recommend_only" | "auto_draft" | "auto_route" | "auto_publish";

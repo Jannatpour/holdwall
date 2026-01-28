@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
   
   /* Experimental features */
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
+    optimizePackageImports: ['@radix-ui/react-icons', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
     // optimizeCss: true, // Temporarily disabled - requires critters
     optimizeServerReact: true,
     serverActions: {

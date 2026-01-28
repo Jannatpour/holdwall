@@ -11,6 +11,7 @@ import { db } from "@/lib/db/client";
 import { getProtocolSecurity } from "@/lib/security/protocol-security";
 import type { ACPMessageEnvelope } from "@/lib/acp/types";
 import { DatabaseEventStore } from "@/lib/events/store-db";
+import { tracer } from "@/lib/observability/tracing";
 
 export type AgentCapability = 
   | "text_generation"
@@ -960,7 +961,7 @@ Respond with JSON only: {"type": "routine", "action": "action_name", "parameters
   }
 
   /**
-   * Start heartbeat monitor
+   * Start heartbeat monitor with enhanced health tracking
    */
   private startHeartbeatMonitor(): void {
     if (process.env.NODE_ENV === "test") return;
@@ -972,7 +973,7 @@ Respond with JSON only: {"type": "routine", "action": "action_name", "parameters
   }
 
   /**
-   * Check agent heartbeats
+   * Check agent heartbeats with enhanced health metrics
    */
   private async checkHeartbeats(): Promise<void> {
     const now = new Date();

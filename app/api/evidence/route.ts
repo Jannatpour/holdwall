@@ -4,9 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { createApiHandler } from "@/lib/middleware/api-wrapper";
 import { DatabaseEvidenceVault } from "@/lib/evidence/vault-db";
-import { db } from "@/lib/db/client";
+import { db, enforceTenantId } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
 import { z } from "zod";
 
@@ -43,22 +43,28 @@ const createEvidenceSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = createApiHandler(
+  async (request: NextRequest, context?: { user?: any; tenantId?: string }) => {
+    const tenantId = context?.tenantId;
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: "Tenant ID required" },
+        { status: 400 }
+      );
     }
 
+    const enforcedTenantId = enforceTenantId(tenantId, "get evidence");
     const searchParams = request.nextUrl.searchParams;
     const evidence_id = searchParams.get("id");
     const include = searchParams.get("include");
-    const tenant_id = searchParams.get("tenant_id") || ((session.user as any).tenantId || "");
 
     if (evidence_id) {
       if (include === "links") {
-        const record = await db.evidence.findUnique({
-          where: { id: evidence_id },
+        const record = await db.evidence.findFirst({
+          where: {
+            id: evidence_id,
+            tenantId: enforcedTenantId, // Enforce tenant isolation
+          },
           include: {
             claimRefs: { include: { claim: true } },
             artifactRefs: { include: { artifact: true } },
@@ -68,9 +74,6 @@ export async function GET(request: NextRequest) {
 
         if (!record) {
           return NextResponse.json({ error: "Not found" }, { status: 404 });
-        }
-        if (record.tenantId !== tenant_id) {
-          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         return NextResponse.json({
@@ -100,18 +103,24 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      const evidence = await evidenceVault.get(evidence_id);
+      const evidence = await evidenceVault.get(evidence_id, undefined, enforcedTenantId);
       if (!evidence) {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       }
-      if (evidence.tenant_id !== tenant_id) {
+      // Double-check tenant ownership (defense in depth)
+      if (evidence.tenant_id !== enforcedTenantId) {
+        logger.warn("Tenant isolation violation detected in evidence get", {
+          evidence_id,
+          requested_tenant_id: enforcedTenantId,
+          actual_tenant_id: evidence.tenant_id,
+        });
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
       return NextResponse.json(evidence);
     }
 
     const filters = {
-      tenant_id,
+      tenant_id: enforcedTenantId, // Required for tenant isolation
       type: searchParams.get("type") || undefined,
       source_type: searchParams.get("source_type") || undefined,
       created_after: searchParams.get("created_after") || undefined,
@@ -120,61 +129,61 @@ export async function GET(request: NextRequest) {
 
     const results = await evidenceVault.query(filters);
     return NextResponse.json(results);
-  } catch (error) {
-    const { logger } = await import("@/lib/logging/logger");
-    logger.error("Error fetching evidence", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  },
+  {
+    requireAuth: true,
+    rateLimit: {
+      windowMs: 60 * 1000,
+      maxRequests: 100,
+    },
   }
-}
+);
 
-export async function POST(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = createApiHandler(
+  async (request: NextRequest, context?: { user?: any; tenantId?: string }) => {
+    const tenantId = context?.tenantId;
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: "Tenant ID required" },
+        { status: 400 }
+      );
     }
 
+    const enforcedTenantId = enforceTenantId(tenantId, "store evidence");
     const body = await request.json();
     const validated = createEvidenceSchema.parse(body);
 
-    // Ensure tenant_id matches session
-    const tenant_id = (session.user as any).tenantId || "";
-    if (validated.tenant_id !== tenant_id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Ensure tenant_id matches authenticated tenant
+    if (validated.tenant_id !== enforcedTenantId) {
+      return NextResponse.json(
+        { error: "Tenant ID mismatch" },
+        { status: 403 }
+      );
     }
 
     const evidence_id = await evidenceVault.store(validated);
     return NextResponse.json({ evidence_id }, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+  },
+  {
+    requireAuth: true,
+    rateLimit: {
+      windowMs: 60 * 1000,
+      maxRequests: 50, // Lower limit for write operations
+    },
+  }
+);
+
+export const DELETE = createApiHandler(
+  async (request: NextRequest, context?: { user?: any; tenantId?: string }) => {
+    const tenantId = context?.tenantId;
+    if (!tenantId) {
       return NextResponse.json(
-        { error: "Validation error", details: error.issues },
+        { error: "Tenant ID required" },
         { status: 400 }
       );
     }
-    logger.error("Error storing evidence", {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
 
-export async function DELETE(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+    const enforcedTenantId = enforceTenantId(tenantId, "delete evidence");
     const searchParams = request.nextUrl.searchParams;
     const evidence_id = searchParams.get("id");
 
@@ -185,26 +194,31 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const evidence = await evidenceVault.get(evidence_id);
+    // Get evidence with tenant isolation enforcement
+    const evidence = await evidenceVault.get(evidence_id, undefined, enforcedTenantId);
     if (!evidence) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const tenant_id = (session.user as any).tenantId || "";
-    if (evidence.tenant_id !== tenant_id) {
+    // Double-check tenant ownership (defense in depth)
+    if (evidence.tenant_id !== enforcedTenantId) {
+      logger.warn("Tenant isolation violation detected in evidence delete", {
+        evidence_id,
+        requested_tenant_id: enforcedTenantId,
+        actual_tenant_id: evidence.tenant_id,
+      });
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await evidenceVault.delete(evidence_id);
+    await evidenceVault.delete(evidence_id, enforcedTenantId);
     return NextResponse.json({ success: true });
-  } catch (error) {
-    const { logger } = await import("@/lib/logging/logger");
-    logger.error("Error deleting evidence", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  },
+  {
+    requireAuth: true,
+    requireRole: "ADMIN", // Deletion requires admin role
+    rateLimit: {
+      windowMs: 60 * 1000,
+      maxRequests: 20, // Lower limit for destructive operations
+    },
   }
-}
+);

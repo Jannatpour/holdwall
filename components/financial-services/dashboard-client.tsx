@@ -29,7 +29,7 @@ import {
   Activity,
   Sparkles,
   ArrowRight,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import Link from "next/link";
 import { format } from "date-fns";
 import { FinancialServicesPerceptionBrief } from "@/components/financial-services/perception-brief";

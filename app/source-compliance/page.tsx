@@ -26,7 +26,7 @@ import {
   RefreshCw,
   AlertCircle,
   Settings,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 interface SourcePolicy {
   id: string;

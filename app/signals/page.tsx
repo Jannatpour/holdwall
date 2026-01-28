@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Radio } from "lucide-react";
+import { Filter, Radio } from "@/components/demo-icons";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { SignalsDataClient } from "@/components/signals-data-client";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";

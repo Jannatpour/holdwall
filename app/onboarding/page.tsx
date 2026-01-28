@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, Shield, MessageSquare, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, MessageSquare, FileText, Sparkles } from "@/components/demo-icons";
 
 type SKUType = "A" | "B" | "C" | "D" | null;
 

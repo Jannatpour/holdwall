@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { POSDashboardClient } from "@/components/pos-dashboard-client";
-import { Brain, Sparkles } from "lucide-react";
+import { Brain, Sparkles } from "@/components/demo-icons";
 import { POSLoading } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = {

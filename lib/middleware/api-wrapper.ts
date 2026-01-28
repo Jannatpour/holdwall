@@ -8,6 +8,9 @@ import { rateLimit, createRateLimitMiddleware } from "./rate-limit";
 import { logRequest } from "./request-logger";
 import { handleError } from "@/lib/errors/handler";
 import { AppError } from "@/lib/errors/app-error";
+import { enforceTenantId } from "@/lib/db/client";
+import { tracer } from "@/lib/observability/tracing";
+import { metrics } from "@/lib/observability/metrics";
 
 export interface ApiHandlerOptions {
   rateLimit?: {
@@ -88,7 +91,21 @@ export function createApiHandler(
 
         context = context || {};
         context.user = user;
-        context.tenantId = (user as any).tenantId || "";
+        
+        // Enforce tenant ID validation and normalization
+        const userTenantId = (user as any).tenantId;
+        if (!userTenantId) {
+          throw new AppError("User tenant ID missing", 403, "TENANT_ID_REQUIRED");
+        }
+        
+        // Validate and normalize tenant ID
+        context.tenantId = enforceTenantId(userTenantId, "API request");
+        
+        // Add tenant ID to trace context for observability
+        const activeSpan = tracer.getActiveSpan();
+        if (activeSpan) {
+          tracer.setTag(activeSpan.spanId, "tenant_id", context.tenantId);
+        }
       }
 
       // Execute handler

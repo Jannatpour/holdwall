@@ -15,7 +15,7 @@ import {
   Plus,
   Settings,
   TrendingUp,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 interface PreemptionPlaybook {
   id: string;

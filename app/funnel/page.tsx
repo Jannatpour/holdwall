@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Funnel, Sparkles, Target, ArrowRight } from "lucide-react";
+import { Funnel, Sparkles, Target, ArrowRight } from "@/components/demo-icons";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { FunnelSimulatorClient } from "@/components/funnel-simulator-client";
 

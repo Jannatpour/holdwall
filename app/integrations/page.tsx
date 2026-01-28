@@ -19,7 +19,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, Key, Trash2, CheckCircle2, XCircle, AlertTriangle, Settings, Play, RefreshCw } from "lucide-react";
+import { Plus, Key, Trash2, CheckCircle2, XCircle, AlertTriangle, Settings, Play, RefreshCw } from "@/components/demo-icons";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";

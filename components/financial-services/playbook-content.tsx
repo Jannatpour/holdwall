@@ -4,7 +4,7 @@ import * as React from "react";
 import { useEffect, useState, useMemo } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "@/components/demo-icons";
 
 interface PlaybookData {
   content: string;

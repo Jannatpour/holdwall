@@ -167,19 +167,20 @@ export class GraphQLQueryOptimizer {
   }
 
   /**
-   * Optimize query
+   * Optimize query with tenant-aware caching
    */
   async optimizeQuery(
     query: string,
-    variables?: Record<string, unknown>
+    variables?: Record<string, unknown>,
+    tenantId?: string
   ): Promise<QueryOptimizationResult> {
     const startTime = Date.now();
     const complexity = this.analyzeComplexity(query);
     const optimizations: string[] = [];
 
-    // Check cache first
+    // Check cache first (with tenant isolation if tenantId provided)
     if (this.cacheConfig.enabled) {
-      const cacheKey = this.getCacheKey(query, variables);
+      const cacheKey = this.getCacheKey(query, variables, tenantId);
       const cached = await this.getCached(cacheKey);
 
       if (cached) {
@@ -226,16 +227,17 @@ export class GraphQLQueryOptimizer {
   }
 
   /**
-   * Cache query result
+   * Cache query result with tenant-aware caching
    */
   async cacheQuery(
     query: string,
     result: unknown,
-    variables?: Record<string, unknown>
+    variables?: Record<string, unknown>,
+    tenantId?: string
   ): Promise<void> {
     if (!this.cacheConfig.enabled) return;
 
-    const cacheKey = this.getCacheKey(query, variables);
+    const cacheKey = this.getCacheKey(query, variables, tenantId);
     const cacheValue = {
       data: result,
       expiresAt: Date.now() + this.cacheConfig.ttl * 1000,
@@ -311,15 +313,28 @@ export class GraphQLQueryOptimizer {
   }
 
   /**
-   * Generate cache key
+   * Generate cache key with optional tenant isolation
    */
-  private getCacheKey(query: string, variables?: Record<string, unknown>): string {
+  private getCacheKey(
+    query: string,
+    variables?: Record<string, unknown>,
+    tenantId?: string
+  ): string {
     const queryHash = this.hashString(query);
+    let key = queryHash;
+    
+    // Include tenantId in cache key for tenant isolation
+    if (tenantId) {
+      const tenantHash = this.hashString(tenantId);
+      key = `tenant:${tenantHash}:${key}`;
+    }
+    
     if (this.cacheConfig.includeVariables && variables) {
       const varsHash = this.hashString(JSON.stringify(variables));
-      return `${queryHash}:${varsHash}`;
+      key = `${key}:vars:${varsHash}`;
     }
-    return queryHash;
+    
+    return key;
   }
 
   /**

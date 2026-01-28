@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle2, Clock, AlertCircle, ArrowRight, Target, TrendingUp, Award } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, ArrowRight, Target, TrendingUp, Award } from "@/components/demo-icons";
 import { format } from "date-fns";
 
 interface WorkflowMilestone {

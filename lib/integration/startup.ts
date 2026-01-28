@@ -11,6 +11,7 @@ import { db } from "@/lib/db/client";
 import { initializeBroadcaster } from "@/lib/events/broadcast-helper";
 import { DynamicLoadBalancer, type LoadBalancingConfig } from "@/lib/load-balancing/distributor";
 import { enforceStagingParity } from "@/lib/environment/staging-parity";
+import { isConnectionError, logConnectionError } from "@/lib/events/kafka-utils";
 
 export interface StartupResult {
   success: boolean;
@@ -156,28 +157,83 @@ export async function initializeServices(): Promise<StartupResult> {
   try {
     if (process.env.KAFKA_ENABLED === "true" && process.env.KAFKA_BROKERS) {
       // Kafka consumers are started lazily when needed
-      // Just verify Kafka client can be initialized
+      // Just verify Kafka client can be initialized and optionally test connection
       try {
         const { Kafka } = require("kafkajs");
-        const brokers = (process.env.KAFKA_BROKERS || "localhost:9092").split(",");
+        const brokers = (process.env.KAFKA_BROKERS || "localhost:9092")
+          .split(",")
+          .map((b: string) => b.trim())
+          .filter(Boolean);
+        
+        const tlsEnabled =
+          process.env.KAFKA_SSL === "true" ||
+          process.env.KAFKA_TLS === "true" ||
+          brokers.some((b: string) => String(b).includes(":9094"));
+        
+        const saslMechanism = process.env.KAFKA_SASL_MECHANISM?.trim();
+        const saslUsername = process.env.KAFKA_SASL_USERNAME?.trim();
+        const saslPassword = process.env.KAFKA_SASL_PASSWORD?.trim();
+        const sasl =
+          saslMechanism && saslUsername && saslPassword
+            ? {
+                mechanism: saslMechanism as any,
+                username: saslUsername,
+                password: saslPassword,
+              }
+            : undefined;
+
         const kafka = new Kafka({
           clientId: "holdwall-startup-check",
           brokers,
+          ssl: tlsEnabled ? { rejectUnauthorized: true } : undefined,
+          sasl,
+          connectionTimeout: parseInt(process.env.KAFKA_CONNECTION_TIMEOUT || "10000", 10),
+          requestTimeout: parseInt(process.env.KAFKA_REQUEST_TIMEOUT || "30000", 10),
         });
-        // Test connection by creating a producer (doesn't connect until used)
-        const producer = kafka.producer();
+        
+        // Test connection if KAFKA_VALIDATE_ON_STARTUP is enabled
+        if (process.env.KAFKA_VALIDATE_ON_STARTUP === "true") {
+          try {
+            const producer = kafka.producer();
+            await producer.connect();
+            await producer.disconnect();
+            logger.info("Kafka connection validated successfully", { brokers });
+          } catch (connectError: any) {
+            if (isConnectionError(connectError)) {
+              logConnectionError(connectError, brokers, "startup-kafka-validate", {
+                hint: "Check network connectivity, DNS resolution, and broker hostnames. Application will continue but Kafka features will be unavailable.",
+              });
+              result.errors.push(
+                `Kafka connection failed: ${connectError instanceof Error ? connectError.message : String(connectError)}`
+              );
+            } else {
+              const errorMessage = connectError instanceof Error ? connectError.message : String(connectError);
+              logger.warn("Kafka connection test failed", { error: errorMessage, brokers });
+              result.errors.push(`Kafka connection test failed: ${errorMessage}`);
+            }
+          }
+        }
+        
         result.services.kafka = true;
-        logger.info("Kafka client initialized", { brokers });
-      } catch (kafkaError) {
-        logger.warn("Kafka not available, event streaming will use database only", {
-          error: kafkaError instanceof Error ? kafkaError.message : String(kafkaError),
+        logger.info("Kafka client initialized", { 
+          brokers,
+          validateOnStartup: process.env.KAFKA_VALIDATE_ON_STARTUP === "true",
         });
+      } catch (kafkaError) {
+        const errorMessage = kafkaError instanceof Error ? kafkaError.message : String(kafkaError);
+        logger.warn("Kafka not available, event streaming will use database only", {
+          error: errorMessage,
+        });
+        result.errors.push(`Kafka initialization failed: ${errorMessage}`);
       }
     } else {
       logger.info("Kafka disabled or not configured, using database event store only");
     }
   } catch (error) {
-    logger.warn("Kafka initialization check failed", { error });
+    logger.warn("Kafka initialization check failed", { 
+      error: error instanceof Error ? error.message : String(error),
+    });
+    result.errors.push(`Kafka initialization check failed: ${error}`);
   }
 
   // Initialize GraphQL federation
@@ -211,6 +267,30 @@ export async function initializeServices(): Promise<StartupResult> {
  */
 export async function shutdownServices(): Promise<void> {
   logger.info("Shutting down services...");
+
+  // Disconnect all Kafka connections
+  try {
+    // Disconnect outbox publisher
+    const { EventOutboxPublisher, disconnectOutboxKafkaProducer } = await import("@/lib/events/outbox-publisher");
+    const publisher = new EventOutboxPublisher();
+    await publisher.stopBackgroundProcessing();
+    await disconnectOutboxKafkaProducer();
+    logger.info("Kafka outbox publisher stopped");
+  } catch (error) {
+    logger.warn("Error stopping Kafka outbox publisher", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  // Disconnect any active Kafka producers/consumers
+  try {
+    const { disconnectKafkaProducers } = await import("@/lib/events/store-db");
+    await disconnectKafkaProducers();
+  } catch (error) {
+    logger.warn("Error disconnecting Kafka store producers", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 
   // Stop health monitoring
   healthMonitor.stop();

@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Wallet, Plus, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
+import { Loader2, Wallet, Plus, DollarSign, TrendingUp, TrendingDown } from "@/components/demo-icons";
 
 interface WalletBalance {
   walletId: string;

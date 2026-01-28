@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { ExternalLink, FileText, Shield } from "lucide-react";
+import { ExternalLink, FileText, Shield } from "@/components/demo-icons";
 
 type EvidenceRecord = {
   id: string;

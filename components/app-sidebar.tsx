@@ -19,7 +19,7 @@ import {
   Building2,
   Presentation,
   Briefcase,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 import { cn } from "@/lib/utils";
 import {

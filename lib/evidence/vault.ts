@@ -47,7 +47,7 @@ export interface Evidence {
 
 export interface EvidenceVault {
   store(evidence: Omit<Evidence, "evidence_id" | "created_at">): Promise<string>; // Returns evidence_id
-  get(evidence_id: string): Promise<Evidence | null>;
+  get(evidence_id: string, actor_id?: string, tenant_id?: string): Promise<Evidence | null>;
   query(filters: {
     tenant_id?: string;
     type?: string;
@@ -56,7 +56,7 @@ export interface EvidenceVault {
     created_before?: string;
   }): Promise<Evidence[]>;
   search(query: string, tenant_id: string, options?: { limit?: number; min_relevance?: number }): Promise<Evidence[]>;
-  delete(evidence_id: string): Promise<void>;
+  delete(evidence_id: string, tenant_id?: string): Promise<void>;
   verify(evidence_id: string): Promise<boolean>; // Verify signature
 }
 
@@ -181,7 +181,14 @@ export class InMemoryEvidenceVault implements EvidenceVault {
     return relevant;
   }
 
-  async delete(evidence_id: string): Promise<void> {
+  async delete(evidence_id: string, tenant_id?: string): Promise<void> {
+    // For in-memory implementation, tenant_id is optional but recommended for consistency
+    if (tenant_id) {
+      const evidence = await this.get(evidence_id);
+      if (evidence && evidence.tenant_id !== tenant_id) {
+        throw new Error("Access denied: tenant mismatch");
+      }
+    }
     this.storage.delete(evidence_id);
   }
 

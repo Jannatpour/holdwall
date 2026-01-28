@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingState, ErrorState } from "@/components/ui/loading-states";
-import { TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle2, AlertTriangle } from "@/components/demo-icons";
 
 interface ExecutiveMetrics {
   totalCases: number;

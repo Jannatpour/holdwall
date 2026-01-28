@@ -6,7 +6,7 @@
 "use client";
 
 import React from "react";
-import { HelpCircle, BookOpen, X } from "lucide-react";
+import { HelpCircle, BookOpen, X } from "@/components/demo-icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

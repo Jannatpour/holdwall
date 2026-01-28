@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, FileText, Network, Users, MessageSquare, Shield } from "lucide-react";
+import { Wallet, FileText, Network, Users, MessageSquare, Shield } from "@/components/demo-icons";
 
 export function AgentsManagement() {
   const { data: session } = useSession() || { data: null };

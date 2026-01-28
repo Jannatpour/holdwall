@@ -62,7 +62,11 @@ export class Benchmarker {
         };
       } catch (error) {
         // Fallback to estimated values if analysis fails
-        console.warn(`Failed to analyze competitor ${competitor}:`, error);
+        const { logger } = require("@/lib/logging/logger");
+        logger.warn("Failed to analyze competitor", {
+          competitor,
+          error: error instanceof Error ? error.message : String(error),
+        });
         for (const [metric, brandValue] of Object.entries(metrics)) {
           competitorMetrics[competitor] = competitorMetrics[competitor] || {};
           competitorMetrics[competitor][metric] = brandValue * (0.8 + Math.random() * 0.4);
@@ -80,7 +84,11 @@ export class Benchmarker {
           }
         }
       } catch (error) {
-        console.warn("Failed to fetch historical competitor data:", error);
+        const { logger } = require("@/lib/logging/logger");
+        logger.warn("Failed to fetch historical competitor data", {
+          error: error instanceof Error ? error.message : String(error),
+          tenantId,
+        });
       }
     }
 
@@ -210,7 +218,11 @@ export class Benchmarker {
 
       return competitorData;
     } catch (error) {
-      console.warn("Failed to fetch historical competitor data:", error);
+        const { logger } = require("@/lib/logging/logger");
+        logger.warn("Failed to fetch historical competitor data", {
+          error: error instanceof Error ? error.message : String(error),
+          tenantId,
+        });
       return {};
     }
   }

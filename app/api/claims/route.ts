@@ -3,8 +3,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { createApiHandler } from "@/lib/middleware/api-wrapper";
 import { requireAuth } from "@/lib/auth/session";
-import { db } from "@/lib/db/client";
+import { db, enforceTenantId } from "@/lib/db/client";
 import { DatabaseEventStore } from "@/lib/events/store-db";
 import { DatabaseEvidenceVault } from "@/lib/evidence/vault-db";
 import { ClaimExtractionService, type Claim } from "@/lib/claims/extraction";
@@ -26,15 +27,21 @@ const idempotencyService = new IdempotencyService();
 const transactionManager = new TransactionManager();
 const errorRecovery = new ErrorRecoveryService();
 
-export async function GET(request: NextRequest) {
-  try {
-    const user = await requireAuth();
-    const tenant_id = (user as any).tenantId || "";
+export const GET = createApiHandler(
+  async (request: NextRequest, context?: { user?: any; tenantId?: string }) => {
+    const tenantId = context?.tenantId;
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: "Tenant ID required" },
+        { status: 400 }
+      );
+    }
 
+    const enforcedTenantId = enforceTenantId(tenantId, "get claims");
     const searchParams = request.nextUrl.searchParams;
     const cluster_id = searchParams.get("cluster_id");
 
-    const where: any = { tenantId: tenant_id };
+    const where: any = { tenantId: enforcedTenantId };
     if (cluster_id) {
       where.clusterId = cluster_id;
     }
@@ -52,20 +59,15 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(claims);
-  } catch (error) {
-    if ((error as Error).message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    logger.error("Error fetching claims", {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  },
+  {
+    requireAuth: true,
+    rateLimit: {
+      windowMs: 60 * 1000,
+      maxRequests: 100,
+    },
   }
-}
+);
 
 const extractClaimsSchema = z.object({
   evidence_id: z.string(),
@@ -73,18 +75,26 @@ const extractClaimsSchema = z.object({
   rules: z.array(z.string()).optional(),
 });
 
-export async function POST(request: NextRequest) {
-  try {
-    const user = await requireAuth();
-    const tenant_id = (user as any).tenantId || "";
-    const user_id = (user as any).id || "";
+export const POST = createApiHandler(
+  async (request: NextRequest, context?: { user?: any; tenantId?: string }) => {
+    const tenantId = context?.tenantId;
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: "Tenant ID required" },
+        { status: 400 }
+      );
+    }
+
+    const enforcedTenantId = enforceTenantId(tenantId, "extract claims");
+    const userId = context?.user?.id || "";
+    
     const body = await request.json();
     const validated = extractClaimsSchema.parse(body);
 
     // Validate evidence exists and belongs to tenant
     const evidenceValidation = await validateBusinessRules("claim", {
       evidenceIds: [validated.evidence_id],
-    }, tenant_id);
+    }, enforcedTenantId);
 
     if (!evidenceValidation.valid) {
       return NextResponse.json(
@@ -96,7 +106,7 @@ export async function POST(request: NextRequest) {
     // Execute with idempotency and error recovery
     const claims: Claim[] = await withIdempotency(
       idempotencyService,
-      tenant_id,
+      enforcedTenantId,
       "extract_claims",
       {
         evidence_id: validated.evidence_id,
@@ -137,8 +147,8 @@ export async function POST(request: NextRequest) {
     const occurredAt = new Date().toISOString();
     const auditEvent: EventEnvelope = {
       event_id: randomUUID(),
-      tenant_id,
-      actor_id: user_id,
+      tenant_id: enforcedTenantId,
+      actor_id: userId,
       type: "action.claim_extraction",
       occurred_at: occurredAt,
       correlation_id: correlationId,
@@ -154,8 +164,8 @@ export async function POST(request: NextRequest) {
     };
     await auditLog.append({
       audit_id: randomUUID(),
-      tenant_id,
-      actor_id: user_id,
+      tenant_id: enforcedTenantId,
+      actor_id: userId,
       type: "event",
       timestamp: occurredAt,
       correlation_id: correlationId,
@@ -169,27 +179,16 @@ export async function POST(request: NextRequest) {
       await broadcastClaimUpdate(claim.claim_id, "created", {
         canonicalText: claim.canonical_text,
         decisiveness: claim.decisiveness,
-      }, tenant_id);
+      }, enforcedTenantId);
     }
 
     return NextResponse.json(claims, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.issues },
-        { status: 400 }
-      );
-    }
-    if ((error as Error).message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    logger.error("Error extracting claims", {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  },
+  {
+    requireAuth: true,
+    rateLimit: {
+      windowMs: 60 * 1000,
+      maxRequests: 20, // Lower limit for resource-intensive operation
+    },
   }
-}
+);

@@ -6,7 +6,7 @@
 "use client";
 
 import React from "react";
-import { X, ChevronRight, ExternalLink } from "lucide-react";
+import { X, ChevronRight, ExternalLink } from "@/components/demo-icons";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

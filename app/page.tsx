@@ -41,7 +41,7 @@ import {
   Sparkles,
   Radio,
   AlertTriangle,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 export default function Home() {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://holdwall.com";

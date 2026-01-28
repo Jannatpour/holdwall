@@ -116,9 +116,10 @@ export const resolvers = {
         throw new Error("Unauthorized: tenant context required");
       }
 
-      const evidence = await evidenceVault.get(id);
+      // Get evidence with tenant isolation enforcement
+      const evidence = await evidenceVault.get(id, undefined, tenantId);
       
-      // Enforce tenant scoping
+      // Double-check tenant ownership (defense in depth)
       if (evidence && evidence.tenant_id !== tenantId) {
         return null; // Don't reveal existence of other tenants' evidence
       }
@@ -633,7 +634,29 @@ export const resolvers = {
         metadata: input.metadata,
       });
 
-      return await evidenceVault.get(evidenceId);
+      return await evidenceVault.get(evidenceId, undefined, tenantId);
+    },
+
+    deleteEvidence: async (_: any, { id }: { id: string }, context: any) => {
+      const tenantId = context.tenantId;
+      if (!tenantId) {
+        throw new Error("Unauthorized: tenant context required");
+      }
+
+      // Get evidence with tenant isolation enforcement
+      const evidence = await evidenceVault.get(id, undefined, tenantId);
+      if (!evidence) {
+        throw new Error("Evidence not found");
+      }
+
+      // Double-check tenant ownership (defense in depth)
+      if (evidence.tenant_id !== tenantId) {
+        throw new Error("Unauthorized: evidence belongs to different tenant");
+      }
+
+      // Delete with tenant isolation
+      await evidenceVault.delete(id, tenantId);
+      return true;
     },
 
     // Claim mutations

@@ -14,6 +14,7 @@ import { getMCPSafetyEnforcer } from "./safety";
 import { getA2AProtocol } from "@/lib/a2a/protocol";
 import { getANPProtocol } from "@/lib/anp/protocol";
 import { db } from "@/lib/db/client";
+import { metrics } from "@/lib/observability/metrics";
 
 export interface GatewayRequest {
   toolCall: MCPToolCall;
@@ -61,7 +62,21 @@ export class MCPGateway {
       ? await this.authorize(request.toolCall, request.userId, request.permissions || [])
       : false;
 
-    // 3. Rate limiting (Redis-backed)
+    // 3. Rate limiting (Redis-backed with tenant-aware limits)
+    // Different tools may have different rate limits based on risk tier
+    const safetyEnforcer = getMCPSafetyEnforcer();
+    const riskTier = safetyEnforcer.getToolRiskTier(request.toolCall.tool_name);
+    
+    // Adjust rate limits based on risk tier
+    const baseMaxRequests = parseInt(process.env.MCP_RATE_LIMIT_MAX_REQUESTS || "10", 10);
+    const maxRequests = riskTier === "critical" 
+      ? Math.max(1, Math.floor(baseMaxRequests * 0.2)) // 20% of base for critical
+      : riskTier === "high"
+      ? Math.max(2, Math.floor(baseMaxRequests * 0.5)) // 50% of base for high
+      : baseMaxRequests; // Full limit for low/medium
+    
+    const windowMs = parseInt(process.env.MCP_RATE_LIMIT_WINDOW_MS || "60000", 10);
+    
     const rateLimitResult = await this.rateLimiter.rateLimit(
       new Request("http://localhost", {
         headers: {
@@ -70,14 +85,30 @@ export class MCPGateway {
         },
       }) as any,
       {
-        windowMs: 60000, // 1 minute
-        maxRequests: 10,
+        windowMs,
+        maxRequests,
         strategy: "sliding",
-        keyGenerator: () => `mcp:${request.userId}:${request.toolCall.tool_name}`,
+        keyGenerator: () => `mcp:${request.tenantId}:${request.userId}:${request.toolCall.tool_name}`,
       }
     );
 
     const rateLimited = !rateLimitResult.allowed;
+    
+    // Record rate limiting metrics
+    if (rateLimited) {
+      metrics.increment("mcp_rate_limit_exceeded", {
+        tool: request.toolCall.tool_name,
+        tenant_id: request.tenantId,
+        user_id: request.userId,
+        risk_tier: riskTier,
+      });
+    } else {
+      metrics.increment("mcp_rate_limit_allowed", {
+        tool: request.toolCall.tool_name,
+        tenant_id: request.tenantId,
+        risk_tier: riskTier,
+      });
+    }
 
     // 4. Safety checks (allowlists, risk tiers, scoped credentials, content policies)
     const safetyCheck = await this.safetyEnforcer.checkToolExecution(

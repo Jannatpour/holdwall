@@ -19,7 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2, FileText, CheckCircle, XCircle, Clock, DollarSign } from "lucide-react";
+import { Loader2, FileText, CheckCircle, XCircle, Clock, DollarSign } from "@/components/demo-icons";
 
 interface PaymentMandate {
   mandateId: string;

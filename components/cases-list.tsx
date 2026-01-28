@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/loading-states";
-import { Search, FileText, AlertCircle, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Search, FileText, AlertCircle, Clock, CheckCircle2, XCircle } from "@/components/demo-icons";
 import Link from "next/link";
 
 type CaseStatus = "SUBMITTED" | "TRIAGED" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";

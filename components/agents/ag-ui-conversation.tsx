@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Send, Mic, Square, MessageSquare, User, Bot } from "lucide-react";
+import { Loader2, Send, Mic, Square, MessageSquare, User, Bot } from "@/components/demo-icons";
 
 interface ConversationMessage {
   role: "user" | "agent";

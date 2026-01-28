@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Network, Search, Sliders, RefreshCw, Sparkles, ArrowRight } from "lucide-react";
+import { Network, Search, Sliders, RefreshCw, Sparkles, ArrowRight } from "@/components/demo-icons";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { GraphCanvas } from "@/components/graph-canvas";
 import { GraphDataClient } from "@/components/graph-data-client";

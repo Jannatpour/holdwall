@@ -26,7 +26,7 @@ import {
   Target,
   ArrowRight,
   BookOpen,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import Link from "next/link";
 
 export function FinancialServicesPlaybookViewer() {

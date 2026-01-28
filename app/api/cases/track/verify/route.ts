@@ -69,8 +69,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Code is valid, get case
-    const case_ = await caseService.getCaseByNumber(validated.caseNumber);
+    // Code is valid, get case (public endpoint - query directly)
+    const case_ = await db.case.findUnique({
+      where: { caseNumber: validated.caseNumber },
+      include: {
+        resolution: true,
+        evidence: {
+          include: {
+            evidence: {
+              select: {
+                id: true,
+                type: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     if (!case_) {
       return NextResponse.json(

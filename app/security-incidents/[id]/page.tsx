@@ -20,7 +20,7 @@ import {
   ArrowLeft,
   Play,
   Download,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import { AuthGuard } from "@/components/auth-guard";
 import Link from "next/link";
 

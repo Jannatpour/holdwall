@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, ExternalLink, Loader2, AlertCircle, Copy, Check } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2, AlertCircle, Copy, Check } from "@/components/demo-icons";
 import { toast } from "sonner";
 
 interface PADLPublishDialogProps {

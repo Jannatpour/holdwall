@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowRight, ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, Plus, X } from "@/components/demo-icons";
 
 type SourceType = "reddit" | "twitter" | "reviews" | "support" | "internal" | "knowledge_base" | "custom";
 

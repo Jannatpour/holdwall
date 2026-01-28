@@ -23,7 +23,7 @@ import {
   Sparkles,
   ArrowLeft,
   Download,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ResolutionPlanDisplay } from "@/components/resolution-plan-display";

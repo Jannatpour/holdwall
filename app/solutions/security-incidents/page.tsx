@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
-import { Shield, AlertTriangle, FileText, CheckCircle2, Sparkles, Lock, Network } from "lucide-react";
+import { Shield, AlertTriangle, FileText, CheckCircle2, Sparkles, Lock, Network } from "@/components/demo-icons";
 
 export const metadata: Metadata = genMeta(
   "Security Incident Narrative Management (SKU D)",

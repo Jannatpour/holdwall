@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ExternalLink, AlertTriangle, Shield, BarChart3 } from "lucide-react";
+import { ExternalLink, AlertTriangle, Shield, BarChart3 } from "@/components/demo-icons";
 import Link from "next/link";
 
 interface NarrativeCluster {

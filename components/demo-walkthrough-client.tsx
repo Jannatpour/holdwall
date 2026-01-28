@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { 
   CheckCircle2, Circle, ArrowRight, Play, Pause, RotateCcw, ExternalLink, ChevronRight, ChevronDown, HelpCircle, Clock, Sparkles, BookOpen, Zap, Target, Info, Trophy, Star, TrendingUp, ChevronLeft, SkipForward, CheckCircle
-} from "lucide-react";
+} from "@/components/demo-icons";
 import {
   AuthOnboardingIcon,
   OverviewAnalyticsIcon,

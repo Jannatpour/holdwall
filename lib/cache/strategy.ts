@@ -1,9 +1,11 @@
 /**
  * Advanced Caching Strategy
  * Production-ready caching with invalidation, tagging, and multi-layer support
+ * Enhanced with tenant-aware cache keys for security and isolation
  */
 
 import { getCache, setCache, deleteCache } from "./redis";
+import { enforceTenantId } from "@/lib/db/client";
 
 export interface CacheTag {
   type: string;
@@ -26,6 +28,7 @@ export class CacheManager {
 
   /**
    * Get cached value with version check
+   * For tenant-scoped data, include tenantId in key or use getTenantScoped
    */
   async get<T>(key: string, minVersion?: number): Promise<T | null> {
     const cached = await getCache<CacheEntry<T>>(key);
@@ -137,6 +140,56 @@ export class CacheManager {
     // In production, use Redis FLUSHDB or FLUSHALL
     this.tagIndex.clear();
     this.keyVersion.clear();
+  }
+
+  /**
+   * Get tenant-scoped cache key (ensures tenant isolation in cache)
+   */
+  getTenantScopedKey(baseKey: string, tenantId: string): string {
+    const enforcedTenantId = enforceTenantId(tenantId, "cache key generation");
+    return `tenant:${enforcedTenantId}:${baseKey}`;
+  }
+
+  /**
+   * Get tenant-scoped cached value
+   */
+  async getTenantScoped<T>(
+    baseKey: string,
+    tenantId: string,
+    minVersion?: number
+  ): Promise<T | null> {
+    const tenantKey = this.getTenantScopedKey(baseKey, tenantId);
+    return this.get<T>(tenantKey, minVersion);
+  }
+
+  /**
+   * Set tenant-scoped cached value
+   */
+  async setTenantScoped<T>(
+    baseKey: string,
+    tenantId: string,
+    value: T,
+    options: {
+      ttl?: number;
+      tags?: CacheTag[];
+      version?: number;
+    } = {}
+  ): Promise<void> {
+    const tenantKey = this.getTenantScopedKey(baseKey, tenantId);
+    // Add tenant tag for invalidation
+    const tags = [
+      ...(options.tags || []),
+      { type: "tenant", id: tenantId },
+    ];
+    return this.set<T>(tenantKey, value, { ...options, tags });
+  }
+
+  /**
+   * Invalidate all cache entries for a tenant
+   */
+  async invalidateTenant(tenantId: string): Promise<void> {
+    const enforcedTenantId = enforceTenantId(tenantId, "cache invalidation");
+    return this.invalidateTag({ type: "tenant", id: enforcedTenantId });
   }
 
   /**

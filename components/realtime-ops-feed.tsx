@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Activity, Zap, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import { Activity, Zap, CheckCircle2, AlertTriangle, Clock } from "@/components/demo-icons";
 import { formatDistanceToNow } from "date-fns";
 
 interface OpsEvent {

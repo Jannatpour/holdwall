@@ -6,6 +6,8 @@
 import { db } from "@/lib/db/client";
 import { getRedisClient } from "@/lib/cache/redis";
 import { checkStagingParity } from "@/lib/environment/staging-parity";
+import { isConnectionError, logConnectionError } from "@/lib/events/kafka-utils";
+import { logger } from "@/lib/logging/logger";
 
 export interface HealthStatus {
   status: "healthy" | "degraded" | "unhealthy";
@@ -153,16 +155,51 @@ export async function checkHealth(): Promise<HealthStatus> {
       checks.kafka = "not_checked";
     } else {
       const { Kafka } = await import("kafkajs");
+      const brokerList = brokers.split(",").map((b) => b.trim()).filter(Boolean);
+      const tlsEnabled =
+        process.env.KAFKA_SSL === "true" ||
+        process.env.KAFKA_TLS === "true" ||
+        brokerList.some((b) => String(b).includes(":9094"));
+      
+      const saslMechanism = process.env.KAFKA_SASL_MECHANISM?.trim();
+      const saslUsername = process.env.KAFKA_SASL_USERNAME?.trim();
+      const saslPassword = process.env.KAFKA_SASL_PASSWORD?.trim();
+      const sasl =
+        saslMechanism && saslUsername && saslPassword
+          ? {
+              mechanism: saslMechanism as any,
+              username: saslUsername,
+              password: saslPassword,
+            }
+          : undefined;
+
       const kafka = new Kafka({
         clientId: "holdwall-health-check",
-        brokers: brokers.split(",").map((b) => b.trim()).filter(Boolean),
+        brokers: brokerList,
+        ssl: tlsEnabled ? { rejectUnauthorized: true } : undefined,
+        sasl,
+        connectionTimeout: parseInt(process.env.KAFKA_CONNECTION_TIMEOUT || "10000", 10),
+        requestTimeout: parseInt(process.env.KAFKA_REQUEST_TIMEOUT || "30000", 10),
       });
       const producer = kafka.producer();
-      await withTimeout(producer.connect(), 1500, "Kafka connect");
-      await withTimeout(producer.disconnect(), 1500, "Kafka disconnect");
-      checks.kafka = "ok";
+      try {
+        await withTimeout(producer.connect(), 1500, "Kafka connect");
+        await withTimeout(producer.disconnect(), 1500, "Kafka disconnect");
+        checks.kafka = "ok";
+      } catch (connectError: any) {
+        if (isConnectionError(connectError)) {
+          logConnectionError(connectError, brokerList, "health-kafka-check", {
+            hint: "Check network connectivity and DNS resolution",
+          });
+        }
+        checks.kafka = "error";
+      }
     }
-  } catch {
+  } catch (error) {
+    const { logger: healthLogger } = await import("@/lib/logging/logger");
+    healthLogger.warn("Kafka health check error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     checks.kafka = "error";
   }
 

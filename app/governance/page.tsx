@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Download, Settings, Shield, Sparkles, ArrowRight, CheckCircle2, FileText, Users, PlayCircle } from "lucide-react";
+import { Download, Settings, Shield, Sparkles, ArrowRight, CheckCircle2, FileText, Users, PlayCircle } from "@/components/demo-icons";
 import { AuditBundleExport } from "@/components/audit-bundle-export";
 import { AuthGuard } from "@/components/auth-guard";
 import { GovernanceApprovals } from "@/components/governance-approvals";

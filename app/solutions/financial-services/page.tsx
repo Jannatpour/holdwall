@@ -20,7 +20,7 @@ import {
   ArrowRight,
   Calendar,
   BookOpen,
-} from "lucide-react";
+} from "@/components/demo-icons";
 
 export const metadata: Metadata = genMeta(
   "Financial Services - Banks, FinTech, Payments, Insurance",

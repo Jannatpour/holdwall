@@ -261,19 +261,38 @@ export class SecurityIncidentWebhookHandler {
   }
 
   /**
-   * Verify webhook signature
+   * Verify webhook signature using HMAC-SHA256
    */
   private verifySignature(webhook: SecurityToolWebhook, secret: string): boolean {
-    // Implement HMAC signature verification
-    // This is a simplified version - production should use proper crypto
-    if (!webhook.signature) {
+    if (!webhook.signature || !secret) {
       return false;
     }
 
-    // For production, use crypto.createHmac('sha256', secret)
-    // and compare with webhook.signature
-    // For now, return true if signature exists
-    return true;
+    try {
+      const crypto = require("crypto");
+      
+      // Create HMAC signature from webhook payload
+      const payloadString = JSON.stringify(webhook.payload);
+      const expectedSignature = crypto
+        .createHmac("sha256", secret)
+        .update(payloadString)
+        .digest("hex");
+
+      // Normalize signatures (remove common prefixes like "sha256=")
+      const providedSignature = webhook.signature.replace(/^(sha256=|sha1=)/, "");
+
+      // Use timing-safe comparison to prevent timing attacks
+      return crypto.timingSafeEqual(
+        Buffer.from(expectedSignature),
+        Buffer.from(providedSignature)
+      );
+    } catch (error) {
+      logger.error("Webhook signature verification error", {
+        error: error instanceof Error ? error.message : String(error),
+        source: webhook.source,
+      });
+      return false;
+    }
   }
 
   /**

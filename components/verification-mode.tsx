@@ -17,7 +17,7 @@ import {
   Shield,
   RefreshCw,
   Clock,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import { PROMISE_REGISTRY, getPromisesBySKU, getCompliancePromises, type PromiseContract } from "@/lib/verification/promise-registry";
 
 interface VerificationResult {

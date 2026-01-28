@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { ClaimsList } from "@/components/claims-list";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
 import { GuideButton, GuideWalkthrough } from "@/components/guides";
-import { FileText } from "lucide-react";
+import { FileText } from "@/components/demo-icons";
 import { ClaimsLoading } from "@/components/ui/loading-states";
 
 export const metadata: Metadata = genMeta(

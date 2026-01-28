@@ -7,11 +7,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { DatabaseEventStore } from "@/lib/events/store-db";
-import { CaseService } from "@/lib/cases/service";
+import { db } from "@/lib/db/client";
 import { logger } from "@/lib/logging/logger";
 
 const eventStore = new DatabaseEventStore();
-const caseService = new CaseService();
 
 /**
  * GET /api/cases/[id]/timeline - Get case timeline
@@ -27,15 +26,16 @@ export async function GET(
     const caseId = id;
 
     // Get case to verify it exists and get tenant ID
-    // Try by case number first (for public tracking)
-    let case_ = await caseService.getCaseByNumber(caseId);
+    // Try by ID first, then by case number (for public tracking)
+    let case_ = await db.case.findUnique({
+      where: { id: caseId },
+    });
+    
     if (!case_) {
-      // Try by ID (for authenticated access)
-      try {
-        case_ = await caseService.getCase(caseId, "") as any;
-      } catch {
-        // Case not found
-      }
+      // Try by case number (for public tracking)
+      case_ = await db.case.findUnique({
+        where: { caseNumber: caseId },
+      });
     }
     
     if (!case_) {

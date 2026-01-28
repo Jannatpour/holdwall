@@ -8,7 +8,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, Building2 } from "lucide-react";
+import { Check, ChevronsUpDown, Building2 } from "@/components/demo-icons";
 import { Button } from "@/components/ui/button";
 import {
   Command,

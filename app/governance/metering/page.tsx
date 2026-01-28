@@ -20,7 +20,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { BarChart3, TrendingUp, AlertTriangle, Settings, Save } from "lucide-react";
+import { BarChart3, TrendingUp, AlertTriangle, Settings, Save } from "@/components/demo-icons";
 import { toast } from "sonner";
 
 interface Entitlement {

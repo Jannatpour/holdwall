@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileText, Network, CheckCircle2, TrendingUp, AlertTriangle, Clock, ArrowRight, Shield, Target, Zap, Sparkles, BarChart3, Settings, Bell, RefreshCw, Lightbulb, Rocket, TrendingDown, Activity } from "lucide-react";
+import { FileText, Network, CheckCircle2, TrendingUp, AlertTriangle, Clock, ArrowRight, Shield, Target, Zap, Sparkles, BarChart3, Settings, Bell, RefreshCw, Lightbulb, Rocket, TrendingDown, Activity } from "@/components/demo-icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NarrativeRiskBrief } from "@/components/narrative-risk-brief";
 import { ExplainScoreDrawer } from "@/components/explain-score-drawer";

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Network, Shield, Play, TrendingUp, Link2, BarChart3, Target, History, Zap, FileEdit, Plus, Clock } from "lucide-react";
+import { FileText, Network, Shield, Play, TrendingUp, Link2, BarChart3, Target, History, Zap, FileEdit, Plus, Clock } from "@/components/demo-icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExplainScoreDrawer } from "@/components/explain-score-drawer";
 import { SeverityBadge } from "@/components/severity-badge";

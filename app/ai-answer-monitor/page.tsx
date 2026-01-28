@@ -23,7 +23,7 @@ import {
   AlertCircle,
   CheckCircle2,
   MessageSquare,
-} from "lucide-react";
+} from "@/components/demo-icons";
 import { AppShell } from "@/components/app-shell";
 
 interface CitationMetrics {

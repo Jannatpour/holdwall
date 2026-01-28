@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Play, Clock, CheckCircle2, XCircle, AlertCircle, Edit, Trash2, MoreVertical } from "lucide-react";
+import { Play, Clock, CheckCircle2, XCircle, AlertCircle, Edit, Trash2, MoreVertical } from "@/components/demo-icons";
 import {
   DropdownMenu,
   DropdownMenuContent,

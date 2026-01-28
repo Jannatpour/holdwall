@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowRight, ArrowLeft, AlertTriangle } from "@/components/demo-icons";
 
 export default function PolicyPage() {
   const router = useRouter();

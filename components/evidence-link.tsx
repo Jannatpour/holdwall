@@ -8,7 +8,7 @@
 "use client";
 
 import * as React from "react";
-import { ExternalLink, FileText } from "lucide-react";
+import { ExternalLink, FileText } from "@/components/demo-icons";
 import { Button } from "@/components/ui/button";
 import {
   HoverCard,

@@ -37,7 +37,7 @@ import {
   MoreVertical, ArrowUpDown, ArrowUp, ArrowDown, Settings2, Eye, EyeOff,
   Activity, TrendingUp, TrendingDown, RefreshCw, TestTube, XCircle,
   Shield, Database, Clock, FileText, Filter, Search, BarChart3
-} from "lucide-react";
+} from "@/components/demo-icons";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { logger } from "@/lib/logging/logger";

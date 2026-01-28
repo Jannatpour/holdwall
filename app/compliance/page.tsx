@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { generateMetadata as genMeta } from "@/lib/seo/metadata";
-import { FileCheck, Shield, Lock, Globe, CheckCircle2, AlertTriangle } from "lucide-react";
+import { FileCheck, Shield, Lock, Globe, CheckCircle2, AlertTriangle } from "@/components/demo-icons";
 
 export const metadata: Metadata = genMeta(
   "Compliance",

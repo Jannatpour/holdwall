@@ -3,7 +3,7 @@
  * Database-backed evidence storage with ChromaDB for vector search
  */
 
-import { db } from "@/lib/db/client";
+import { db, enforceTenantId, withTenantFilter } from "@/lib/db/client";
 import { Prisma } from "@prisma/client";
 import type { Evidence, EvidenceVault } from "./vault";
 import { EmbeddingService } from "@/lib/vector/embeddings";
@@ -239,16 +239,35 @@ export class DatabaseEvidenceVault implements EvidenceVault {
   }
 
   async get(evidence_id: string, actor_id?: string, tenant_id?: string): Promise<Evidence | null> {
+    // Enforce tenant isolation - tenant_id is required for security
+    if (!tenant_id) {
+      throw new Error("tenant_id is required to enforce tenant isolation");
+    }
+
     const result = await db.evidence.findUnique({
-      where: { id: evidence_id },
+      where: {
+        id: evidence_id,
+        tenantId: tenant_id, // Enforce tenant isolation at query level
+      },
     });
 
     if (!result) {
       return null;
     }
 
+    // Double-check tenant ownership (defense in depth)
+    if (result.tenantId !== tenant_id) {
+      logger.warn("Tenant isolation violation detected", {
+        evidence_id,
+        requested_tenant_id: tenant_id,
+        actual_tenant_id: result.tenantId,
+        actor_id,
+      });
+      return null; // Don't reveal existence of other tenants' evidence
+    }
+
     // Log access if actor provided
-    if (actor_id && tenant_id) {
+    if (actor_id) {
       try {
         await this.accessControl.logAccess({
           evidence_id,
@@ -270,17 +289,18 @@ export class DatabaseEvidenceVault implements EvidenceVault {
   }
 
   async query(filters: {
-    tenant_id?: string;
+    tenant_id: string; // Required for tenant isolation
     type?: string;
     source_type?: string;
     created_after?: string;
     created_before?: string;
   }): Promise<Evidence[]> {
-    const where: any = {};
-
-    if (filters.tenant_id) {
-      where.tenantId = filters.tenant_id;
-    }
+    // Enforce tenant isolation - tenant_id is required
+    const enforcedTenantId = enforceTenantId(filters.tenant_id, "evidence query");
+    
+    const where: any = {
+      tenantId: enforcedTenantId, // Always include tenantId filter
+    };
     if (filters.type) {
       where.type = filters.type.toUpperCase() as any;
     }
@@ -434,9 +454,42 @@ export class DatabaseEvidenceVault implements EvidenceVault {
     };
   }
 
-  async delete(evidence_id: string): Promise<void> {
+  async delete(evidence_id: string, tenant_id?: string): Promise<void> {
+    // Enforce tenant isolation - tenant_id is required for security
+    if (!tenant_id) {
+      throw new Error("tenant_id is required to enforce tenant isolation");
+    }
+
+    const enforcedTenantId = enforceTenantId(tenant_id, "delete evidence");
+
+    // Verify ownership before deletion
+    const evidence = await db.evidence.findFirst({
+      where: {
+        id: evidence_id,
+        tenantId: enforcedTenantId,
+      },
+      select: { id: true, tenantId: true },
+    });
+
+    if (!evidence) {
+      throw new Error("Evidence not found or access denied");
+    }
+
+    // Double-check tenant ownership (defense in depth)
+    if (evidence.tenantId !== enforcedTenantId) {
+      logger.warn("Tenant isolation violation detected in evidence delete", {
+        evidence_id,
+        requested_tenant_id: enforcedTenantId,
+        actual_tenant_id: evidence.tenantId,
+      });
+      throw new Error("Access denied");
+    }
+
     await db.evidence.delete({
-      where: { id: evidence_id },
+      where: {
+        id: evidence_id,
+        tenantId: enforcedTenantId, // Enforce tenant isolation at delete level
+      },
     });
   }
 
